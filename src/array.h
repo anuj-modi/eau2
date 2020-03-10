@@ -596,3 +596,106 @@ class IntArray : public Object {
         return items_copy;
     }
 };
+
+class StringArray {
+   public:
+    String** vals_;
+    size_t size_;
+    size_t capacity_;
+
+    StringArray() {
+        size_ = 0;
+        capacity_ = 10;
+        vals_ = new String*[capacity_];
+    }
+
+    StringArray(Deserializer* d) {
+        size_ = d->get_size_t();
+        capacity_ = d->get_size_t();
+        vals_ = new String*[capacity_];
+        for (size_t i = 0; i < size_; i++) {
+            vals_[i] = d->get_string();
+        }
+    }
+
+    virtual ~StringArray() {
+        delete[] vals_;
+    }
+
+    void push_back(String* s) {
+        if (size_ == capacity_) {
+            capacity_ *= 2;
+            String** new_vals = new String*[capacity_];
+            for (size_t i = 0; i < size_; i++) {
+                new_vals[i] = vals_[i];
+            }
+            delete[] vals_;
+            vals_ = new_vals;
+        }
+
+        vals_[size_] = s;
+        size_++;
+    }
+
+    String* get(size_t i) {
+        assert(i < size_);
+        return vals_[i];
+    }
+
+    void serialize(Serializer* s) {
+        s->add_size_t(size_);
+        s->add_size_t(capacity_);
+        for (size_t i = 0; i < size_; i++) {
+            s->add_string(vals_[i]);
+        }
+    }
+};
+
+class DoubleArray {
+   public:
+    double* vals_;
+    size_t size_;
+    size_t capacity_;
+
+    DoubleArray() {
+        size_ = 0;
+        capacity_ = 10;
+        vals_ = new double[capacity_];
+    }
+
+    DoubleArray(Deserializer* d) : DoubleArray() {
+        size_ = d->get_size_t();
+        capacity_ = d->get_size_t();
+        vals_ = (double*)d->get_buffer(size_ * sizeof(double));
+    }
+
+    virtual ~DoubleArray() {
+        delete[] vals_;
+    }
+
+    void push_back(double d) {
+        if (size_ == capacity_) {
+            capacity_ *= 2;
+            double* new_vals = new double[capacity_];
+            for (size_t i = 0; i < size_; i++) {
+                new_vals[i] = vals_[i];
+            }
+            delete[] vals_;
+            vals_ = new_vals;
+        }
+
+        vals_[size_] = d;
+        size_++;
+    }
+
+    double get(size_t i) {
+        assert(i < size_);
+        return vals_[i];
+    }
+
+    void serialize(Serializer* s) {
+        s->add_size_t(size_);
+        s->add_size_t(capacity_);
+        s->add_buffer(vals_, size_ * sizeof(double));
+    }
+};
