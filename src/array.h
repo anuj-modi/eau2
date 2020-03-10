@@ -936,7 +936,7 @@ class DoubleArray {
         vals_ = new double[capacity_];
     }
 
-    DoubleArray(Deserializer* d) : DoubleArray() {
+    DoubleArray(Deserializer* d) {
         size_ = d->get_size_t();
         capacity_ = d->get_size_t();
         vals_ = (double*)d->get_buffer(size_ * sizeof(double));
