@@ -11,6 +11,11 @@ submission.zip: $(STUFF)
 	zip -x '*.DS_Store' -x '*__MACOSX*' -x '*.AppleDouble*' -r submission.zip eau2
 	@rm -rf eau2/
 
+.PHONY: test
+test:
+	cd tests/ && make test && ./test
+
 .PHONY: clean
 clean:
 	rm -rf submission.zip eau2/
+	cd tests/ && make clean
