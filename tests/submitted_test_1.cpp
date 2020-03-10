@@ -1,20 +1,6 @@
 #include "../src/dataframe.h"
 #include "catch.hpp"
 
-/**
- * Determine if these two floats are equal with respect to eps.
- * @param f1 the first float to compare.
- * @param f2 the second float to compare.
- */
-bool float_equal(float f1, float f2) {
-    float eps = 0.0000001;
-    if (f1 > f2) {
-        return f1 - f2 < eps;
-    } else {
-        return f2 - f1 < eps;
-    }
-}
-
 /** Tests that methods return -1 if a nullptr name is given for
  * a row or column to look for in schema, since not put as
  * undefined in spec.
