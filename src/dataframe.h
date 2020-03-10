@@ -22,6 +22,20 @@ class DataFrame : public DataFrameBase {
      * empty. */
     DataFrame(Schema& schema) : DataFrameBase(schema) {}
 
+    /** Create a new dataframe, constructed from rows for which the given
+     * Rower returned true from its accept method. */
+    DataFrame* filter(Rower& r) {
+        DataFrame* new_df = new DataFrame(*df_schema_);
+        for (size_t i = 0; i < df_schema_->length(); i++) {
+            Row curr_row = Row(*df_schema_);
+            fill_row(i, curr_row);
+            if (r.accept(curr_row)) {
+                new_df->add_row(curr_row);
+            }
+        }
+        return new_df;
+    }
+
     /** This method clones the Rower and executes the map in parallel. Join is
      * used at the end to merge the results. */
     void pmap(Rower& r) {

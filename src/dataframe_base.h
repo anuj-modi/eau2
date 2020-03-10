@@ -214,7 +214,7 @@ class DataFrameBase : public Object {
 
     /** Create a new dataframe, constructed from rows for which the given
      * Rower returned true from its accept method. */
-    DataFrameBase* filter(Rower& r) {
+    virtual DataFrameBase* filter(Rower& r) {
         DataFrameBase* new_df = new DataFrameBase(*df_schema_);
         for (size_t i = 0; i < df_schema_->length(); i++) {
             Row curr_row = Row(*df_schema_);
