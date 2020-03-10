@@ -3,8 +3,6 @@
 #include "thread.h"
 #include "worker.h"
 
-static const size_t NUM_WORKERS = std::thread::hardware_concurrency();
-
 /****************************************************************************
  * DataFrame::
  *
@@ -39,14 +37,20 @@ class DataFrame : public DataFrameBase {
     /** This method clones the Rower and executes the map in parallel. Join is
      * used at the end to merge the results. */
     void pmap(Rower& r) {
-        Worker** workers = new Worker*[NUM_WORKERS];
-        size_t chunk_size = nrows() / NUM_WORKERS;
-        for (size_t i = 0; i < NUM_WORKERS; i++) {
-            workers[i] = new Worker(&r, this, i, chunk_size);
+        size_t num_workers = std::thread::hardware_concurrency();
+        Worker** workers = new Worker*[num_workers];
+        size_t chunk_size = nrows() / num_workers;
+        size_t leftovers = nrows() % num_workers;
+        for (size_t i = 0; i < num_workers; i++) {
+            if (i == num_workers - 1) {
+                workers[i] = new Worker(&r, this, i, chunk_size, leftovers);
+            } else {
+                workers[i] = new Worker(&r, this, i, chunk_size);
+            }
             workers[i]->start();
         }
 
-        for (size_t i = 0; i < NUM_WORKERS; i++) {
+        for (size_t i = 0; i < num_workers; i++) {
             workers[i]->join();
             r.join_delete(workers[i]->rower);
             delete workers[i];

@@ -5,6 +5,7 @@
 #include <string.h>
 #include "column.h"
 #include "object.h"
+#include "serial.h"
 
 /**
  * Array: Represents a resizeable array.

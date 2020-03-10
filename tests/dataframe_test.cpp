@@ -62,16 +62,16 @@ class MaxFielder2 : public Fielder {
 // rower test for the map test
 class MaxRower2 : public Rower {
    public:
-    int max1;
-    String* max2;
-    float max3;
-    bool max4;
+    int maxInt;
+    String* maxStr;
+    float maxFloat;
+    bool maxBool;
 
     MaxRower2() : Rower() {
-        max1 = INT_MIN;
-        max2 = nullptr;
-        max3 = -FLT_MAX;
-        max4 = false;
+        maxInt = INT_MIN;
+        maxStr = nullptr;
+        maxFloat = -FLT_MAX;
+        maxBool = false;
     }
 
     virtual ~MaxRower2() {}
@@ -85,23 +85,51 @@ class MaxRower2 : public Rower {
         }
         mf.done();
 
-        if (max1 < mf.max1) {
-            max1 = mf.max1;
+        if (maxInt < mf.max1) {
+            maxInt = mf.max1;
         }
 
-        if (max2 == nullptr || strcmp(max2->c_str(), mf.max2->c_str()) < 0) {
-            max2 = mf.max2;
+        if (maxStr == nullptr || strcmp(maxStr->c_str(), mf.max2->c_str()) < 0) {
+            maxStr = mf.max2;
         }
 
-        if (max3 < mf.max3) {
-            max3 = mf.max3;
+        if (maxFloat < mf.max3) {
+            maxFloat = mf.max3;
         }
 
         if (mf.max4) {
-            max4 = true;
+            maxBool = true;
         }
 
         return true;
+    }
+
+    void join_delete(Rower* r) {
+        MaxRower2* mr = dynamic_cast<MaxRower2*>(r);
+        if (mr == nullptr) {
+            return;
+        }
+
+        if (maxInt < mr->maxInt) {
+            maxInt = mr->maxInt;
+        }
+
+        if (maxStr == nullptr || strcmp(maxStr->c_str(), mr->maxStr->c_str()) < 0) {
+            maxStr = mr->maxStr;
+        }
+
+        if (maxFloat < mr->maxFloat) {
+            maxFloat = mr->maxFloat;
+        }
+
+        if (mr->maxBool) {
+            maxBool = true;
+        }
+        delete mr;
+    }
+
+    Rower* clone() {
+        return new MaxRower2();
     }
 };
 
@@ -147,14 +175,12 @@ TEST_CASE("Add column to dataframe is copy", "[column][dataframe]") {
     df.add_row(r);
     IntColumn* col = new IntColumn();
     col->push_back(4);
-    String* col_name = new String("Names");
-    df.add_column(col, col_name);
+    df.add_column(col);
     col->as_int()->set(0, 8);
 
     REQUIRE(df.get_int(1, 0) == 4);
 
     delete str;
-    delete col_name;
 }
 
 /** Tests that adding a column with a length not equal to the
@@ -168,8 +194,7 @@ TEST_CASE("uneven column length", "[schema][dataframe]") {
     r.set(0, str);
     df.add_row(r);
     IntColumn* col = new IntColumn();
-    String* col_name = new String("Names");
-    df.add_column(col, col_name);
+    df.add_column(col);
 
     if (df.ncols() == 1) {
         REQUIRE(true);
@@ -180,10 +205,9 @@ TEST_CASE("uneven column length", "[schema][dataframe]") {
 
     delete str;
     delete col;
-    delete col_name;
 }
 
- // Tests that constructor for dataframe does not copy over rows.
+// Tests that constructor for dataframe does not copy over rows.
 TEST_CASE("dataframe constructor doesn't copy rows", "[dataframe]") {
     Schema s("I");
     DataFrame df(s);
@@ -204,9 +228,8 @@ TEST_CASE("dataframe constructor doesn't copy rows", "[dataframe]") {
 TEST_CASE("map works", "[dataframe]") {
     Schema s("ISF");
     DataFrame df(s);
-    String* bool_name = new String("Bool Col");
     BoolColumn* b = new BoolColumn();
-    df.add_column(b, bool_name);
+    df.add_column(b);
     Row r = Row(df.get_schema());
     String* str = new String("Test");
     String* str2 = new String("ZZZZZZZZ");
@@ -225,12 +248,11 @@ TEST_CASE("map works", "[dataframe]") {
     MaxRower2 mr = MaxRower2();
     df.map(mr);
 
-    REQUIRE(mr.max1 == 11);
-    REQUIRE(mr.max2->equals(str2));
-    REQUIRE(float_equal(mr.max3, 11.0));
-    REQUIRE(mr.max4);
+    REQUIRE(mr.maxInt == 11);
+    REQUIRE(mr.maxStr->equals(str2));
+    REQUIRE(float_equal(mr.maxFloat, 11.0));
+    REQUIRE(mr.maxBool);
 
-    delete bool_name;
     delete str;
     delete str2;
     delete b;
@@ -240,9 +262,8 @@ TEST_CASE("map works", "[dataframe]") {
 TEST_CASE("filter works", "[dataframe]") {
     Schema s("ISF");
     DataFrame df(s);
-    String* bool_name = new String("Bool Col");
     BoolColumn* b = new BoolColumn();
-    df.add_column(b, bool_name);
+    df.add_column(b);
     Row r = Row(df.get_schema());
     String* str = new String("Test");
     String* str2 = new String("ZZZZZZZZ");
@@ -265,20 +286,40 @@ TEST_CASE("filter works", "[dataframe]") {
     REQUIRE(new_df->ncols() == 4);
     REQUIRE(new_df->nrows() == 1);
 
-    delete bool_name;
     delete str;
     delete str2;
     delete b;
     delete new_df;
 }
 
-// test for dataframe
-TEST_CASE("test_dataframe", "[dataframe]") {
+// test adding column to the dataframe
+TEST_CASE("adding column to dataframe", "[dataframe]") {
     Schema s("ISF");
     DataFrame df(s);
-    String* bool_name = new String("Bool Col");
     BoolColumn* b = new BoolColumn();
-    df.add_column(b, bool_name);
+    df.add_column(b);
+
+    REQUIRE(df.ncols() == 4);
+    REQUIRE(df.df_schema_->col_type(3) == 'B');
+}
+
+// test adding a row to the dataframe
+TEST_CASE("adding row to dataframe", "[dataframe]") {
+    Schema s("IFB");
+    DataFrame df(s);
+    Row r = Row(df.get_schema());
+    r.set(0, 8);
+    r.set(1, 8.0f);
+    r.set(2, false);
+    df.add_row(r);
+
+    REQUIRE(df.nrows() == 1);
+}
+
+// setting and getting a value in a dataframe
+TEST_CASE("setting and getting values", "[dataframe]") {
+    Schema s("ISFB");
+    DataFrame df(s);
     Row r = Row(df.get_schema());
     String* str = new String("Test");
     String* str2 = new String("ZZZZZZZZ");
@@ -290,13 +331,13 @@ TEST_CASE("test_dataframe", "[dataframe]") {
         df.add_row(r);
     }
 
-    // test get_col
-    REQUIRE(df.get_col(*bool_name) == 3);
-
     df.set(0, 19, 11);
     df.set(1, 94, str2);
     df.set(2, 88, (float)11.0);
     df.set(3, 76, true);
+
+    REQUIRE(df.nrows() == 100);
+    REQUIRE(df.ncols() == 4);
 
     // test get_int and set
     REQUIRE(df.get_int(0, 19) == 11);
@@ -310,25 +351,72 @@ TEST_CASE("test_dataframe", "[dataframe]") {
     // test get_string and set
     REQUIRE(df.get_string(1, 94)->equals(str2));
 
-    MaxRower mr = MaxRower();
-    df.map(mr);
+    delete str;
+    delete str2;
+}
 
-    // test map
+// tests that running pmap works with equally divided dataframe
+TEST_CASE("pmap works evenly distributed", "[dataframe]") {
+    Schema s("ISFB");
+    DataFrame df(s);
+    Row r = Row(df.get_schema());
+    String* str = new String("Test");
+    String* str2 = new String("ZZZZZZZZ");
+    for (int i = 0; i < 100; i++) {
+        r.set(0, 8);
+        r.set(1, str);
+        r.set(2, 8.0f);
+        r.set(3, false);
+        df.add_row(r);
+    }
+
+    df.set(0, 99, 11);
+    df.set(1, 99, str2);
+    df.set(2, 99, (float)11.0);
+    df.set(3, 99, true);
+
+    REQUIRE(df.nrows() == 100);
+    REQUIRE(df.ncols() == 4);
+
+    MaxRower2 mr = MaxRower2();
+    df.pmap(mr);
+
     REQUIRE(mr.maxInt == 11);
     REQUIRE(mr.maxStr->equals(str2));
     REQUIRE(float_equal(mr.maxFloat, 11.0));
     REQUIRE(mr.maxBool);
 
-    FilterGreater10 greater_10 = FilterGreater10();
-    DataFrame* new_df = static_cast<DataFrame*>(df.filter(greater_10));
-
-    // test filter
-    REQUIRE(new_df->ncols() == 4);
-    REQUIRE(new_df->nrows() == 1);
-
-    delete bool_name;
     delete str;
     delete str2;
-    delete b;
-    delete new_df;
+}
+
+// tests that running pmap works with unequally divided dataframe
+TEST_CASE("pmap works unevenly distributed", "[dataframe]") {
+    Schema s("ISFB");
+    DataFrame df(s);
+    Row r = Row(df.get_schema());
+    String* str = new String("Test");
+    String* str2 = new String("ZZZZZZZZ");
+    for (int i = 0; i < 101; i++) {
+        r.set(0, 8);
+        r.set(1, str);
+        r.set(2, 8.0f);
+        r.set(3, false);
+        df.add_row(r);
+    }
+
+    df.set(0, 100, 11);
+    df.set(1, 100, str2);
+    df.set(2, 100, (float)11.0);
+    df.set(3, 100, true);
+    MaxRower2 mr = MaxRower2();
+    df.pmap(mr);
+
+    REQUIRE(mr.maxInt == 11);
+    REQUIRE(mr.maxStr->equals(str2));
+    REQUIRE(float_equal(mr.maxFloat, 11.0));
+    REQUIRE(mr.maxBool);
+
+    delete str;
+    delete str2;
 }

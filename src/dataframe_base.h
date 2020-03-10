@@ -29,19 +29,19 @@ class DataFrameBase : public Object {
         for (size_t i = 0; i < schema.width(); i++) {
             switch (schema.col_type(i)) {
                 case 'S':
-                    df_schema_->add_column('S', schema.col_name(i));
+                    df_schema_->add_column('S');
                     columns_->push_back(new StringColumn());
                     break;
                 case 'I':
-                    df_schema_->add_column('I', schema.col_name(i));
+                    df_schema_->add_column('I');
                     columns_->push_back(new IntColumn());
                     break;
                 case 'B':
-                    df_schema_->add_column('B', schema.col_name(i));
+                    df_schema_->add_column('B');
                     columns_->push_back(new BoolColumn());
                     break;
                 case 'F':
-                    df_schema_->add_column('F', schema.col_name(i));
+                    df_schema_->add_column('F');
                     columns_->push_back(new FloatColumn());
                     break;
                 default:
@@ -65,12 +65,12 @@ class DataFrameBase : public Object {
     }
 
     /** Adds a column this dataframe, updates the schema, the new column
-     * is external, and appears as the last column of the dataframe, the
-     * name is optional and external. A nullptr colum is undefined. */
-    void add_column(Column* col, String* name) {
+     * is external, and appears as the last column of the dataframe.
+     * A nullptr colum is undefined. */
+    void add_column(Column* col) {
         assert(col != nullptr);
         if (col->size() == df_schema_->length()) {
-            df_schema_->add_column(col->get_type(), name);
+            df_schema_->add_column(col->get_type());
             columns_->push_back(col->clone());
         }
     }
@@ -96,16 +96,6 @@ class DataFrameBase : public Object {
         assert(col < df_schema_->width() && row < df_schema_->length());
         assert(df_schema_->col_type(col) == 'S');
         return columns_->get(col)->as_string()->get(row);
-    }
-
-    /** Return the offset of the given column name or -1 if no such col. */
-    int get_col(String& col) {
-        return df_schema_->col_idx(col.c_str());
-    }
-
-    /** Return the offset of the given row name or -1 if no such row. */
-    int get_row(String& col) {
-        return df_schema_->row_idx(col.c_str());
     }
 
     /** Set the value at the given column and row to the given value.
@@ -171,7 +161,6 @@ class DataFrameBase : public Object {
         for (size_t i = 0; i < row.width(); i++) {
             assert(df_schema_->col_type(i) == row.col_type(i));
         }
-        df_schema_->add_row(nullptr);
         for (size_t j = 0; j < row.width(); j++) {
             char c_type = row.col_type(j);
             switch (c_type) {
@@ -191,6 +180,7 @@ class DataFrameBase : public Object {
                     assert(false);
             }
         }
+        df_schema_->add_row();
     }
 
     /** The number of rows in the dataframe. */

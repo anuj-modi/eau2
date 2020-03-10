@@ -11,23 +11,20 @@
  * The valid types are represented by the chars 'S', 'B', 'I' and 'F'.
  */
 class Schema : public Object {
-    Array* col_names_;
     IntArray* col_types_;
-    Array* row_names_;
+    size_t num_rows_;
 
    public:
     /** Copying constructor */
     Schema(Schema& from) : Object() {
-        col_names_ = from.col_names_->clone();
         col_types_ = from.col_types_->clone();
-        row_names_ = from.row_names_->clone();
+        num_rows_ = from.num_rows_;
     }
 
     /** Create an empty schema **/
     Schema() : Object() {
-        col_names_ = new Array();
         col_types_ = new IntArray();
-        row_names_ = new Array();
+        num_rows_ = 0;
     }
 
     /** Create a schema from a string of types. A string that contains
@@ -36,56 +33,23 @@ class Schema : public Object {
      * undefined. **/
     Schema(const char* types) : Schema() {
         assert(types != nullptr);
-
         int num_types = strlen(types);
         for (int i = 0; i < num_types; i++) {
-            col_types_->push_back(type_to_int_(types[i]));
-            col_names_->push_back(nullptr);
+            col_types_->push_back(type_to_int_(types[i]));;
         }
     }
 
     virtual ~Schema() {
-        delete col_names_;
         delete col_types_;
-        delete row_names_;
     }
 
-    /** Add a column of the given type and name (can be nullptr), name
-     * is external. Names are expectd to be unique, duplicates result
-     * in undefined behavior. */
-    void add_column(char type, String* name) {
-        assert(!col_names_->contains(name));
+    void add_column(char type) {
         col_types_->push_back(type_to_int_(type));
-        col_names_->push_back(name);
     }
 
-    /** Add a row with a name (possibly nullptr), name is external.  Names are
-     *  expectd to be unique, duplicates result in undefined behavior. */
-    void add_row(String* name) {
-        assert(!row_names_->contains(name));
-        row_names_->push_back(name);
-    }
-
-    /** Return name of row at idx; nullptr indicates no name. An idx >= width
-     * is undefined. */
-    String* row_name(size_t idx) {
-        assert(idx < row_names_->size());
-        if (row_names_->get(idx) == nullptr) {
-            return nullptr;
-        } else {
-            return static_cast<String*>(row_names_->get(idx));
-        }
-    }
-
-    /** Return name of column at idx; nullptr indicates no name given.
-     *  An idx >= width is undefined.*/
-    String* col_name(size_t idx) {
-        assert(idx < col_names_->size());
-        if (col_names_->get(idx) == nullptr) {
-            return nullptr;
-        } else {
-            return static_cast<String*>(col_names_->get(idx));
-        }
+    /** Add a row to the schema. */
+    void add_row() {
+        num_rows_ += 1;
     }
 
     /** Return type of column at idx. An idx >= width is undefined. */
@@ -94,43 +58,14 @@ class Schema : public Object {
         return type_to_char_(col_types_->get(idx));
     }
 
-    /** Given a column name return its index, or -1. */
-    int col_idx(const char* name) {
-        if (name == nullptr) {
-            return -1;
-        }
-        String* n = new String(name);
-        int result = -1;
-        if (col_names_->contains(n)) {
-            result = col_names_->index_of(n);
-        }
-
-        delete n;
-        return result;
-    }
-
-    /** Given a row name return its index, or -1. */
-    int row_idx(const char* name) {
-        if (name == nullptr) {
-            return -1;
-        }
-        String* n = new String(name, strlen(name));
-        if (row_names_->contains(n)) {
-            return row_names_->index_of(n);
-        } else {
-            return -1;
-        }
-        delete n;
-    }
-
     /** The number of columns */
     size_t width() {
-        return col_names_->size();
+        return col_types_->size();
     }
 
     /** The number of rows */
     size_t length() {
-        return row_names_->size();
+        return num_rows_;
     }
 
     int type_to_int_(char c) {
