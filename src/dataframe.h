@@ -3,7 +3,7 @@
 #include "thread.h"
 #include "worker.h"
 
-static const int NUM_WORKERS = 4;
+static const size_t NUM_WORKERS = std::thread::hardware_concurrency();
 
 /****************************************************************************
  * DataFrame::
