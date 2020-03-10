@@ -15,7 +15,6 @@ static bool float_equal(float f1, float f2) {
     }
 }
 
-
 // tests for an Int Column
 TEST_CASE("test_int_column", "[column]") {
     IntColumn* ic = new IntColumn();

@@ -1,5 +1,3 @@
-#include "../src/array.h"
-#include <stdio.h>
 #include "../src/string.h"
 #include "catch.hpp"
 
