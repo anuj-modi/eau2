@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+#include "catch.hpp"
 #include "dataframe.h"
 
 #define GT_TRUE(a) ASSERT_EQ((a), true)
