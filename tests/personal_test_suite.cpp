@@ -101,7 +101,132 @@ void test_schema() {
     exit(0);
 }
 
-// TODO move in colomn tests
+// tests for an Int Column
+void test_int_column() {
+    IntColumn* ic = new IntColumn();
+    int size = 10000;
+    for (int i = 0; i < size; i++) {
+        ic->push_back(i);
+    }
+
+    GT_EQUALS(ic->get_type(), 'I');
+
+    for (int i = 0; i < size; i++) {
+        GT_EQUALS(ic->get(i), i);
+    }
+
+    GT_EQUALS(ic->size(), size);
+    ic->set(size - 1, 9001);
+    for (int i = 0; i < size - 1; i++) {
+        GT_EQUALS(ic->get(i), i);
+    }
+
+    GT_EQUALS(ic->size(), size);
+    GT_EQUALS(ic->get(size - 1), 9001);
+
+    GT_EQUALS(ic->as_int(), ic);
+    GT_EQUALS(ic->as_bool(), nullptr);
+    GT_EQUALS(ic->as_float(), nullptr);
+    GT_EQUALS(ic->as_string(), nullptr);
+
+    delete ic;
+    exit(0);
+}
+
+// tests for a Float Column
+void test_float_column() {
+    FloatColumn* fc = new FloatColumn();
+    int size = 1000;
+    for (int i = 0; i < size; i++) {
+        fc->push_back(i * 1.5f);
+    }
+
+    GT_EQUALS(fc->get_type(), 'F');
+
+    for (int i = 0; i < size; i++) {
+        GT_TRUE(float_equal(fc->get(i), i * 1.5f));
+    }
+
+    GT_EQUALS(fc->size(), size);
+    fc->set(size - 1, 9001.9001);
+    for (int i = 0; i < size - 1; i++) {
+        GT_TRUE(float_equal(fc->get(i), i * 1.5f));
+    }
+
+    GT_EQUALS(fc->size(), size);
+    GT_TRUE(float_equal(fc->get(size - 1), 9001.9001));
+
+    GT_EQUALS(fc->as_int(), nullptr);
+    GT_EQUALS(fc->as_float(), fc);
+    GT_EQUALS(fc->as_bool(), nullptr);
+    GT_EQUALS(fc->as_string(), nullptr);
+
+    delete fc;
+    exit(0);
+}
+// tests for an Int Column
+void test_bool_column() {
+    BoolColumn* bc = new BoolColumn();
+    int size = 10000;
+    for (int i = 0; i < size; i++) {
+        bool val = i % 2 ? false : true;
+        bc->push_back(val);
+    }
+
+    GT_EQUALS(bc->get_type(), 'B');
+
+    for (int i = 0; i < size; i++) {
+        bool val = i % 2 ? false : true;
+        GT_EQUALS(bc->get(i), val);
+    }
+
+    GT_EQUALS(bc->size(), size);
+    bool old_last = bc->get(size - 1);
+    bc->set(size - 1, !old_last);
+    for (int i = 0; i < size - 1; i++) {
+        GT_EQUALS(bc->get(i), i);
+    }
+
+    GT_EQUALS(bc->size(), size);
+    GT_EQUALS(bc->get(size - 1), !old_last);
+
+    GT_EQUALS(bc->as_int(), nullptr);
+    GT_EQUALS(bc->as_bool(), bc);
+    GT_EQUALS(bc->as_float(), nullptr);
+    GT_EQUALS(bc->as_string(), nullptr);
+
+    delete bc;
+    exit(0);
+}
+
+void test_string_column() {
+    StringColumn* sc = new StringColumn();
+    String* a = new String("a");
+    String* b = new String("b");
+    String* c = new String("c");
+    String* d = new String("d");
+    String* e = new String("e");
+
+    sc->push_back(a);
+    sc->push_back(b);
+    sc->push_back(c);
+
+    GT_EQUALS(sc->size(), 3);
+    GT_EQUALS(sc->get_type(), 'S');
+    GT_TRUE(a->equals(sc->get(0)));
+
+    GT_EQUALS(sc->as_int(), nullptr);
+    GT_EQUALS(sc->as_bool(), nullptr);
+    GT_EQUALS(sc->as_float(), nullptr);
+    GT_EQUALS(sc->as_string(), sc);
+
+    delete a;
+    delete b;
+    delete c;
+    delete d;
+    delete e;
+    delete sc;
+}
 
 // test for dataframe
 void test_dataframe() {
@@ -173,6 +298,13 @@ TEST(a4, schema) {
 
 TEST(a4, row) {
     ASSERT_EXIT_ZERO(test_row);
+}
+
+TEST(a4, column) {
+    ASSERT_EXIT_ZERO(test_int_column);
+    ASSERT_EXIT_ZERO(test_float_column);
+    ASSERT_EXIT_ZERO(test_bool_column);
+    ASSERT_EXIT_ZERO(test_string_column);
 }
 
 TEST(a4, dataframe) {
