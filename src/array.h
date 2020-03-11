@@ -185,6 +185,8 @@ class Array<T*> : public Object {
         }
     }
 
+    // TEST
+
     /**
      * Adds an element to the end the array.
      * @arg o  element to add
