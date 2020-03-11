@@ -181,7 +181,6 @@ TEST_CASE("Add column to dataframe is copy", "[column][dataframe]") {
     REQUIRE(df.get_int(1, 0) == 4);
 
     delete str;
-    delete col;
 }
 
 /** Tests that adding a column with a length not equal to the
@@ -302,8 +301,6 @@ TEST_CASE("adding column to dataframe", "[dataframe]") {
 
     REQUIRE(df.ncols() == 4);
     REQUIRE(df.df_schema_->col_type(3) == 'B');
-
-    delete b;
 }
 
 // test adding a row to the dataframe
@@ -423,3 +420,4 @@ TEST_CASE("pmap works unevenly distributed", "[dataframe]") {
     delete str;
     delete str2;
 }
+>>>>>>> parent of f1a23c5... plugged memory errors
