@@ -1,54 +1,8 @@
 #pragma once
 #include <assert.h>
 #include "helper.h"
+#include "object.h"
 // LANGUAGE: CwC
-
-/** Base class for all objects in the system.
- *  author: vitekj@me.com */
-class Object : public Sys {
-   public:
-    size_t hash_;  // every object has a hash, subclasses must implement the functionality
-
-    Object() {
-        hash_ = 0;
-    }
-
-    /** Subclasses may have something to do on finalziation */
-    virtual ~Object() {}
-
-    /** Return the hash value of this object */
-    size_t hash() {
-        return hash_ != 0 ? hash_ : hash_ = hash_me();
-    }
-
-    /** Subclasses should redefine */
-    virtual bool equals(Object* other) {
-        return this == other;
-    }
-
-    /** Return a copy of the object; nullptr is considered an error */
-    virtual Object* clone() {
-        return nullptr;
-    }
-
-    /** Compute the hash code (subclass responsibility) */
-    virtual size_t hash_me() {
-        return 1;
-    };
-
-    /** Returned c_str is owned by the object, don't modify nor delete. */
-    virtual char* c_str() {
-        return nullptr;
-    }
-
-    bool operator==(const Object& other) {
-        return equals(const_cast<Object*>(&other));
-    }
-
-    bool operator!=(const Object& other) {
-        return !(*this == other);
-    }
-};
 
 template <typename T>
 class Array : public Object {
@@ -122,6 +76,32 @@ class Array : public Object {
     }
 
     /**
+     * Removes all elements from the array.
+     */
+    virtual void clear() {
+        size_ = 0;
+        capacity_ = 10;
+        delete[] items_;
+        items_ = new T[capacity_];
+    }
+
+    /**
+     * Checks if the array is empty.
+     * @return if the array is empty
+     */
+    virtual bool is_empty() {
+        return size_ == 0;
+    }
+
+    /**
+     * Gets the number of elements in the array.
+     * @return the number of elements
+     */
+    virtual size_t size() {
+        return size_;
+    }
+
+    /**
      * Checks if this array is equal to object given.
      * @arg other  object to compare
      * @return whether the two are equal
@@ -140,6 +120,18 @@ class Array : public Object {
             }
         }
         return true;
+    }
+
+    /**
+     * Gets a copy of the array.
+     * @return the copy of the array
+     */
+    virtual Array<T>* clone() {
+        Array<T>* items_copy = new Array<T>();
+        for (size_t i = 0; i < size_; i++) {
+            items_copy->push_back(items_[i]);
+        }
+        return items_copy;
     }
 };
 
@@ -215,6 +207,32 @@ class Array<T*> : public Object {
     }
 
     /**
+     * Removes all elements from the array.
+     */
+    virtual void clear() {
+        size_ = 0;
+        capacity_ = 10;
+        delete[] items_;
+        items_ = new T*[capacity_];
+    }
+
+    /**
+     * Checks if the array is empty.
+     * @return if the array is empty
+     */
+    virtual bool is_empty() {
+        return size_ == 0;
+    }
+
+    /**
+     * Gets the number of elements in the array.
+     * @return the number of elements
+     */
+    virtual size_t size() {
+        return size_;
+    }
+
+    /**
      * Checks if this array is equal to object given.
      * @arg other  object to compare
      * @return whether the two are equal
@@ -233,5 +251,17 @@ class Array<T*> : public Object {
             }
         }
         return true;
+    }
+
+    /**
+     * Gets a copy of the array.
+     * @return the copy of the array
+     */
+    virtual Array<T*>* clone() {
+        Array<T*>* items_copy = new Array<T*>();
+        for (size_t i = 0; i < size_; i++) {
+            items_copy->push_back(items_[i]);
+        }
+        return items_copy;
     }
 };

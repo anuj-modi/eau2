@@ -16,13 +16,13 @@
 class Row : public Object {
    public:
     int index_ = -1;
-    ColumnArray* values_;
-    IntArray* types_;
+    Array<Column*>* values_;
+    Array<int>* types_;
 
     /** Build a row following a schema. */
     Row(Schema& scm) : Object() {
-        values_ = new ColumnArray();
-        types_ = new IntArray();
+        values_ = new Array<Column*>();
+        types_ = new Array<int>();
         for (size_t i = 0; i < scm.width(); i++) {
             switch (scm.col_type(i)) {
                 case 'S':

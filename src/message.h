@@ -148,7 +148,7 @@ class Register : public Message {
  */
 class Directory : public Message {
    public:
-    Array* client_addrs_;
+    Array<Address*>* client_addrs_;
 
     /**
      * Creates instance of a directory message.
@@ -160,7 +160,7 @@ class Directory : public Message {
     }
 
     Directory(Deserializer* d) : Message(MsgType::DIRECTORY, d) {
-        client_addrs_ = new Array();
+        client_addrs_ = new Array<Address*>();
         size_t num_addrs = d->get_size_t();
         for (size_t i = 0; i < num_addrs; i++) {
             client_addrs_->push_back(new Address(d->get_uint32_t()));

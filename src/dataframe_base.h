@@ -14,7 +14,7 @@
  */
 class DataFrameBase : public Object {
    public:
-    ColumnArray* columns_;
+    Array<Column*>* columns_;
     Schema* df_schema_;
 
     /** Create a data frame with the same columns as the given df but with no
@@ -25,7 +25,7 @@ class DataFrameBase : public Object {
      * empty. */
     DataFrameBase(Schema& schema) : Object() {
         df_schema_ = new Schema();
-        columns_ = new ColumnArray();
+        columns_ = new Array<Column*>();
         for (size_t i = 0; i < schema.width(); i++) {
             switch (schema.col_type(i)) {
                 case 'S':

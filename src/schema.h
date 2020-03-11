@@ -11,7 +11,7 @@
  * The valid types are represented by the chars 'S', 'B', 'I' and 'F'.
  */
 class Schema : public Object {
-    IntArray* col_types_;
+    Array<int>* col_types_;
     size_t num_rows_;
 
    public:
@@ -23,7 +23,7 @@ class Schema : public Object {
 
     /** Create an empty schema **/
     Schema() : Object() {
-        col_types_ = new IntArray();
+        col_types_ = new Array<int>();
         num_rows_ = 0;
     }
 
