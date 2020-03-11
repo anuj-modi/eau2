@@ -50,9 +50,14 @@ TEST_CASE("test_serialize_deserialize_buffer", "[serialize][deserialize][string]
     Serializer s;
     s.add_buffer("TESTING", sizeof("TESTING"));
     Deserializer d(s.get_bytes(), s.size());
-    String* str = new String(d.get_buffer(sizeof("TESTING")));
+    char* buffer = d.get_buffer(sizeof("TESTING"));
+    String* str = new String(buffer);
     String* old_str = new String("TESTING");
     REQUIRE(str->equals(old_str));
+
+    delete[] buffer;
+    delete str;
+    delete old_str;
 }
 
 TEST_CASE("test_serialize_deserialize_string", "[serialize][deserialize][string]") {
@@ -97,7 +102,11 @@ TEST_CASE("test_serialize_deserialize_string_array", "[serialize][deserialize][a
     delete h1;
     delete h2;
     delete strs;
+    delete strs_copy->get(0);
+    delete strs_copy->get(1);
     delete strs_copy;
+    delete s;
+    delete d;
 }
 
 TEST_CASE("test_serialize_deserialize_double_array", "[serialize][deserialize][array]") {
@@ -113,5 +122,6 @@ TEST_CASE("test_serialize_deserialize_double_array", "[serialize][deserialize][a
     }
     delete doubles;
     delete doubles_copy;
+    delete s;
+    delete d;
 }
->>>>>>> parent of f1a23c5... plugged memory errors

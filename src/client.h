@@ -14,8 +14,8 @@ class Client : public Object {
     Socket* listen_sock_;
     uint16_t listen_port_;
     Socket* server_connection_;
-    Array<Socket*>* peer_sockets_;
-    Array<Address*>* peer_addresses_;
+    Array* peer_sockets_;
+    Array* peer_addresses_;
     Address* my_addr_;
 
     /**
@@ -26,8 +26,8 @@ class Client : public Object {
      * @arg server_port  the server port to bind on
      */
     Client(const char* ip, uint16_t port, const char* server_ip, uint16_t server_port) {
-        peer_sockets_ = new Array<Socket*>();
-        peer_addresses_ = new Array<Address*>();
+        peer_sockets_ = new Array();
+        peer_addresses_ = new Array();
         listen_sock_ = new Socket();
         listen_sock_->bind_and_listen(ip, port);
         listen_port_ = port;
@@ -142,7 +142,7 @@ class Client : public Object {
             }
 
             for (size_t i = 0; i < peer_sockets_->size(); i++) {
-                Socket* peer = peer_sockets_->get(i);
+                Socket* peer = static_cast<Socket*>(peer_sockets_->get(i));
                 if (peer->has_new_bytes()) {
                     char buf[1024];
                     size_t num_bytes = peer->recv_bytes(buf, sizeof(buf));
@@ -166,7 +166,7 @@ class Client : public Object {
             if (!sender && num_server_messages == 2 && peer_addresses_->size() == 1) {
                 sender = true;
                 // connect to the other client
-                Address* peer = peer_addresses_->get(0);
+                Address* peer = static_cast<Address*>(peer_addresses_->get(0));
                 Socket* peer_sock = new Socket();
                 peer_sock->connect_to_other(peer->as_str()->c_str(), listen_port_);
                 peer_sockets_->push_back(peer_sock);
