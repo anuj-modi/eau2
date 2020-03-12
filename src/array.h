@@ -301,7 +301,7 @@ class IntArray : public Object {
     /**
      * Constructs a DoubleArray from a Deserializer.
      */
-    IntArray(Deserializer* d) : IntArray() {
+    IntArray(Deserializer* d) {
         size_ = d->get_size_t();
         capacity_ = size_;
         items_ = (int*)d->get_buffer(size_ * sizeof(int));
@@ -582,10 +582,9 @@ class StringArray : public Array {
    public:
     StringArray() : Array() {}
 
-    StringArray(Deserializer* d) : Array() {
-        size_ = d->get_size_t();
-        capacity_ = d->get_size_t();
-        for (size_t i = 0; i < size_; i++) {
+    StringArray(Deserializer* d) : StringArray() {
+        size_t num_strs = d->get_size_t();
+        for (size_t i = 0; i < num_strs; i++) {
             push_back(d->get_string());
         }
     }
@@ -650,10 +649,9 @@ class StringArray : public Array {
     }
 
     void serialize(Serializer* s) {
-        s->add_size_t(size_);
-        s->add_size_t(capacity_);
-        for (size_t i = 0; i < size_; i++) {
-            s->add_string(static_cast<String*>(items_[i]));
+        s->add_size_t(size());
+        for (size_t i = 0; i < size(); i++) {
+            s->add_string(get(i));
         }
     }
 };
@@ -671,7 +669,7 @@ class BoolArray : public Object {
     /**
      * Constructs a DoubleArray from a Deserializer.
      */
-    BoolArray(Deserializer* d) : BoolArray() {
+    BoolArray(Deserializer* d) {
         size_ = d->get_size_t();
         capacity_ = size_;
         items_ = (bool*)d->get_buffer(size_ * sizeof(bool));
@@ -961,7 +959,7 @@ class DoubleArray : public Object {
     /**
      * Constructs a DoubleArray from a Deserializer.
      */
-    DoubleArray(Deserializer* d) : DoubleArray() {
+    DoubleArray(Deserializer* d) {
         size_ = d->get_size_t();
         capacity_ = size_;
         items_ = (double*)d->get_buffer(size_ * sizeof(double));

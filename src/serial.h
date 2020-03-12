@@ -108,7 +108,6 @@ class Serializer : public Object {
         size_ = new_size;
     }
 
-    // This could be wrong
     void add_string(String* s) {
         assert(s != nullptr);
         add_size_t(s->size());

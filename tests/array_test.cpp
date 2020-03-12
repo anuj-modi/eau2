@@ -245,6 +245,7 @@ TEST_CASE("add_all", "[array]") {
     delete l4;
     delete l5;
     delete l6;
+    delete l9;
     delete l10;
     delete l11;
     delete l12;
