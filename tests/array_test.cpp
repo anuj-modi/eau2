@@ -1,280 +1,390 @@
-// #include "../src/string.h"
-// #include "catch.hpp"
+#include "../src/array.h"
+#include "catch.hpp"
 
-// /**
-//  * Determine if these two floats are equal with respect to eps.
-//  * @param f1 the first float to compare.
-//  * @param f2 the second float to compare.
-//  */
-// bool float_equal(float f1, float f2) {
-//     float eps = 0.0000001;
-//     if (f1 > f2) {
-//         return f1 - f2 < eps;
-//     } else {
-//         return f2 - f1 < eps;
-//     }
-// }
+/**
+ * Determine if these two floats are equal with respect to eps.
+ * @param f1 the first float to compare.
+ * @param f2 the second float to compare.
+ */
+bool double_equal(double d1, double d2) {
+    double eps = 0.0000001;
+    if (d1 > d2) {
+        return d1 - d2 < eps;
+    } else {
+        return d2 - d1 < eps;
+    }
+}
 
-// void test_push_back() {
-//     printf("Test push_back for string: ");
-//     String *s = new String("Hello");
-//     String *t = new String("World");
-//     Array *l1 = new Array();
-//     l1->push_back(s);
-//     l1->push_back(t);
-//     REQUIRE((l1->get(0)->equals(s) && l1->get(1)->equals(t) && l1->size() == 2));
+// tests that all push_backs and gets work
+TEST_CASE("push_back and get", "[array]") {
+    String *s = new String("Hello");
+    String *t = new String("World");
+    Array *l1 = new Array();
+    l1->push_back(s);
+    l1->push_back(t);
+    REQUIRE((l1->get(0)->equals(s) && l1->get(1)->equals(t) && l1->size() == 2));
 
-//     printf("Test push_back for int: ");
-//     IntArray *l2 = new IntArray();
-//     l2->push_back(3);
-//     l2->push_back(4);
-//     REQUIRE((l2->get(0) == 3 && l2->get(1) == 4 && l2->size() == 2));
+    IntArray *l2 = new IntArray();
+    l2->push_back(3);
+    l2->push_back(4);
+    REQUIRE((l2->get(0) == 3 && l2->get(1) == 4 && l2->size() == 2));
 
-//     printf("Test push_back for float: ");
-//     float u = -3.3;
-//     float v = 4.4;
-//     FloatArray *l3 = new FloatArray();
-//     l3->push_back(u);
-//     l3->push_back(v);
-//     REQUIRE(float_equal(l3->get(0), -3.3) && float_equal(l3->get(1), 4.4) && l3->size() == 2);
+    float u = -3.3;
+    float v = 4.4;
+    FloatArray *l3 = new FloatArray();
+    l3->push_back(u);
+    l3->push_back(v);
+    REQUIRE((double_equal(l3->get(0), -3.3) && double_equal(l3->get(1), 4.4) && l3->size() == 2));
 
-//     printf("Test push_back for bool: ");
-//     BoolArray *l4 = new BoolArray();
-//     l4->push_back(true);
-//     l4->push_back(false);
-//     REQUIRE(l4->get(0) && !l4->get(1) && l4->size() == 2);
+    double w = -3.3;
+    double x = 4.4;
+    DoubleArray *l5 = new DoubleArray();
+    l5->push_back(w);
+    l5->push_back(x);
+    REQUIRE((double_equal(l5->get(0), -3.3) && double_equal(l5->get(1), 4.4) && l5->size() == 2));
 
-//     delete s;
-//     delete t;
-//     delete l1;
-//     delete l2;
-//     delete l3;
-//     delete l4;
-// }
+    BoolArray *l4 = new BoolArray();
+    l4->push_back(true);
+    l4->push_back(false);
+    REQUIRE((l4->get(0) && !l4->get(1) && l4->size() == 2));
 
-// void test_push_back_all() {
-//     printf("Test push_back_array for string (empty): ");
-//     String *s = new String("Hello");
-//     String *t = new String("World");
-//     Array *l1 = new Array();
-//     l1->push_back(s);
-//     l1->push_back(t);
-//     Array *l2 = new Array();
-//     l2->push_back_all(l1);
-//     REQUIRE(l2->equals(l1));
+    StringArray *l6 = new StringArray();
+    l6->push_back(s);
+    l6->push_back(t);
+    REQUIRE((l1->get(0)->equals(s) && l1->get(1)->equals(t) && l1->size() == 2));
 
-//     printf("Test push_back_array for int (empty): ");
-//     IntArray *l3 = new IntArray();
-//     l3->push_back(1);
-//     l3->push_back(2);
-//     IntArray *l4 = new IntArray();
-//     l4->push_back_all(l3);
-//     REQUIRE(l4->equals(l3));
+    delete s;
+    delete t;
+    delete l1;
+    delete l2;
+    delete l3;
+    delete l4;
+    delete l5;
+    delete l6;
+}
 
-//     printf("Test push_back_all for float (empty): ");
-//     float u = -2.2;
-//     float v = 1.0;
-//     FloatArray *l5 = new FloatArray();
-//     l5->push_back(u);
-//     l5->push_back(v);
-//     FloatArray *l6 = new FloatArray();
-//     l6->push_back_all(l5);
-//     REQUIRE(l6->equals(l5));
+// test push_back_all for all types
+TEST_CASE("push_back_all", "[array]") {
+    String *s = new String("Hello");
+    String *t = new String("World");
+    Array *l1 = new Array();
+    l1->push_back(s);
+    l1->push_back(t);
+    Array *l2 = new Array();
+    l2->push_back_all(l1);
+    REQUIRE(l2->equals(l1));
 
-//     printf("Test push_back_all for bool (empty): ");
-//     BoolArray *l7 = new BoolArray();
-//     l7->push_back(true);
-//     l7->push_back(false);
-//     BoolArray *l8 = new BoolArray();
-//     l8->push_back_all(l7);
-//     REQUIRE(l8->equals(l7));
+    IntArray *l3 = new IntArray();
+    l3->push_back(1);
+    l3->push_back(2);
+    IntArray *l4 = new IntArray();
+    l4->push_back_all(l3);
+    REQUIRE(l4->equals(l3));
 
-//     printf("Test push_back_all for string (not empty): ");
-//     Array *l10 = new Array();
-//     String *s2 = new String("Hi");
-//     String *t2 = new String("Mom");
-//     l10->push_back(s2);
-//     l10->push_back(t2);
-//     l1->push_back_all(l10);
-//     REQUIRE(l1->get(2)->equals(s2) && l1->get(3)->equals(t2) && l1->size() == 4);
+    float u = -2.2;
+    float v = 1.0;
+    FloatArray *l5 = new FloatArray();
+    l5->push_back(u);
+    l5->push_back(v);
+    FloatArray *l6 = new FloatArray();
+    l6->push_back_all(l5);
+    REQUIRE(l6->equals(l5));
 
-//     printf("Test push_back_all for int (not empty): ");
-//     IntArray *l11 = new IntArray();
-//     l11->push_back(4);
-//     l11->push_back(5);
-//     l3->push_back_all(l11);
-//     REQUIRE(l3->get(2) == 4 && l3->get(3) == 5 && l3->size() == 4);
+    double d1 = -2.2;
+    double d2 = 1.0;
+    DoubleArray *l14 = new DoubleArray();
+    l14->push_back(d1);
+    l14->push_back(d2);
+    DoubleArray *l15 = new DoubleArray();
+    l15->push_back_all(l14);
+    REQUIRE(l14->equals(l15));
 
-//     printf("Test push_back_all for float (not empty): ");
-//     FloatArray *l12 = new FloatArray();
-//     float f1 = 3.7;
-//     float f2 = 10.5;
-//     l12->push_back(f1);
-//     l12->push_back(f2);
-//     l5->push_back_all(l12);
-//     REQUIRE(float_equal(l5->get(2), 3.7) && (l5->get(3), 10.5) && l5->size() == 4);
+    BoolArray *l7 = new BoolArray();
+    l7->push_back(true);
+    l7->push_back(false);
+    BoolArray *l8 = new BoolArray();
+    l8->push_back_all(l7);
+    REQUIRE(l8->equals(l7));
 
-//     printf("Test push_back_all for bool (not empty): ");
-//     BoolArray *l13 = new BoolArray();
-//     l13->push_back(true);
-//     l13->push_back(true);
-//     l7->push_back_all(l13);
-//     REQUIRE(l7->get(2) && l7->get(3) && l7->size() == 4);
+    Array *l10 = new Array();
+    String *s2 = new String("Hi");
+    String *t2 = new String("Mom");
+    l10->push_back(s2);
+    l10->push_back(t2);
+    l1->push_back_all(l10);
+    REQUIRE((l1->get(2)->equals(s2) && l1->get(3)->equals(t2) && l1->size() == 4));
 
-//     delete s;
-//     delete t;
-//     delete s2;
-//     delete t2;
-//     delete l1;
-//     delete l2;
-//     delete l3;
-//     delete l4;
-//     delete l5;
-//     delete l6;
-//     delete l7;
-//     delete l8;
-//     delete l10;
-//     delete l11;
-//     delete l12;
-//     delete l13;
-// }
+    IntArray *l11 = new IntArray();
+    l11->push_back(4);
+    l11->push_back(5);
+    l3->push_back_all(l11);
+    REQUIRE((l3->get(2) == 4 && l3->get(3) == 5 && l3->size() == 4));
 
-// void test_add() {
-//     printf("Test add for string: ");
-//     Array *l1 = new Array();
-//     String *s = new String("Hello");
-//     String *t = new String("World");
-//     String *u = new String("Hi");
-//     l1->push_back(s);
-//     l1->add(0, t);
-//     REQUIRE(l1->get(0)->equals(t) && l1->get(1)->equals(s) && l1->size() == 2);
+    FloatArray *l12 = new FloatArray();
+    float f1 = 3.7;
+    float f2 = 10.5;
+    l12->push_back(f1);
+    l12->push_back(f2);
+    l5->push_back_all(l12);
+    REQUIRE((double_equal(l5->get(2), 3.7) && double_equal(l5->get(3), 10.5) && l5->size() == 4));
 
-//     printf("Test add for int: ");
-//     IntArray *l2 = new IntArray();
-//     l2->push_back(6);
-//     l2->add(0, 13);
-//     REQUIRE(l2->get(0) == 13 && l2->get(1) == 6 && l2->size() == 2);
+    BoolArray *l13 = new BoolArray();
+    l13->push_back(true);
+    l13->push_back(true);
+    l7->push_back_all(l13);
+    REQUIRE((l7->get(2) && l7->get(3) && l7->size() == 4));
 
-//     printf("Test add for float: ");
-//     FloatArray *l3 = new FloatArray();
-//     float f = 5.6;
-//     float g = 7.8;
-//     l3->push_back(f);
-//     l3->add(0, g);
-//     REQUIRE(float_equal(l3->get(0), 7.8) && float_equal(l3->get(1), 5.6) && l3->size() == 2);
+    StringArray *l16 = new StringArray();
+    l16->push_back(s);
+    l16->push_back(t);
+    StringArray *l17 = new StringArray();
+    l17->push_back_all(l16);
+    REQUIRE(l16->equals(l17));
 
-//     printf("Test add for bool: ");
-//     BoolArray *l4 = new BoolArray();
-//     l4->push_back(true);
-//     l4->add(0, false);
-//     REQUIRE(!l4->get(0) && l4->get(1) && l4->size() == 2);
+    delete s;
+    delete t;
+    delete s2;
+    delete t2;
+    delete l1;
+    delete l2;
+    delete l3;
+    delete l4;
+    delete l5;
+    delete l6;
+    delete l7;
+    delete l8;
+    delete l10;
+    delete l11;
+    delete l12;
+    delete l13;
+    delete l14;
+    delete l15;
+    delete l16;
+    delete l17;
+}
 
-//     delete s;
-//     delete t;
-//     delete u;
-//     delete l1;
-//     delete l2;
-//     delete l3;
-//     delete l4;
-// }
+// test add for all types
+TEST_CASE("add", "[array]") {
+    Array *l1 = new Array();
+    String *s = new String("Hello");
+    String *t = new String("World");
+    String *u = new String("Hi");
+    l1->push_back(s);
+    l1->add(0, t);
+    REQUIRE((l1->get(0)->equals(t) && l1->get(1)->equals(s) && l1->size() == 2));
 
-// void test_clear() {
-//     printf("Test clear for string (not empty): ");
-//     String *s = new String("Hello");
-//     String *t = new String("World");
-//     Array *l1 = new Array();
-//     l1->push_back(s);
-//     l1->push_back(t);
-//     l1->clear();
-//     REQUIRE(l1->size() == 0);
+    IntArray *l2 = new IntArray();
+    l2->push_back(6);
+    l2->add(0, 13);
+    REQUIRE((l2->get(0) == 13 && l2->get(1) == 6 && l2->size() == 2));
 
-//     printf("Test clear for string (empty): ");
-//     l1->clear();
-//     REQUIRE(l1->size() == 0);
+    FloatArray *l3 = new FloatArray();
+    float f = 5.6;
+    float g = 7.8;
+    l3->push_back(f);
+    l3->add(0, g);
+    REQUIRE((double_equal(l3->get(0), g) && double_equal(l3->get(1), f) && l3->size() == 2));
 
-//     printf("Test clear for int (not empty): ");
-//     IntArray *l2 = new IntArray();
-//     l2->push_back(6);
-//     l2->add(0, 13);
-//     l2->clear();
-//     REQUIRE(l2->size() == 0);
+    BoolArray *l4 = new BoolArray();
+    l4->push_back(true);
+    l4->add(0, false);
+    REQUIRE((!l4->get(0) && l4->get(1) && l4->size() == 2));
 
-//     printf("Test clear for int (empty): ");
-//     l2->clear();
-//     REQUIRE(l2->size() == 0);
+    StringArray *l5 = new StringArray();
+    l5->push_back(s);
+    l5->add(0, t);
+    REQUIRE((l5->get(0)->equals(t) && l5->get(1)->equals(s) && l5->size() == 2));
 
-//     printf("Test clear for float (not empty): ");
-//     FloatArray *l3 = new FloatArray();
-//     float f = 5.6;
-//     float g = 7.8;
-//     l3->push_back(f);
-//     l3->add(0, g);
-//     l3->clear();
-//     REQUIRE(l3->size() == 0);
+    delete s;
+    delete t;
+    delete u;
+    delete l1;
+    delete l2;
+    delete l3;
+    delete l4;
+    delete l5;
+}
 
-//     printf("Test clear for float (empty): ");
-//     l3->clear();
-//     REQUIRE(l3->size() == 0);
+// test add_all for all types
+TEST_CASE("add_all", "[array]") {
+    String *s = new String("Hello");
+    String *t = new String("World");
+    Array *l1 = new Array();
+    l1->push_back(s);
+    Array *l2 = new Array();
+    l2->push_back(t);
+    l2->add_all(0, l1);
+    REQUIRE(l2->equals(l1));
 
-//     printf("Test clear for bool (not empty): ");
-//     BoolArray *l4 = new BoolArray();
-//     l4->push_back(true);
-//     l4->add(0, false);
-//     l4->clear();
-//     REQUIRE(l4->size() == 0);
+    IntArray *l3 = new IntArray();
+    l3->push_back(1);
+    l3->push_back(2);
+    IntArray *l4 = new IntArray();
+    l4->push_back_all(l3);
+    REQUIRE(l4->equals(l3));
 
-//     printf("Test clear for bool (empty): ");
-//     l4->clear();
-//     REQUIRE(l4->size() == 0);
+    float u = -2.2;
+    float v = 1.0;
+    FloatArray *l5 = new FloatArray();
+    l5->push_back(u);
+    l5->push_back(v);
+    FloatArray *l6 = new FloatArray();
+    l6->push_back_all(l5);
+    REQUIRE(l6->equals(l5));
 
-//     delete s;
-//     delete t;
-//     delete l1;
-//     delete l2;
-//     delete l3;
-//     delete l4;
-// }
+    double d1 = -2.2;
+    double d2 = 1.0;
+    DoubleArray *l14 = new DoubleArray();
+    l14->push_back(d1);
+    l14->push_back(d2);
+    DoubleArray *l15 = new DoubleArray();
+    l15->push_back_all(l14);
+    REQUIRE(l14->equals(l15));
 
-// void test_get() {
-//     String *s = new String("Hello");
-//     String *t = new String("World");
-//     Array *l1 = new Array();
-//     l1->push_back(s);
-//     l1->push_back(t);
+    BoolArray *l7 = new BoolArray();
+    l7->push_back(true);
+    l7->push_back(false);
+    BoolArray *l8 = new BoolArray();
+    l8->push_back_all(l7);
+    REQUIRE(l8->equals(l7));
 
-//     IntArray *l2 = new IntArray();
-//     l2->push_back(6);
-//     l2->add(0, 13);
+    Array *l10 = new Array();
+    String *s2 = new String("Hi");
+    String *t2 = new String("Mom");
+    l10->push_back(s2);
+    l10->push_back(t2);
+    l1->push_back_all(l10);
+    REQUIRE((l1->get(2)->equals(s2) && l1->get(3)->equals(t2) && l1->size() == 4));
 
-//     FloatArray *l3 = new FloatArray();
-//     float f = 5.6;
-//     float g = 7.8;
-//     l3->push_back(f);
-//     l3->add(0, g);
+    IntArray *l11 = new IntArray();
+    l11->push_back(4);
+    l11->push_back(5);
+    l3->push_back_all(l11);
+    REQUIRE((l3->get(2) == 4 && l3->get(3) == 5 && l3->size() == 4));
 
-//     BoolArray *l4 = new BoolArray();
-//     l4->push_back(true);
-//     l4->add(0, false);
+    FloatArray *l12 = new FloatArray();
+    float f1 = 3.7;
+    float f2 = 10.5;
+    l12->push_back(f1);
+    l12->push_back(f2);
+    l5->push_back_all(l12);
+    REQUIRE((double_equal(l5->get(2), 3.7) && double_equal(l5->get(3), 10.5) && l5->size() == 4));
 
-//     printf("Test get for string: ");
-//     REQUIRE(l1->get(1)->equals(t));
+    BoolArray *l13 = new BoolArray();
+    l13->push_back(true);
+    l13->push_back(true);
+    l7->push_back_all(l13);
+    REQUIRE((l7->get(2) && l7->get(3) && l7->size() == 4));
 
-//     printf("Test get for int: ");
-//     REQUIRE(l2->get(1) == 6);
+    StringArray *l16 = new StringArray();
+    l16->push_back(s);
+    l16->push_back(t);
+    StringArray *l17 = new StringArray();
+    l17->push_back_all(l16);
+    REQUIRE(l16->equals(l17));
 
-//     printf("Test get for float: ");
-//     REQUIRE(float_equal(l3->get(1), 5.6));
+    delete s;
+    delete t;
+    delete s2;
+    delete t2;
+    delete l1;
+    delete l2;
+    delete l3;
+    delete l4;
+    delete l5;
+    delete l6;
+    delete l7;
+    delete l8;
+    delete l10;
+    delete l11;
+    delete l12;
+    delete l13;
+    delete l14;
+    delete l15;
+    delete l16;
+    delete l17;
+}
 
-//     printf("Test get for bool: ");
-//     REQUIRE_FALSE(l4->get(0));
+// test clear method for all types
+TEST_CASE("clear", "[array]") {
+    String *s = new String("Hello");
+    String *t = new String("World");
+    Array *l1 = new Array();
+    l1->push_back(s);
+    l1->push_back(t);
+    l1->clear();
+    REQUIRE(l1->size() == 0);
 
-//     delete s;
-//     delete t;
-//     delete l1;
-//     delete l2;
-//     delete l3;
-//     delete l4;
-// }
+    l1->clear();
+    REQUIRE(l1->size() == 0);
+
+    IntArray *l2 = new IntArray();
+    l2->push_back(6);
+    l2->add(0, 13);
+    l2->clear();
+    REQUIRE(l2->size() == 0);
+
+    l2->clear();
+    REQUIRE(l2->size() == 0);
+
+    FloatArray *l3 = new FloatArray();
+    float f = 5.6;
+    float g = 7.8;
+    l3->push_back(f);
+    l3->add(0, g);
+    l3->clear();
+    REQUIRE(l3->size() == 0);
+
+    l3->clear();
+    REQUIRE(l3->size() == 0);
+
+    BoolArray *l4 = new BoolArray();
+    l4->push_back(true);
+    l4->add(0, false);
+    l4->clear();
+    REQUIRE(l4->size() == 0);
+
+    l4->clear();
+    REQUIRE(l4->size() == 0);
+
+    StringArray *l5 = new StringArray();
+    l5->push_back(s);
+    l5->push_back(t);
+    l5->clear();
+    REQUIRE(l5->size() == 0);
+
+    delete s;
+    delete t;
+    delete l1;
+    delete l2;
+    delete l3;
+    delete l4;
+    delete l5;
+}
+
+// test is_empty method for all types
+TEST_CASE("is_empty", "[array]") {
+    Array *l1 = new Array();
+    REQUIRE(l1->is_empty());
+
+    IntArray *l2 = new IntArray();
+    REQUIRE(l2->is_empty());
+
+    FloatArray *l3 = new FloatArray();
+    REQUIRE(l3->is_empty());
+
+    BoolArray *l4 = new BoolArray();
+    REQUIRE(l4->is_empty());
+
+    StringArray *l5 = new StringArray();
+    REQUIRE(l5->is_empty());
+
+    delete l1;
+    delete l2;
+    delete l3;
+    delete l4;
+    delete l5;
+}
 
 // void test_index_of() {
 //     String *s = new String("Hello");
@@ -535,19 +645,4 @@
 //     delete l6;
 //     delete l7;
 //     delete l8;
-// }
-
-// int main() {
-//     test_add();
-//     test_push_back();
-//     test_push_back_all();
-//     test_clear();
-//     test_get();
-//     test_hash();
-//     test_index_of();
-//     test_remove();
-//     test_set();
-//     test_size();
-//     printf("All tests passed!\n");
-//     return 0;
 // }

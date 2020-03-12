@@ -16,12 +16,12 @@
 class Row : public Object {
    public:
     int index_ = -1;
-    ColumnArray* values_;
+    Array* values_;
     IntArray* types_;
 
     /** Build a row following a schema. */
     Row(Schema& scm) : Object() {
-        values_ = new ColumnArray();
+        values_ = new Array();
         types_ = new IntArray();
         for (size_t i = 0; i < scm.width(); i++) {
             switch (scm.col_type(i)) {
@@ -60,7 +60,7 @@ class Row : public Object {
     void set(size_t col, int val) {
         assert(col < values_->size());
         assert(type_to_char_(types_->get(col)) == 'I');
-        IntColumn* c = values_->get(col)->as_int();
+        IntColumn* c = static_cast<Column*>(values_->get(col))->as_int();
         assert(c != nullptr);
         if (c->size() == 0) {
             c->push_back(val);
@@ -71,7 +71,7 @@ class Row : public Object {
     void set(size_t col, float val) {
         assert(col < values_->size());
         assert(type_to_char_(types_->get(col)) == 'F');
-        FloatColumn* c = values_->get(col)->as_float();
+        FloatColumn* c = static_cast<Column*>(values_->get(col))->as_float();
         if (c->size() == 0) {
             c->push_back(val);
         } else {
@@ -81,7 +81,7 @@ class Row : public Object {
     void set(size_t col, bool val) {
         assert(col < values_->size());
         assert(type_to_char_(types_->get(col)) == 'B');
-        BoolColumn* c = values_->get(col)->as_bool();
+        BoolColumn* c = static_cast<Column*>(values_->get(col))->as_bool();
         if (c->size() == 0) {
             c->push_back(val);
         } else {
@@ -93,7 +93,7 @@ class Row : public Object {
     void set(size_t col, String* val) {
         assert(col < values_->size());
         assert(type_to_char_(types_->get(col)) == 'S');
-        StringColumn* c = values_->get(col)->as_string();
+        StringColumn* c = static_cast<Column*>(values_->get(col))->as_string();
         if (c->size() == 0) {
             c->push_back(val);
         } else {
@@ -115,25 +115,25 @@ class Row : public Object {
     int get_int(size_t col) {
         assert(col < values_->size());
         assert(type_to_char_(types_->get(col)) == 'I');
-        return values_->get(col)->as_int()->get(0);
+        return static_cast<Column*>(values_->get(col))->as_int()->get(0);
     }
 
     bool get_bool(size_t col) {
         assert(col < values_->size());
         assert(type_to_char_(types_->get(col)) == 'B');
-        return values_->get(col)->as_bool()->get(0);
+        return static_cast<Column*>(values_->get(col))->as_bool()->get(0);
     }
 
     float get_float(size_t col) {
         assert(col < values_->size());
         assert(type_to_char_(types_->get(col)) == 'F');
-        return values_->get(col)->as_float()->get(0);
+        return static_cast<Column*>(values_->get(col))->as_float()->get(0);
     }
 
     String* get_string(size_t col) {
         assert(col < values_->size());
         assert(type_to_char_(types_->get(col)) == 'S');
-        return values_->get(col)->as_string()->get(0);
+        return static_cast<Column*>(values_->get(col))->as_string()->get(0);
     }
 
     /** Number of fields in the row. */
