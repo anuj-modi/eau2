@@ -6,7 +6,7 @@
  * @param f1 the first float to compare.
  * @param f2 the second float to compare.
  */
-bool float_equal(float f1, float f2) {
+static bool float_equal(float f1, float f2) {
     float eps = 0.0000001;
     if (f1 > f2) {
         return f1 - f2 < eps;
