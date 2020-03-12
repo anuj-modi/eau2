@@ -42,7 +42,7 @@ class DataFrameBase : public Object {
                     break;
                 case 'F':
                     df_schema_->add_column('F');
-                    columns_->push_back(new FloatColumn());
+                    columns_->push_back(new DoubleColumn());
                     break;
                 default:
                     assert(false);
@@ -87,10 +87,10 @@ class DataFrameBase : public Object {
         assert(df_schema_->col_type(col) == 'B');
         return static_cast<Column*>(columns_->get(col))->as_bool()->get(row);
     }
-    float get_float(size_t col, size_t row) {
+    double get_double(size_t col, size_t row) {
         assert(col < df_schema_->width() && row < df_schema_->length());
         assert(df_schema_->col_type(col) == 'F');
-        return static_cast<Column*>(columns_->get(col))->as_float()->get(row);
+        return static_cast<Column*>(columns_->get(col))->as_double()->get(row);
     }
     String* get_string(size_t col, size_t row) {
         assert(col < df_schema_->width() && row < df_schema_->length());
@@ -111,10 +111,10 @@ class DataFrameBase : public Object {
         assert(df_schema_->col_type(col) == 'B');
         static_cast<Column*>(columns_->get(col))->as_bool()->set(row, val);
     }
-    void set(size_t col, size_t row, float val) {
+    void set(size_t col, size_t row, double val) {
         assert(col < df_schema_->width() && row < df_schema_->length());
         assert(df_schema_->col_type(col) == 'F');
-        static_cast<Column*>(columns_->get(col))->as_float()->set(row, val);
+        static_cast<Column*>(columns_->get(col))->as_double()->set(row, val);
     }
     void set(size_t col, size_t row, String* val) {
         assert(col < df_schema_->width() && row < df_schema_->length());
@@ -146,7 +146,7 @@ class DataFrameBase : public Object {
                     row.set(j, static_cast<Column*>(columns_->get(j))->as_int()->get(idx));
                     break;
                 case 'F':
-                    row.set(j, static_cast<Column*>(columns_->get(j))->as_float()->get(idx));
+                    row.set(j, static_cast<Column*>(columns_->get(j))->as_double()->get(idx));
                     break;
                 default:
                     assert(false);
@@ -174,7 +174,7 @@ class DataFrameBase : public Object {
                     static_cast<Column*>(columns_->get(j))->push_back(row.get_int(j));
                     break;
                 case 'F':
-                    static_cast<Column*>(columns_->get(j))->push_back(row.get_float(j));
+                    static_cast<Column*>(columns_->get(j))->push_back(row.get_double(j));
                     break;
                 default:
                     assert(false);

@@ -16,7 +16,7 @@ class Fielder : public Object {
 
     /** Called for fields of the argument's type with the value of the field. */
     virtual void accept(bool b) {}
-    virtual void accept(float f) {}
+    virtual void accept(double f) {}
     virtual void accept(int i) {}
     virtual void accept(String* s) {}
 
@@ -39,7 +39,7 @@ class PrintFielder : public Fielder {
             printf("False");
         }
     }
-    void accept(float f) {
+    void accept(double f) {
         printf("%f", f);
     }
 
@@ -61,7 +61,7 @@ class MaxFielder : public Fielder {
    public:
     int maxInt;
     String* maxStr;
-    float maxFloat;
+    double maxFloat;
     bool maxBool;
 
     MaxFielder() : Fielder() {
@@ -86,7 +86,7 @@ class MaxFielder : public Fielder {
             maxBool = true;
         }
     }
-    void accept(float f) {
+    void accept(double f) {
         if (maxFloat < f) {
             maxFloat = f;
         }
@@ -124,7 +124,7 @@ class ConcatStrFielder : public Fielder {
 
     /** Called for fields of the argument's type with the value of the field. */
     void accept(bool b) {}
-    void accept(float f) {}
+    void accept(double f) {}
 
     void accept(int i) {}
 

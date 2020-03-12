@@ -2,12 +2,12 @@
 #include "catch.hpp"
 
 /**
- * Determine if these two floats are equal with respect to eps.
- * @param f1 the first float to compare.
- * @param f2 the second float to compare.
+ * Determine if these two doubles are equal with respect to eps.
+ * @param f1 the first double to compare.
+ * @param f2 the second double to compare.
  */
-static bool float_equal(float f1, float f2) {
-    float eps = 0.0000001;
+static bool double_equal(double f1, double f2) {
+    double eps = 0.0000001;
     if (f1 > f2) {
         return f1 - f2 < eps;
     } else {
@@ -31,8 +31,8 @@ TEST_CASE("Basic test cases for Row", "[row]") {
     // tests if string value is set and retreived properly
     REQUIRE(r.get_string(1)->equals(str));
 
-    // tests if float value is set and retreived properly
-    REQUIRE(float_equal(r.get_float(2), 1.3));
+    // tests if double value is set and retreived properly
+    REQUIRE(double_equal(r.get_double(2), 1.3));
 
     // tests if bool is set and retreived properly
     REQUIRE(r.get_bool(3));

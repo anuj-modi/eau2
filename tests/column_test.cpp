@@ -2,12 +2,12 @@
 #include "catch.hpp"
 
 /**
- * Determine if these two floats are equal with respect to eps.
- * @param f1 the first float to compare.
- * @param f2 the second float to compare.
+ * Determine if these two doubles are equal with respect to eps.
+ * @param f1 the first double to compare.
+ * @param f2 the second double to compare.
  */
-static bool float_equal(float f1, float f2) {
-    float eps = 0.0000001;
+static bool double_equal(double f1, double f2) {
+    double eps = 0.0000001;
     if (f1 > f2) {
         return f1 - f2 < eps;
     } else {
@@ -40,15 +40,15 @@ TEST_CASE("test_int_column", "[column]") {
 
     REQUIRE(ic->as_int() == ic);
     REQUIRE(ic->as_bool() == nullptr);
-    REQUIRE(ic->as_float() == nullptr);
+    REQUIRE(ic->as_double() == nullptr);
     REQUIRE(ic->as_string() == nullptr);
 
     delete ic;
 }
 
 // tests for a Float Column
-TEST_CASE("test_float_column", "[column]") {
-    FloatColumn* fc = new FloatColumn();
+TEST_CASE("test_double_column", "[column]") {
+    DoubleColumn* fc = new DoubleColumn();
     int size = 1000;
     for (int i = 0; i < size; i++) {
         fc->push_back(i * 1.5f);
@@ -57,20 +57,20 @@ TEST_CASE("test_float_column", "[column]") {
     REQUIRE(fc->get_type() == 'F');
 
     for (int i = 0; i < size; i++) {
-        REQUIRE(float_equal(fc->get(i), i * 1.5f));
+        REQUIRE(double_equal(fc->get(i), i * 1.5f));
     }
 
     REQUIRE(fc->size() == size);
     fc->set(size - 1, 9001.9001);
     for (int i = 0; i < size - 1; i++) {
-        REQUIRE(float_equal(fc->get(i), i * 1.5f));
+        REQUIRE(double_equal(fc->get(i), i * 1.5f));
     }
 
     REQUIRE(fc->size() == size);
-    REQUIRE(float_equal(fc->get(size - 1), 9001.9001));
+    REQUIRE(double_equal(fc->get(size - 1), 9001.9001));
 
     REQUIRE(fc->as_int() == nullptr);
-    REQUIRE(fc->as_float() == fc);
+    REQUIRE(fc->as_double() == fc);
     REQUIRE(fc->as_bool() == nullptr);
     REQUIRE(fc->as_string() == nullptr);
 
@@ -108,7 +108,7 @@ TEST_CASE("test_bool_column", "[column]") {
 
     REQUIRE(bc->as_int() == nullptr);
     REQUIRE(bc->as_bool() == bc);
-    REQUIRE(bc->as_float() == nullptr);
+    REQUIRE(bc->as_double() == nullptr);
     REQUIRE(bc->as_string() == nullptr);
 
     delete bc;
@@ -132,7 +132,7 @@ TEST_CASE("test_string_column", "[column]") {
 
     REQUIRE(sc->as_int() == nullptr);
     REQUIRE(sc->as_bool() == nullptr);
-    REQUIRE(sc->as_float() == nullptr);
+    REQUIRE(sc->as_double() == nullptr);
     REQUIRE(sc->as_string() == sc);
 
     delete a;
