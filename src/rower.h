@@ -61,13 +61,13 @@ class MaxRower : public Rower {
    public:
     int maxInt;
     String* maxStr;
-    float maxFloat;
+    double maxFloat;
     bool maxBool;
 
     MaxRower() : Rower() {
         maxInt = INT_MIN;
         maxStr = nullptr;
-        maxFloat = -FLT_MAX;
+        maxFloat = -DBL_MAX;
         maxBool = false;
     }
 

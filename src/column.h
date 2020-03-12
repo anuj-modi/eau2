@@ -5,7 +5,7 @@
 #include "string.h"
 
 class IntColumn;
-class FloatColumn;
+class DoubleColumn;
 class BoolColumn;
 class StringColumn;
 
@@ -30,7 +30,7 @@ class Column : public Object {
     virtual BoolColumn* as_bool() {
         return nullptr;
     }
-    virtual FloatColumn* as_float() {
+    virtual DoubleColumn* as_double() {
         return nullptr;
     }
     virtual StringColumn* as_string() {
@@ -45,7 +45,7 @@ class Column : public Object {
     virtual void push_back(bool val) {
         assert(false);
     }
-    virtual void push_back(float val) {
+    virtual void push_back(double val) {
         assert(false);
     }
     virtual void push_back(String* val) {
@@ -265,38 +265,38 @@ class BoolColumn : public Column {
 };
 
 /*************************************************************************
- * FloatColumn::
- * Holds float values.
+ * DoubleColumn::
+ * Holds double values.
  */
-class FloatColumn : public Column {
+class DoubleColumn : public Column {
    public:
     size_t size_;
     size_t capacity_;
     size_t num_segments_;
     size_t segments_capacity_;
-    float** segments_;
+    double** segments_;
 
-    FloatColumn() : Column() {
+    DoubleColumn() : Column() {
         size_ = 0;
         capacity_ = SEGMENT_SIZE;
         num_segments_ = 1;
         segments_capacity_ = 10;
-        segments_ = new float*[segments_capacity_];
-        segments_[0] = new float[SEGMENT_SIZE];
+        segments_ = new double*[segments_capacity_];
+        segments_[0] = new double[SEGMENT_SIZE];
     }
 
-    FloatColumn(int n, ...) : FloatColumn() {
+    DoubleColumn(int n, ...) : DoubleColumn() {
         va_list args;
         va_start(args, n);
-        float val = 0;
+        double val = 0;
         for (int i = 0; i < n; i++) {
-            val = va_arg(args, float);
+            val = va_arg(args, double);
             push_back(val);
         }
         va_end(args);
     }
 
-    virtual ~FloatColumn() {
+    virtual ~DoubleColumn() {
         for (size_t i = 0; i < num_segments_; i++) {
             delete[] segments_[i];
         }
@@ -306,7 +306,7 @@ class FloatColumn : public Column {
     void expand_() {
         if (num_segments_ == segments_capacity_) {
             size_t new_capacity = num_segments_ * 2;
-            float** new_segments = new float*[new_capacity];
+            double** new_segments = new double*[new_capacity];
             for (size_t i = 0; i < num_segments_; i++) {
                 new_segments[i] = segments_[i];
             }
@@ -316,12 +316,12 @@ class FloatColumn : public Column {
             segments_capacity_ = new_capacity;
         }
 
-        segments_[num_segments_] = new float[SEGMENT_SIZE];
+        segments_[num_segments_] = new double[SEGMENT_SIZE];
         capacity_ += SEGMENT_SIZE;
         num_segments_ += 1;
     }
 
-    void push_back(float val) {
+    void push_back(double val) {
         if (size() == capacity_) {
             expand_();
         }
@@ -329,17 +329,17 @@ class FloatColumn : public Column {
         size_ += 1;
     }
 
-    float get(size_t idx) {
+    double get(size_t idx) {
         assert(idx < size());
         return segments_[idx / SEGMENT_SIZE][idx % SEGMENT_SIZE];
     }
 
-    FloatColumn* as_float() {
+    DoubleColumn* as_double() {
         return this;
     }
 
     /** Set value at idx. An out of bound idx is undefined.  */
-    void set(size_t idx, float val) {
+    void set(size_t idx, double val) {
         assert(idx < size());
         segments_[idx / SEGMENT_SIZE][idx % SEGMENT_SIZE] = val;
     }
@@ -353,7 +353,7 @@ class FloatColumn : public Column {
     }
 
     virtual Column* clone() {
-        FloatColumn* result = new FloatColumn();
+        DoubleColumn* result = new DoubleColumn();
         for (size_t i = 0; i < size(); i++) {
             result->push_back(get(i));
         }

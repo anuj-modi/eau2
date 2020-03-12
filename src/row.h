@@ -38,7 +38,7 @@ class Row : public Object {
                     types_->push_back(type_to_int_('I'));
                     break;
                 case 'F':
-                    values_->push_back(new FloatColumn());
+                    values_->push_back(new DoubleColumn());
                     types_->push_back(type_to_int_('F'));
                     break;
                 default:
@@ -68,10 +68,10 @@ class Row : public Object {
             c->set(0, val);
         }
     }
-    void set(size_t col, float val) {
+    void set(size_t col, double val) {
         assert(col < values_->size());
         assert(type_to_char_(types_->get(col)) == 'F');
-        FloatColumn* c = static_cast<Column*>(values_->get(col))->as_float();
+        DoubleColumn* c = static_cast<Column*>(values_->get(col))->as_double();
         if (c->size() == 0) {
             c->push_back(val);
         } else {
@@ -124,10 +124,10 @@ class Row : public Object {
         return static_cast<Column*>(values_->get(col))->as_bool()->get(0);
     }
 
-    float get_float(size_t col) {
+    double get_double(size_t col) {
         assert(col < values_->size());
         assert(type_to_char_(types_->get(col)) == 'F');
-        return static_cast<Column*>(values_->get(col))->as_float()->get(0);
+        return static_cast<Column*>(values_->get(col))->as_double()->get(0);
     }
 
     String* get_string(size_t col) {
@@ -160,7 +160,7 @@ class Row : public Object {
                 f.accept(get_int(idx));
                 break;
             case 'F':
-                f.accept(get_float(idx));
+                f.accept(get_double(idx));
                 break;
             case 'B':
                 f.accept(get_bool(idx));

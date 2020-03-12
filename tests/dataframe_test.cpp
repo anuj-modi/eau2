@@ -2,12 +2,12 @@
 #include "catch.hpp"
 
 /**
- * Determine if these two floats are equal with respect to eps.
- * @param f1 the first float to compare.
- * @param f2 the second float to compare.
+ * Determine if these two doubles are equal with respect to eps.
+ * @param f1 the first double to compare.
+ * @param f2 the second double to compare.
  */
-bool float_equal(float f1, float f2) {
-    float eps = 0.0000001;
+static bool double_equal(double f1, double f2) {
+    double eps = 0.0000001;
     if (f1 > f2) {
         return f1 - f2 < eps;
     } else {
@@ -20,7 +20,7 @@ class MaxFielder2 : public Fielder {
    public:
     int max1;
     String* max2;
-    float max3;
+    double max3;
     bool max4;
 
     MaxFielder2() : Fielder() {
@@ -43,7 +43,7 @@ class MaxFielder2 : public Fielder {
     void accept(bool b) {
         max4 = b;
     }
-    void accept(float f) {
+    void accept(double f) {
         max3 = f;
     }
 
@@ -64,7 +64,7 @@ class MaxRower2 : public Rower {
    public:
     int maxInt;
     String* maxStr;
-    float maxFloat;
+    double maxFloat;
     bool maxBool;
 
     MaxRower2() : Rower() {
@@ -244,14 +244,14 @@ TEST_CASE("map works", "[dataframe]") {
 
     df.set(0, 19, 11);
     df.set(1, 94, str2);
-    df.set(2, 88, (float)11.0);
+    df.set(2, 88, (double)11.0);
     df.set(3, 76, true);
     MaxRower2 mr = MaxRower2();
     df.map(mr);
 
     REQUIRE(mr.maxInt == 11);
     REQUIRE(mr.maxStr->equals(str2));
-    REQUIRE(float_equal(mr.maxFloat, 11.0));
+    REQUIRE(double_equal(mr.maxFloat, 11.0));
     REQUIRE(mr.maxBool);
 
     delete str;
@@ -277,7 +277,7 @@ TEST_CASE("filter works", "[dataframe]") {
     }
     df.set(0, 19, 11);
     df.set(1, 94, str2);
-    df.set(2, 88, (float)11.0);
+    df.set(2, 88, (double)11.0);
     df.set(3, 76, true);
     FilterGreater102 greater_10 = FilterGreater102();
     DataFrame* new_df = df.filter(greater_10);
@@ -336,7 +336,7 @@ TEST_CASE("setting and getting values", "[dataframe]") {
 
     df.set(0, 19, 11);
     df.set(1, 94, str2);
-    df.set(2, 88, (float)11.0);
+    df.set(2, 88, (double)11.0);
     df.set(3, 76, true);
 
     REQUIRE(df.nrows() == 100);
@@ -348,8 +348,8 @@ TEST_CASE("setting and getting values", "[dataframe]") {
     // test get_bool and set
     REQUIRE(df.get_bool(3, 76));
 
-    // test get_float and set
-    REQUIRE(float_equal(df.get_float(2, 88), 11.0));
+    // test get_double and set
+    REQUIRE(double_equal(df.get_double(2, 88), 11.0));
 
     // test get_string and set
     REQUIRE(df.get_string(1, 94)->equals(str2));
@@ -375,7 +375,7 @@ TEST_CASE("pmap works evenly distributed", "[dataframe]") {
 
     df.set(0, 99, 11);
     df.set(1, 99, str2);
-    df.set(2, 99, (float)11.0);
+    df.set(2, 99, (double)11.0);
     df.set(3, 99, true);
 
     REQUIRE(df.nrows() == 100);
@@ -386,7 +386,7 @@ TEST_CASE("pmap works evenly distributed", "[dataframe]") {
 
     REQUIRE(mr.maxInt == 11);
     REQUIRE(mr.maxStr->equals(str2));
-    REQUIRE(float_equal(mr.maxFloat, 11.0));
+    REQUIRE(double_equal(mr.maxFloat, 11.0));
     REQUIRE(mr.maxBool);
 
     delete str;
@@ -410,14 +410,14 @@ TEST_CASE("pmap works unevenly distributed", "[dataframe]") {
 
     df.set(0, 100, 11);
     df.set(1, 100, str2);
-    df.set(2, 100, (float)11.0);
+    df.set(2, 100, (double)11.0);
     df.set(3, 100, true);
     MaxRower2 mr = MaxRower2();
     df.pmap(mr);
 
     REQUIRE(mr.maxInt == 11);
     REQUIRE(mr.maxStr->equals(str2));
-    REQUIRE(float_equal(mr.maxFloat, 11.0));
+    REQUIRE(double_equal(mr.maxFloat, 11.0));
     REQUIRE(mr.maxBool);
 
     delete str;
