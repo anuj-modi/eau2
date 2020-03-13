@@ -227,7 +227,7 @@ TEST_CASE("dataframe constructor doesn't copy rows", "[dataframe]") {
 
 // tests that running map works
 TEST_CASE("map works", "[dataframe]") {
-    Schema s("ISF");
+    Schema s("ISD");
     DataFrame df(s);
     BoolColumn* b = new BoolColumn();
     df.add_column(b);
@@ -261,7 +261,7 @@ TEST_CASE("map works", "[dataframe]") {
 
 // tests that running filter works
 TEST_CASE("filter works", "[dataframe]") {
-    Schema s("ISF");
+    Schema s("ISD");
     DataFrame df(s);
     BoolColumn* b = new BoolColumn();
     df.add_column(b);
@@ -295,7 +295,7 @@ TEST_CASE("filter works", "[dataframe]") {
 
 // test adding column to the dataframe
 TEST_CASE("adding column to dataframe", "[dataframe]") {
-    Schema s("ISF");
+    Schema s("ISD");
     DataFrame df(s);
     BoolColumn* b = new BoolColumn();
     df.add_column(b);
@@ -308,7 +308,7 @@ TEST_CASE("adding column to dataframe", "[dataframe]") {
 
 // test adding a row to the dataframe
 TEST_CASE("adding row to dataframe", "[dataframe]") {
-    Schema s("IFB");
+    Schema s("IDB");
     DataFrame df(s);
     Row r = Row(df.get_schema());
     r.set(0, 8);
@@ -321,7 +321,7 @@ TEST_CASE("adding row to dataframe", "[dataframe]") {
 
 // setting and getting a value in a dataframe
 TEST_CASE("setting and getting values", "[dataframe]") {
-    Schema s("ISFB");
+    Schema s("ISDB");
     DataFrame df(s);
     Row r = Row(df.get_schema());
     String* str = new String("Test");
@@ -360,7 +360,7 @@ TEST_CASE("setting and getting values", "[dataframe]") {
 
 // tests that running pmap works with equally divided dataframe
 TEST_CASE("pmap works evenly distributed", "[dataframe]") {
-    Schema s("ISFB");
+    Schema s("ISDB");
     DataFrame df(s);
     Row r = Row(df.get_schema());
     String* str = new String("Test");
@@ -395,7 +395,7 @@ TEST_CASE("pmap works evenly distributed", "[dataframe]") {
 
 // tests that running pmap works with unequally divided dataframe
 TEST_CASE("pmap works unevenly distributed", "[dataframe]") {
-    Schema s("ISFB");
+    Schema s("ISDB");
     DataFrame df(s);
     Row r = Row(df.get_schema());
     String* str = new String("Test");

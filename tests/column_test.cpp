@@ -54,7 +54,7 @@ TEST_CASE("test_double_column", "[column]") {
         fc->push_back(i * 1.5f);
     }
 
-    REQUIRE(fc->get_type() == 'F');
+    REQUIRE(fc->get_type() == 'D');
 
     for (int i = 0; i < size; i++) {
         REQUIRE(double_equal(fc->get(i), i * 1.5f));
