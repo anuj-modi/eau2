@@ -16,6 +16,10 @@ test: $(OBJS) $(DEPS)
 %.o: %.cpp $(DEPS)
 	$(CC) $(CFLAGS) -c $<
 
+.PHONY: valgrind
+valgrind: test
+	valgrind ./test
+
 .PHONY: clean
 clean:
 	rm -rf *.o ./test

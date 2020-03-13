@@ -15,6 +15,10 @@ submission.zip: $(STUFF)
 test:
 	cd tests/ && make test && ./test
 
+.PHONY: valgrind
+valgrind:
+	cd tests/ && make valgrind
+
 .PHONY: clean
 clean:
 	rm -rf submission.zip eau2/
