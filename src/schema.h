@@ -8,7 +8,7 @@
  * A schema is a description of the contents of a data frame, the schema
  * knows the number of columns and number of rows, the type of each column,
  * optionally columns and rows can be named by strings.
- * The valid types are represented by the chars 'S', 'B', 'I' and 'F'.
+ * The valid types are represented by the chars 'S', 'B', 'I' and 'D'.
  */
 class Schema : public Object {
     IntArray* col_types_;
@@ -76,7 +76,7 @@ class Schema : public Object {
                 return 2;
             case 'I':
                 return 3;
-            case 'F':
+            case 'D':
                 return 4;
             default:
                 fprintf(stderr, "Invalid column type given\n");
@@ -93,7 +93,7 @@ class Schema : public Object {
             case 3:
                 return 'I';
             case 4:
-                return 'F';
+                return 'D';
             default:
                 fprintf(stderr, "Invalid column type given: %d\n", i);
                 assert(false);

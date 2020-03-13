@@ -13,7 +13,7 @@ TEST_CASE("schema constructor copies", "[schema]") {
 
 // test adding a column to a schema
 TEST_CASE("add column to schema", "[schema]") {
-    Schema s("ISF");
+    Schema s("ISD");
     s.add_column('B');
 
     REQUIRE(s.width() == 4);
@@ -23,7 +23,7 @@ TEST_CASE("add column to schema", "[schema]") {
 
 // test adding a row to a schema
 TEST_CASE("add row to schema", "[schema]") {
-    Schema s("ISF");
+    Schema s("ISD");
     s.add_row();
 
     REQUIRE(s.width() == 3);
