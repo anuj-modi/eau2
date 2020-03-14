@@ -14,8 +14,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: install compile tools
-      run: apt install -y make g++
-    - name: make
-      run: make
+      run: |
+          apt update -y
+          apt install -y make g++
     - name: make test
       run: make test
