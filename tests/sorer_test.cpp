@@ -82,13 +82,19 @@ TEST_CASE("test sor file over 500 lines", "[sor]") {
     parser.parseFile();
     ColumnSet* cols = parser.getColumnSet();
     DataFrame df(cols->getColumns());
+    String* s = new String("0.4");
 
     REQUIRE(df.ncols() == 4);
     REQUIRE(df.nrows() == 672);
+    REQUIRE(df.get_bool(0, 486));
+    REQUIRE(df.get_int(1, 654) == -11);
+    REQUIRE(double_equal(df.get_double(2, 83), -17.5));
+    REQUIRE(df.get_string(3, 294)->equals(s));
 
     for (size_t i = 0; i < df.nrows(); i++) {
         delete df.get_string(3, i);
     }
 
     fclose(file);
+    delete s;
 }
