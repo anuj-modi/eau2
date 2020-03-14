@@ -96,5 +96,5 @@ TEST_CASE("test sor file over 500 lines", "[sor]") {
     }
 
     fclose(file);
-    // delete s;
+    delete s;
 }
