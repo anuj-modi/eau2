@@ -10,13 +10,13 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v2
     - name: install compile tools
       run: |
           sudo apt update -y
-          sudo apt install -y make g++
+          sudo apt install -y make g++ valgrind
     - name: make test
       run: make test
     - name: make valgrind
