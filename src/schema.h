@@ -35,7 +35,7 @@ class Schema : public Object {
         assert(types != nullptr);
         int num_types = strlen(types);
         for (int i = 0; i < num_types; i++) {
-            col_types_->push_back(type_to_int_(types[i]));;
+            col_types_->push_back(type_to_int_(types[i]));
         }
     }
 

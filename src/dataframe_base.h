@@ -69,6 +69,7 @@ class DataFrameBase : public Object {
      * A nullptr colum is undefined. */
     void add_column(Column* col) {
         assert(col != nullptr);
+        // TODO: Should this be an assert?
         if (col->size() == df_schema_->length()) {
             df_schema_->add_column(col->get_type());
             columns_->push_back(col->clone());
