@@ -39,7 +39,7 @@ TEST_CASE("test simple sor", "[sor]") {
 }
 
 TEST_CASE("test single value in sor file", "[sor]") {
-    FILE* file = fopen("../data/data1.sor", "r");
+    FILE* file = fopen("../data/data2.sor", "r");
     SorParser parser(file);
     parser.guessSchema();
     parser.parseFile();
@@ -49,4 +49,28 @@ TEST_CASE("test single value in sor file", "[sor]") {
     REQUIRE(df.ncols() == 1);
     REQUIRE(df.nrows() == 1);
     REQUIRE(df.get_int(0, 0) == -5);
+
+    fclose(file);
+}
+
+TEST_CASE("test type inferencing", "[sor]") {
+    FILE* file = fopen("../data/data3.sor", "r");
+    SorParser parser(file);
+    parser.guessSchema();
+    parser.parseFile();
+    ColumnSet* cols = parser.getColumnSet();
+    DataFrame df(cols->getColumns());
+
+    REQUIRE(df.ncols() == 4);
+    REQUIRE(df.nrows() == 4);
+    REQUIRE(df.get_schema().col_type(0) == 'B');
+    REQUIRE(df.get_schema().col_type(1) == 'I');
+    REQUIRE(df.get_schema().col_type(2) == 'D');
+    REQUIRE(df.get_schema().col_type(3) == 'S');
+
+    for (size_t i = 0; i < df.nrows(); i++) {
+        delete df.get_string(3, i);
+    }
+
+    fclose(file);
 }
