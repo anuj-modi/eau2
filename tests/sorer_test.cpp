@@ -74,3 +74,21 @@ TEST_CASE("test type inferencing", "[sor]") {
 
     fclose(file);
 }
+
+TEST_CASE("test sor file over 500 lines", "[sor]") {
+    FILE* file = fopen("../data/data4.sor", "r");
+    SorParser parser(file);
+    parser.guessSchema();
+    parser.parseFile();
+    ColumnSet* cols = parser.getColumnSet();
+    DataFrame df(cols->getColumns());
+
+    REQUIRE(df.ncols() == 4);
+    REQUIRE(df.nrows() == 672);
+
+    for (size_t i = 0; i < df.nrows(); i++) {
+        delete df.get_string(3, i);
+    }
+
+    fclose(file);
+}
