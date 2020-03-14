@@ -37,9 +37,9 @@ class Row : public Object {
                     values_->push_back(new IntColumn());
                     types_->push_back(type_to_int_('I'));
                     break;
-                case 'F':
+                case 'D':
                     values_->push_back(new DoubleColumn());
-                    types_->push_back(type_to_int_('F'));
+                    types_->push_back(type_to_int_('D'));
                     break;
                 default:
                     assert(false);
@@ -70,7 +70,7 @@ class Row : public Object {
     }
     void set(size_t col, double val) {
         assert(col < values_->size());
-        assert(type_to_char_(types_->get(col)) == 'F');
+        assert(type_to_char_(types_->get(col)) == 'D');
         DoubleColumn* c = static_cast<Column*>(values_->get(col))->as_double();
         if (c->size() == 0) {
             c->push_back(val);
@@ -126,7 +126,7 @@ class Row : public Object {
 
     double get_double(size_t col) {
         assert(col < values_->size());
-        assert(type_to_char_(types_->get(col)) == 'F');
+        assert(type_to_char_(types_->get(col)) == 'D');
         return static_cast<Column*>(values_->get(col))->as_double()->get(0);
     }
 
@@ -159,7 +159,7 @@ class Row : public Object {
             case 'I':
                 f.accept(get_int(idx));
                 break;
-            case 'F':
+            case 'D':
                 f.accept(get_double(idx));
                 break;
             case 'B':
@@ -178,7 +178,7 @@ class Row : public Object {
                 return 2;
             case 'I':
                 return 3;
-            case 'F':
+            case 'D':
                 return 4;
             default:
                 printf("Invalid column type given");
@@ -195,7 +195,7 @@ class Row : public Object {
             case 3:
                 return 'I';
             case 4:
-                return 'F';
+                return 'D';
             default:
                 printf("Invalid column type given");
                 assert(false);

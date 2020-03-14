@@ -58,7 +58,7 @@ class Column : public Object {
         return 0;
     }
 
-    /** Return the type of this column as a char: 'S', 'B', 'I' and 'F'. */
+    /** Return the type of this column as a char: 'S', 'B', 'I' and 'D'. */
     virtual char get_type() {
         assert(false);
         return 'U';
@@ -349,7 +349,7 @@ class DoubleColumn : public Column {
     }
 
     virtual char get_type() {
-        return 'F';
+        return 'D';
     }
 
     virtual Column* clone() {

@@ -17,7 +17,7 @@ static bool double_equal(double f1, double f2) {
 
 // tests for row
 TEST_CASE("Basic test cases for Row", "[row]") {
-    Schema s("ISFB");
+    Schema s("ISDB");
     Row r(s);
     String* str = new String("Test");
     r.set(0, 1);
