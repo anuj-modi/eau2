@@ -3,7 +3,7 @@ CFLAGS = -g -Wall -std=c++11 -pthread
 
 SRCS = $(wildcard *.cpp)
 OBJS = $(subst .cpp,.o,$(SRCS))
-DEPS = catch.hpp $(wildcard ../src/*.h)
+DEPS = catch.hpp $(wildcard ../src/*.h) $(wildcard ../src/sorer/*.h)
 
 all: test
 
