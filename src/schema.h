@@ -35,7 +35,7 @@ class Schema : public Object {
         assert(types != nullptr);
         int num_types = strlen(types);
         for (int i = 0; i < num_types; i++) {
-            col_types_->push_back(type_to_int_(types[i]));;
+            col_types_->push_back(type_to_int_(types[i]));
         }
     }
 
@@ -49,7 +49,15 @@ class Schema : public Object {
 
     /** Add a row to the schema. */
     void add_row() {
-        num_rows_ += 1;
+        add_rows(1);
+    }
+
+    /**
+     * Adds given number of rows to the schema.
+     * @arg n  number of rows to add
+     */
+    void add_rows(size_t n) {
+        num_rows_ += n;
     }
 
     /** Return type of column at idx. An idx >= width is undefined. */

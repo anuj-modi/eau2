@@ -29,3 +29,12 @@ TEST_CASE("add row to schema", "[schema]") {
     REQUIRE(s.width() == 3);
     REQUIRE(s.length() == 1);
 }
+
+// test adding rows to a schema
+TEST_CASE("add rows to schema", "[schema]") {
+    Schema s("ISD");
+    s.add_rows(10);
+
+    REQUIRE(s.width() == 3);
+    REQUIRE(s.length() == 10);
+}

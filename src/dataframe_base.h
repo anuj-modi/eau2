@@ -4,6 +4,7 @@
 #include "row.h"
 #include "rower.h"
 #include "schema.h"
+#include "vector"
 
 /****************************************************************************
  * DataFrame::
@@ -50,6 +51,22 @@ class DataFrameBase : public Object {
         }
     }
 
+    /**
+     * Creates a data frame from a given set of columns.
+     */
+    DataFrameBase(std::vector<Column*> columns) : Object() {
+        df_schema_ = new Schema();
+        columns_ = new Array();
+        size_t length = columns[0]->size();
+        for (size_t i = 1; i < columns.size(); i++) {
+            assert(columns[i]->size() == length);
+        }
+        df_schema_->add_rows(length);
+        for (size_t i = 0; i < columns.size(); i++) {
+            add_column(columns[i]);
+        }
+    }
+
     virtual ~DataFrameBase() {
         for (size_t i = 0; i < columns_->size(); i++) {
             delete columns_->get(i);
@@ -69,6 +86,7 @@ class DataFrameBase : public Object {
      * A nullptr colum is undefined. */
     void add_column(Column* col) {
         assert(col != nullptr);
+        // TODO: Should this be an assert?
         if (col->size() == df_schema_->length()) {
             df_schema_->add_column(col->get_type());
             columns_->push_back(col->clone());
