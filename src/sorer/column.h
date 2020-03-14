@@ -116,4 +116,12 @@ class ColumnSet : public Object {
         assert(_columns[which] != nullptr);
         return _columns[which];
     }
+
+    /**
+     * Gets all of the columns in the column set.
+     * @return the columns
+     */
+    std::vector<Column*> getColumns() {
+        return _columns;
+    }
 };

@@ -4,6 +4,7 @@
 #include "row.h"
 #include "rower.h"
 #include "schema.h"
+#include "vector"
 
 /****************************************************************************
  * DataFrame::
@@ -47,6 +48,22 @@ class DataFrameBase : public Object {
                 default:
                     assert(false);
             }
+        }
+    }
+
+    /**
+     * Creates a data frame from a given set of columns.
+     */
+    DataFrameBase(std::vector<Column*> columns) : Object() {
+        df_schema_ = new Schema();
+        columns_ = new Array();
+        size_t length = columns[0]->size();
+        for (size_t i = 1; i < columns.size(); i++) {
+            assert(columns[i]->size() == length);
+        }
+        df_schema_->add_rows(length);
+        for (size_t i = 0; i < columns.size(); i++) {
+            add_column(columns[i]);
         }
     }
 

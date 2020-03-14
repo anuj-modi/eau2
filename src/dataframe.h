@@ -2,6 +2,7 @@
 #include "dataframe_base.h"
 #include "thread.h"
 #include "worker.h"
+#include <vector>
 
 /****************************************************************************
  * DataFrame::
@@ -19,6 +20,11 @@ class DataFrame : public DataFrameBase {
     /** Create a data frame from a schema and columns. All columns are created
      * empty. */
     DataFrame(Schema& schema) : DataFrameBase(schema) {}
+
+    /**
+     * Creates a data frame from a given set of columns.
+     */
+    DataFrame(std::vector<Column*> columns) : DataFrameBase(columns) {}
 
     /** Create a new dataframe, constructed from rows for which the given
      * Rower returned true from its accept method. */

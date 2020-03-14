@@ -403,15 +403,16 @@ class SorParser : public Object {
         assert(slice.getLength() != 0);
         int i = -1;
         String* s = nullptr;
+        size_t str_len = 0;
 
         switch (column->get_type()) {
             case 'S':
                 slice.trim(STRING_QUOTE);
                 assert(slice.getLength() <= MAX_STRING);
-                s = new String(slice.toCString());
+                str_len = slice.getLength();
+                s = new String(true, slice.toCString(), str_len);
                 assert(s != nullptr);
                 column->push_back(s);
-                delete s;
                 break;
             case 'I':
                 column->push_back(slice.toInt());

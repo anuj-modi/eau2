@@ -49,7 +49,15 @@ class Schema : public Object {
 
     /** Add a row to the schema. */
     void add_row() {
-        num_rows_ += 1;
+        add_rows(1);
+    }
+
+    /**
+     * Adds given number of rows to the schema.
+     * @arg n  number of rows to add
+     */
+    void add_rows(size_t n) {
+        num_rows_ += n;
     }
 
     /** Return type of column at idx. An idx >= width is undefined. */
