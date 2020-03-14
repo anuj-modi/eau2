@@ -23,18 +23,10 @@ TEST_CASE("test simple sor", "[sor]") {
     parser.parseFile();
     ColumnSet* cols = parser.getColumnSet();
     String* result_str = new String("string with > inside ");
-
     DataFrame df(cols->getColumns());
 
     REQUIRE(df.ncols() == 5);
     REQUIRE(df.nrows() == 1);
-    REQUIRE(df.get_schema().width() == 5);
-    REQUIRE(df.get_schema().length() == 1);
-    REQUIRE(df.get_schema().col_type(0) == 'B');
-    REQUIRE(df.get_schema().col_type(1) == 'I');
-    REQUIRE(df.get_schema().col_type(2) == 'S');
-    REQUIRE(df.get_schema().col_type(3) == 'I');
-    REQUIRE(df.get_schema().col_type(4) == 'D');
     REQUIRE(df.get_bool(0, 0) == true);
     REQUIRE(df.get_int(1, 0) == 2);
     REQUIRE(df.get_string(2, 0)->equals(result_str));
@@ -44,5 +36,17 @@ TEST_CASE("test simple sor", "[sor]") {
     delete df.get_string(2, 0);
     delete result_str;
     fclose(file);
-    
+}
+
+TEST_CASE("test single value in sor file", "[sor]") {
+    FILE* file = fopen("../data/data1.sor", "r");
+    SorParser parser(file);
+    parser.guessSchema();
+    parser.parseFile();
+    ColumnSet* cols = parser.getColumnSet();
+    DataFrame df(cols->getColumns());
+
+    REQUIRE(df.ncols() == 1);
+    REQUIRE(df.nrows() == 1);
+    REQUIRE(df.get_int(0, 0) == -5);
 }
