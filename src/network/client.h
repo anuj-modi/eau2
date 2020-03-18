@@ -1,9 +1,10 @@
-#include "array.h"
+#pragma once
 #include "message.h"
 #include "network.h"
-#include "object.h"
-#include "serial.h"
-#include "string.h"
+#include "util/array.h"
+#include "util/object.h"
+#include "util/serial.h"
+#include "util/string.h"
 
 /**
  * Represents a client that connects and registers to a

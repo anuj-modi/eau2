@@ -1,10 +1,10 @@
 #pragma once
 #include <assert.h>
+#include <vector>
 #include "column.h"
 #include "row.h"
 #include "rower.h"
 #include "schema.h"
-#include "vector"
 
 /****************************************************************************
  * DataFrame::

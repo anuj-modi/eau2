@@ -6,8 +6,8 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include "object.h"
-#include "string.h"
+#include "util/object.h"
+#include "util/string.h"
 
 /**
  * A class which helps convert between address string and byte representations

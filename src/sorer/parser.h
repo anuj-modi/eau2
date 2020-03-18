@@ -1,10 +1,8 @@
-// Lang::CwC
 #pragma once
-
+// Lang::CwC
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "column.h"
+#include "columnset.h"
 
 /**
  * The maximum allowed length for string columns.

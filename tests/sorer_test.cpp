@@ -1,6 +1,6 @@
-#include "../src/dataframe.h"
-#include "../src/sorer/parser.h"
 #include "catch.hpp"
+#include "dataframe/dataframe.h"
+#include "sorer/parser.h"
 
 /**
  * Determine if these two doubles are equal with respect to eps.

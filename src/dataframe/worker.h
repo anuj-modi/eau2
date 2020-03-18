@@ -1,7 +1,7 @@
 #pragma once
 #include "dataframe_base.h"
 #include "rower.h"
-#include "thread.h"
+#include "util/thread.h"
 
 class Worker : public Thread {
    public:
@@ -13,9 +13,11 @@ class Worker : public Thread {
 
     Worker() : Thread() {}
 
-    Worker(Rower* r, DataFrameBase* df, size_t worker_num, size_t chunk_size) : Worker(r, df, worker_num, chunk_size, 0) {}
+    Worker(Rower* r, DataFrameBase* df, size_t worker_num, size_t chunk_size)
+        : Worker(r, df, worker_num, chunk_size, 0) {}
 
-    Worker(Rower* r, DataFrameBase* df, size_t worker_num, size_t chunk_size, size_t leftovers) : Worker() {
+    Worker(Rower* r, DataFrameBase* df, size_t worker_num, size_t chunk_size, size_t leftovers)
+        : Worker() {
         rower = r->clone();
         df_ = df;
         worker_num_ = worker_num;

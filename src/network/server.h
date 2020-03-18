@@ -1,10 +1,10 @@
 #pragma once
-#include "array.h"
 #include "message.h"
 #include "network.h"
-#include "object.h"
-#include "serial.h"
-#include "string.h"
+#include "util/array.h"
+#include "util/object.h"
+#include "util/serial.h"
+#include "util/string.h"
 
 /**
  * Represents a server (controller) that clients register with.
@@ -93,7 +93,7 @@ class Server : public Object {
             if (!server_sock_->has_new_connections()) {
                 continue;
             }
-            
+
             Socket* new_client = server_sock_->accept_connection();
             char buf[1024];
             size_t num_bytes = new_client->recv_bytes(buf, sizeof(buf));

@@ -1,5 +1,5 @@
-#include "../src/dataframe.h"
 #include "catch.hpp"
+#include "dataframe/dataframe.h"
 
 // Tests that schema copy constructor actually makes a copy.
 TEST_CASE("schema constructor copies", "[schema]") {
