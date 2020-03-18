@@ -33,4 +33,4 @@
 
 # local stuff
 .DS_Store
-tests/test
+build/*

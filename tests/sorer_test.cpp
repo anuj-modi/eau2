@@ -17,7 +17,7 @@ static bool double_equal(double f1, double f2) {
 }
 
 TEST_CASE("test simple sor", "[sor]") {
-    FILE* file = fopen("../data/data1.sor", "r");
+    FILE* file = fopen("./data/data1.sor", "r");
     SorParser parser(file);
     parser.guessSchema();
     parser.parseFile();
@@ -39,7 +39,7 @@ TEST_CASE("test simple sor", "[sor]") {
 }
 
 TEST_CASE("test single value in sor file", "[sor]") {
-    FILE* file = fopen("../data/data2.sor", "r");
+    FILE* file = fopen("./data/data2.sor", "r");
     SorParser parser(file);
     parser.guessSchema();
     parser.parseFile();
@@ -54,7 +54,7 @@ TEST_CASE("test single value in sor file", "[sor]") {
 }
 
 TEST_CASE("test type inferencing", "[sor]") {
-    FILE* file = fopen("../data/data3.sor", "r");
+    FILE* file = fopen("./data/data3.sor", "r");
     SorParser parser(file);
     parser.guessSchema();
     parser.parseFile();
@@ -76,7 +76,7 @@ TEST_CASE("test type inferencing", "[sor]") {
 }
 
 TEST_CASE("test sor file over 500 lines", "[sor]") {
-    FILE* file = fopen("../data/data4.sor", "r");
+    FILE* file = fopen("./data/data4.sor", "r");
     SorParser parser(file);
     parser.guessSchema();
     parser.parseFile();
