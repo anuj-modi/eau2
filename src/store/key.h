@@ -1,6 +1,6 @@
 #pragma once
-#include "~/util/object.h"
-#include "~/util/string.h"
+#include "util/object.h"
+#include "util/string.h"
 
 /**
  * Array: Represents a key in a key value store.
@@ -30,7 +30,7 @@ class Key : public Object {
     bool equals(Object* other) {
         if (other == this) return true;
         Key* o = dynamic_cast<Key*>(other);
-        if (x == nullptr) return false;
+        if (o == nullptr) return false;
         return k_->equals(o->k_) && node_ == o->node_;
     }
 
@@ -38,4 +38,4 @@ class Key : public Object {
     size_t hash_me() {
         return k_->hash() * (node_ + 1);
     }
-}
+};

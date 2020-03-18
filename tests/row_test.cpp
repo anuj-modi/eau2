@@ -1,5 +1,5 @@
-#include "../src/dataframe.h"
 #include "catch.hpp"
+#include "dataframe/dataframe.h"
 
 /**
  * Determine if these two doubles are equal with respect to eps.

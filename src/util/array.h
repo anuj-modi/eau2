@@ -1,12 +1,12 @@
 // lang:CwC
 #pragma once
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include "column.h"
 #include "object.h"
 #include "serial.h"
-#include <math.h>
+#include "string.h"
 
 /**
  * Array: Represents a resizeable array.

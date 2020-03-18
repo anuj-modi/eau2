@@ -1,7 +1,7 @@
-#include "../src/serial.h"
-#include "../src/message.h"
-#include "../src/string.h"
+#include "util/serial.h"
 #include "catch.hpp"
+#include "network/message.h"
+#include "util/string.h"
 
 TEST_CASE("test_serialize_deserialize_size_t", "[serialize][deserialize]") {
     Serializer s;
@@ -77,7 +77,8 @@ TEST_CASE("test_serialize_deserialize_string", "[serialize][deserialize][string]
     delete h3d;
 }
 
-TEST_CASE("test serialize deserialize string array", "[serialize][deserialize][array][string][bad]") {
+TEST_CASE("test serialize deserialize string array",
+          "[serialize][deserialize][array][string][bad]") {
     StringArray* strs = new StringArray();
     String* h1 = new String("hello there");
     String* h2 = new String("why howdy!");

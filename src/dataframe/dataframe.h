@@ -1,8 +1,7 @@
 #pragma once
-#include "dataframe_base.h"
-#include "thread.h"
-#include "worker.h"
 #include <vector>
+#include "dataframe_base.h"
+#include "worker.h"
 
 /****************************************************************************
  * DataFrame::

@@ -3,7 +3,7 @@ CFLAGS = -g -Wall -std=c++11 -pthread
 
 SRCS = $(wildcard *.cpp)
 OBJS = $(subst .cpp,.o,$(SRCS))
-DEPS = catch.hpp $(wildcard ../src/*.h) $(wildcard ../src/sorer/*.h)
+DEPS = catch.hpp $(wildcard src/*.h) $(wildcard src/sorer/*.h)
 
 all: test
 
@@ -14,7 +14,7 @@ test: $(OBJS) $(DEPS)
 	$(CC) $(CFLAGS) -o test $(OBJS)
 
 %.o: %.cpp $(DEPS)
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -I../src -c $<
 
 .PHONY: valgrind
 valgrind: test

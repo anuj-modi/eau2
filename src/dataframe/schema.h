@@ -1,7 +1,7 @@
 #pragma once
 #include <stdio.h>
-#include "array.h"
-#include "string.h"
+#include "util/array.h"
+#include "util/string.h"
 
 /*************************************************************************
  * Schema::
