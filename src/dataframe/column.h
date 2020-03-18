@@ -9,26 +9,6 @@
  */
 enum class ColumnType { STRING, INTEGER, DOUBLE, BOOL, UNKNOWN };
 
-// /**
-//  * Converts the given ColumnType to a string.
-//  * @param type the column type
-//  * @return A string representing this column type. Do not free or modify this string.
-//  */
-// const char* columnTypeToString(ColumnType type) {
-//     switch (type) {
-//         case ColumnType::STRING:
-//             return "STRING";
-//         case ColumnType::INTEGER:
-//             return "INTEGER";
-//         case ColumnType::DOUBLE:
-//             return "DOUBLE";
-//         case ColumnType::BOOL:
-//             return "BOOL";
-//         default:
-//             return "UNKNOWN";
-//     }
-// }
-
 class IntColumn;
 class DoubleColumn;
 class BoolColumn;
@@ -485,23 +465,3 @@ class StringColumn : public Column {
         return result;
     }
 };
-
-// /**
-//  * Creates the right subclass of BaseColumn based on the given type.
-//  * @param type The type of column to create
-//  * @return The newly created column. Caller must free.
-//  */
-// Column* makeColumnFromType(ColumnType type) {
-//     switch (type) {
-//         case ColumnType::STRING:
-//             return new StringColumn();
-//         case ColumnType::INTEGER:
-//             return new IntColumn();
-//         case ColumnType::DOUBLE:
-//             return new DoubleColumn();
-//         case ColumnType::BOOL:
-//             return new BoolColumn();
-//         default:
-//             assert(false);
-//     }
-// }
