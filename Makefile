@@ -8,7 +8,7 @@ _OBJS = $(patsubst %.cpp,%.o,$(notdir $(TEST_SRCS))) test.o
 OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
 DEPS := ./tests/catch.hpp $(shell find src/ -name *.h)
 ODIR = build
-TEST_OUT = $(ODIR)/test
+TEST_OUT = ./$(ODIR)/test
 
 all: zip test valgrind
 
@@ -34,11 +34,11 @@ $(TEST_OUT): $(OBJS) $(DEPS)
 
 .PHONY:test
 test: $(ODIR) $(TEST_OUT)
-	./$(TEST_OUT)
+	$(TEST_OUT)
 
 .PHONY: valgrind
-valgrind: test
-	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full ./build/test
+valgrind: $(TEST_OUT)
+	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT)
 
 .PHONY: clean
 clean:
