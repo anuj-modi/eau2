@@ -42,4 +42,4 @@ valgrind: $(TEST_OUT)
 
 .PHONY: clean
 clean:
-	rm -rf build/*
+	rm -rf build/* submission.zip
