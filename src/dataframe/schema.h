@@ -1,6 +1,7 @@
 #pragma once
 #include <stdio.h>
 #include "util/array.h"
+#include "util/serial.h"
 #include "util/string.h"
 
 /*************************************************************************
@@ -106,5 +107,10 @@ class Schema : public Object {
                 fprintf(stderr, "Invalid column type given: %d\n", i);
                 assert(false);
         }
+    }
+
+    void serialize(Serializer* s) {
+        col_types_->serialize(s);
+        s->add_size_t(num_rows_);
     }
 };

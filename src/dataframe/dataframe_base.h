@@ -239,4 +239,9 @@ class DataFrameBase : public Object {
         PrintRower pr = PrintRower();
         map(pr);
     }
+
+    void serialize(Serializer* s) {
+        // TODO: Serialize Columns
+        df_schema_->serialize(s);
+    }
 };
