@@ -9,9 +9,11 @@
 class Value : public Object {
    public:
     char* blob_;
+    size_t size_;
 
-    Value(char* blob) : Object() {
+    Value(char* blob, size_t size) : Object() {
         blob_ = blob;
+        size_ = size;
     }
 
     virtual ~Value() {}
@@ -25,6 +27,14 @@ class Value : public Object {
     }
 
     /**
+     * Gets the size of the data stored in the value object.
+     * @return the number of bytes
+     */
+    size_t get_size() {
+        return size_;
+    }
+
+    /**
      * Checks if this key is equal to another object.
      * @arg other  the other object
      * @return if the two are equal
@@ -33,17 +43,12 @@ class Value : public Object {
         if (other == this) return true;
         Value* o = dynamic_cast<Value*>(other);
         if (o == nullptr) return false;
-        String* this_blob = new String(blob_);
-        String* other_blob = new String(o->blob_);
-        bool result = this_blob->equals(other_blob);
-        delete this_blob;
-        delete other_blob;
-        return result;
+        return o->size_ == size_ && memcmp(blob_, o->blob_, size_) == 0;
     }
 
     /** Compute a hash for this key. */
     size_t hash_me() {
-        String str_blob(blob_);
+        String str_blob(blob_, size_);
         return str_blob.hash();
     }
 };
