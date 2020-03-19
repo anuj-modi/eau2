@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include "dataframe_base.h"
+#include "store/key.h"
+#include "store/kvstore.h"
 #include "worker.h"
 
 /****************************************************************************
@@ -24,6 +26,24 @@ class DataFrame : public DataFrameBase {
      * Creates a data frame from a given set of columns.
      */
     DataFrame(std::vector<Column*> columns) : DataFrameBase(columns) {}
+
+    virtual ~DataFrame() {}
+
+    static DataFrameBase* fromArray(Key* k, KVStore* kv, size_t size, double* vals) {
+        Schema s("D");
+        Row r(s);
+        DataFrame* df = new DataFrame(s);
+        for (size_t i = 0; i < size; i++) {
+            r.set(0, vals[i]);
+            df->add_row(r);
+        }
+
+        Serializer serializer;
+        df->serialize(&serializer);
+        Value v(serializer.get_bytes(), serializer.size());
+        kv->put(k, &v);
+        return df;
+    }
 
     /** Create a new dataframe, constructed from rows for which the given
      * Rower returned true from its accept method. */
