@@ -33,11 +33,14 @@ class Value : public Object {
         if (other == this) return true;
         Value* o = dynamic_cast<Value*>(other);
         if (o == nullptr) return false;
-        return k_->equals(o->k_) && node_ == o->node_;
+        String* this_blob = new String(blob_);
+        String* other_blob = new String(o->blob_);
+        return this_blob->equals(other_blob);
     }
 
     /** Compute a hash for this key. */
     size_t hash_me() {
-        return k_->hash() * (node_ + 1);
+        String str_blob(blob_);
+        return str_blob.hash();
     }
 };
