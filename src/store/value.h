@@ -35,7 +35,10 @@ class Value : public Object {
         if (o == nullptr) return false;
         String* this_blob = new String(blob_);
         String* other_blob = new String(o->blob_);
-        return this_blob->equals(other_blob);
+        bool result = this_blob->equals(other_blob);
+        delete this_blob;
+        delete other_blob;
+        return result;
     }
 
     /** Compute a hash for this key. */
