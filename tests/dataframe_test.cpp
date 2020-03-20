@@ -184,30 +184,6 @@ TEST_CASE("Add column to dataframe is copy", "[column][dataframe]") {
     delete col;
 }
 
-/** Tests that adding a column with a length not equal to the
- * df length will not add the column or will add it with padding.
- */
-TEST_CASE("uneven column length", "[schema][dataframe]") {
-    Schema s("S");
-    DataFrame df(s);
-    Row r = Row(df.get_schema());
-    String* str = new String("Test");
-    r.set(0, str);
-    df.add_row(r);
-    IntColumn* col = new IntColumn();
-    df.add_column(col);
-
-    if (df.ncols() == 1) {
-        REQUIRE(true);
-    } else {
-        df.set(1, 0, 11);
-        REQUIRE((df.ncols() == 2 && df.get_int(1, 0) == 11));
-    }
-
-    delete str;
-    delete col;
-}
-
 // Tests that constructor for dataframe does not copy over rows.
 TEST_CASE("dataframe constructor doesn't copy rows", "[dataframe]") {
     Schema s("I");

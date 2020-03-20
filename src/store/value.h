@@ -58,7 +58,9 @@ class Value : public Object {
 
     /** Compute a hash for this key. */
     size_t hash_me() {
-        String str_blob(blob_, size_);
-        return str_blob.hash();
+        size_t hash = 0;
+        for (size_t i = 0; i < size_; ++i)
+            hash = blob_[i] + (hash << 6) + (hash << 16) - hash;
+        return hash;
     }
 };
