@@ -69,10 +69,22 @@ class Column : public Object {
         return 'U';
     }
 
+    /**
+     * Makes a copy of the column.
+     */
     virtual Column* clone() {
         assert(false);
         return nullptr;
     }
+
+    /**
+     * Serializes the column.
+     */
+    virtual void serialize(Serializer* s) {
+        assert(false);
+    }
+    
+    // TODO implement in child classes
 };
 
 /*************************************************************************

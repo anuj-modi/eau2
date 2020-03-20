@@ -2,6 +2,7 @@
 #include "dataframe/dataframe.h"
 #include "kvstore.h"
 
+// TODO test kdstore methods
 class KDStore : public Object {
    public:
     KVStore* store_;
@@ -29,8 +30,8 @@ class KDStore : public Object {
      * @arg k  the key
      * @return the value
      */
-    Value* wait_and_get(Key* k) {
-        Value* v = store_->wait_and_gets(k);
+    DataFrame* wait_and_get(Key* k) {
+        Value* v = store_->wait_and_get(k);
         Deserializer d(v->get_bytes(), v->get_size());
         DataFrame* df = new DataFrame(&d);
         return df;
@@ -41,7 +42,10 @@ class KDStore : public Object {
      * @arg k  the key to put the value at
      * @arg v  the value to put in the store
      */
-    void put(Key* k, Value* v) {
-        store_[k] = 
+    void put(Key* k, DataFrame* df) {
+        Serializer s;
+        df->serialize(&s);
+        Value* v = new Value(s.get_bytes(), s.size());
+        store_->put(k, v);
     }
 };
