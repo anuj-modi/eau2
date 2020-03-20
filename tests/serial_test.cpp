@@ -1,7 +1,58 @@
 #include "util/serial.h"
+#include <float.h>
+#include <limits.h>
 #include "catch.hpp"
 #include "network/message.h"
 #include "util/string.h"
+
+/**
+ * Determine if these two doubles are equal with respect to eps.
+ * @param f1 the first double to compare.
+ * @param f2 the second double to compare.
+ */
+static bool double_equal(double f1, double f2) {
+    double eps = 0.0000001;
+    if (f1 > f2) {
+        return f1 - f2 < eps;
+    } else {
+        return f2 - f1 < eps;
+    }
+}
+
+TEST_CASE("test_serialize_deserialize_int", "[serialize][deserialize]") {
+    Serializer s;
+    s.add_int(0);
+    s.add_int(1);
+    s.add_int(INT_MAX);
+    s.add_int(-12345);
+    Deserializer d(s.get_bytes(), s.size());
+    REQUIRE(d.get_int() == 0);
+    REQUIRE(d.get_int() == 1);
+    REQUIRE(d.get_int() == INT_MAX);
+    REQUIRE(d.get_int() == -12345);
+}
+
+TEST_CASE("test_serialize_deserialize_bool", "[serialize][deserialize]") {
+    Serializer s;
+    s.add_bool(true);
+    s.add_bool(false);
+    Deserializer d(s.get_bytes(), s.size());
+    REQUIRE(d.get_bool());
+    REQUIRE_FALSE(d.get_bool());
+}
+
+TEST_CASE("test_serialize_deserialize_double", "[serialize][deserialize]") {
+    Serializer s;
+    s.add_double(0);
+    s.add_double(1.1111111);
+    s.add_double(DBL_MAX);
+    s.add_double(-3.1415926);
+    Deserializer d(s.get_bytes(), s.size());
+    REQUIRE(double_equal(d.get_double(), 0));
+    REQUIRE(double_equal(d.get_double(), 1.1111111));
+    REQUIRE(double_equal(d.get_double(), DBL_MAX));
+    REQUIRE(double_equal(d.get_double(), -3.1415926));
+}
 
 TEST_CASE("test_serialize_deserialize_size_t", "[serialize][deserialize]") {
     Serializer s;
