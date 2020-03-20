@@ -2,16 +2,28 @@
 #include "dataframe/dataframe.h"
 #include "kvstore.h"
 
-// TODO test kdstore methods
 class KDStore : public Object {
    public:
     KVStore* store_;
+
+    KDStore() : Object() {
+        store_ = new KVStore();
+    }
 
     KDStore(KVStore* kv) : Object() {
         store_ = kv;
     }
 
     ~KDStore() {}
+
+    /**
+     * Checks if the given key is in the kvstore.
+     * @arg k  the key
+     * @return if it exists in the store
+     */
+    virtual bool in(Key* k) {
+        return store_->in(k);
+    }
 
     /**
      * Gets the value at the given key.

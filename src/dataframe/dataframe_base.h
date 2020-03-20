@@ -91,7 +91,6 @@ class DataFrameBase : public Object {
                 default:
                     assert(false);
             }
-            // TODO implement deserialize for all child columns
         }
     }
 
