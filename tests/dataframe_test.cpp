@@ -399,3 +399,8 @@ TEST_CASE("pmap works unevenly distributed", "[dataframe]") {
     delete str;
     delete str2;
 }
+
+// test fromArray methods
+TEST_CASE("fromArray for all types", "[dataframe]") {
+    KVStore kv;
+}

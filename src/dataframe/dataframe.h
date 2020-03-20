@@ -87,35 +87,39 @@ class DataFrame : public DataFrameBase {
     }
 
     static DataFrame* fromScalar(Key* k, KVStore* kv, size_t size, double val) {
-        double* vals = new double[1];
-        vals[0] = val;
-        DataFrame* df = fromArray(k, kv, size, vals);
-        delete[] vals;
-        return df;
+        Schema s("D");
+        Row r(s);
+        DataFrame* df = new DataFrame(s);
+        r.set(0, val);
+        df->add_row(r);
+        return putDataFrame(k, kv, df);
     }
 
     static DataFrame* fromScalar(Key* k, KVStore* kv, size_t size, int val) {
-        int* vals = new int[1];
-        vals[0] = val;
-        DataFrame* df = fromArray(k, kv, size, vals);
-        delete[] vals;
-        return df;
+        Schema s("I");
+        Row r(s);
+        DataFrame* df = new DataFrame(s);
+        r.set(0, val);
+        df->add_row(r);
+        return putDataFrame(k, kv, df);
     }
 
     static DataFrame* fromScalar(Key* k, KVStore* kv, size_t size, bool val) {
-        bool* vals = new bool[1];
-        vals[0] = val;
-        DataFrame* df = fromArray(k, kv, size, vals);
-        delete[] vals;
-        return df;
+        Schema s("B");
+        Row r(s);
+        DataFrame* df = new DataFrame(s);
+        r.set(0, val);
+        df->add_row(r);
+        return putDataFrame(k, kv, df);
     }
 
     static DataFrame* fromScalar(Key* k, KVStore* kv, size_t size, String* val) {
-        String** vals = new String*[1];
-        vals[0] = val;
-        DataFrame* df = fromArray(k, kv, size, vals);
-        delete[] vals;
-        return df;
+        Schema s("S");
+        Row r(s);
+        DataFrame* df = new DataFrame(s);
+        r.set(0, val);
+        df->add_row(r);
+        return putDataFrame(k, kv, df);
     }
 
     /** Create a new dataframe, constructed from rows for which the given
