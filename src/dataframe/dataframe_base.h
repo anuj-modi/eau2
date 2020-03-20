@@ -32,7 +32,22 @@ class DataFrameBase : public Object {
         df_schema_ = new Schema();
         columns_ = std::vector<Column*>();
         for (size_t i = 0; i < schema.width(); i++) {
-            columns_.push_back(Column::create_column(schema.col_type(i)));
+            switch (df_schema_->col_type(i)) {
+                case 'S':
+                    columns_.push_back(new StringColumn());
+                    break;
+                case 'I':
+                    columns_.push_back(new IntColumn());
+                    break;
+                case 'B':
+                    columns_.push_back(new BoolColumn());
+                    break;
+                case 'D':
+                    columns_.push_back(new DoubleColumn());
+                    break;
+                default:
+                    assert(false);
+            }
         }
     }
 
@@ -55,7 +70,22 @@ class DataFrameBase : public Object {
     DataFrameBase(Deserializer* d) : Object() {
         df_schema_ = new Schema(d);
         for (size_t i = 0; i < df_schema_->width(); i++) {
-            columns_.push_back(Column::deserialize_column(d, df_schema_->col_type(i)));
+            switch (df_schema_->col_type(i)) {
+                case 'S':
+                    columns_.push_back(new StringColumn(d));
+                    break;
+                case 'I':
+                    columns_.push_back(new IntColumn(d));
+                    break;
+                case 'B':
+                    columns_.push_back(new BoolColumn(d));
+                    break;
+                case 'D':
+                    columns_.push_back(new DoubleColumn(d));
+                    break;
+                default:
+                    assert(false);
+            }
             // TODO implement deserialize for all child columns
         }
     }
