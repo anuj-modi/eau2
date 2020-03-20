@@ -148,6 +148,13 @@ class IntColumn : public Column {
         va_end(args);
     }
 
+    IntColumn(Deserializer* d) : IntColumn() {
+        size_t num_items = d->get_size_t();
+        for (size_t i = 0; i < num_items; i++) {
+            push_back(d->get_int());
+        }
+    }
+
     virtual ~IntColumn() {
         for (size_t i = 0; i < num_segments_; i++) {
             delete[] segments_[i];
@@ -211,6 +218,13 @@ class IntColumn : public Column {
         }
         return result;
     }
+
+    virtual void serialize(Serializer* s) {
+        s->add_size_t(size_);
+        for (size_t i = 0; i < size_; i++) {
+            s->add_int(get(i));
+        }
+    }
 };
 
 /*************************************************************************
@@ -243,6 +257,13 @@ class BoolColumn : public Column {
             push_back(val);
         }
         va_end(args);
+    }
+
+    BoolColumn(Deserializer* d) : BoolColumn() {
+        size_t num_items = d->get_size_t();
+        for (size_t i = 0; i < num_items; i++) {
+            push_back(d->get_bool());
+        }
     }
 
     virtual ~BoolColumn() {
@@ -308,6 +329,13 @@ class BoolColumn : public Column {
         }
         return result;
     }
+
+    virtual void serialize(Serializer* s) {
+        s->add_size_t(size_);
+        for (size_t i = 0; i < size_; i++) {
+            s->add_bool(get(i));
+        }
+    }
 };
 
 /*************************************************************************
@@ -340,6 +368,13 @@ class DoubleColumn : public Column {
             push_back(val);
         }
         va_end(args);
+    }
+
+    DoubleColumn(Deserializer* d) : DoubleColumn() {
+        size_t num_items = d->get_size_t();
+        for (size_t i = 0; i < num_items; i++) {
+            push_back(d->get_double());
+        }
     }
 
     virtual ~DoubleColumn() {
@@ -405,6 +440,13 @@ class DoubleColumn : public Column {
         }
         return result;
     }
+
+    virtual void serialize(Serializer* s) {
+        s->add_size_t(size_);
+        for (size_t i = 0; i < size_; i++) {
+            s->add_double(get(i));
+        }
+    }
 };
 
 // Other primitive column classes similar...
@@ -440,6 +482,13 @@ class StringColumn : public Column {
             push_back(val);
         }
         va_end(args);
+    }
+
+    StringColumn(Deserializer* d) : StringColumn() {
+        size_t num_items = d->get_size_t();
+        for (size_t i = 0; i < num_items; i++) {
+            push_back(d->get_string());
+        }
     }
 
     virtual ~StringColumn() {
@@ -504,5 +553,12 @@ class StringColumn : public Column {
             result->push_back(get(i));
         }
         return result;
+    }
+
+    virtual void serialize(Serializer* s) {
+        s->add_size_t(size_);
+        for (size_t i = 0; i < size_; i++) {
+            s->add_string(get(i));
+        }
     }
 };
