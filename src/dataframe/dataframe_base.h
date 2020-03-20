@@ -18,12 +18,16 @@ class DataFrameBase : public Object {
     std::vector<Column*> columns_;
     Schema* df_schema_;
 
-    /** Create a data frame with the same columns as the given df but with no
-     * rows or rownmaes */
+    /**
+     * Create a data frame with the same columns as the given df but with no
+     * rows or rownmaes
+     */
     DataFrameBase(DataFrameBase& df) : DataFrameBase(df.get_schema()) {}
 
-    /** Create a data frame from a schema and columns. All columns are created
-     * empty. */
+    /** 
+     * Create a data frame from a schema and columns. All columns are created
+     * empty. 
+     */
     DataFrameBase(Schema& schema) : Object() {
         df_schema_ = new Schema();
         columns_ = std::vector<Column*>();
@@ -64,6 +68,9 @@ class DataFrameBase : public Object {
         df_schema_->add_rows(length);
     }
 
+    /**
+     * Creates a data frame from the given deserializer.
+     */
     DataFrameBase(Deserializer* d) : Object() {
         df_schema_ = new Schema(d);
         for (size_t i = 0; i < df_schema_->width(); i++) {
