@@ -83,8 +83,37 @@ class Column : public Object {
     virtual void serialize(Serializer* s) {
         assert(false);
     }
-    
+
+    static Column* create_column(char col_type) {
+        switch (col_type) {
+            case 'S':
+                return new StringColumn();
+            case 'I':
+                return new IntColumn();
+            case 'B':
+                return new BoolColumn();
+            case 'D':
+                return new DoubleColumn();
+            default:
+                assert(false);
+        }
+    }
+
     // TODO implement in child classes
+    static Column* deserialize_column(Deserializer* d, char col_type) {
+        switch (col_type) {
+            case 'S':
+                return new StringColumn(d);
+            case 'I':
+                return new IntColumn(d);
+            case 'B':
+                return new BoolColumn(d);
+            case 'D':
+                return new DoubleColumn(d);
+            default:
+                assert(false);
+        }
+    }
 };
 
 /*************************************************************************
