@@ -21,10 +21,10 @@ submission.zip: $(STUFF)
 	@rm -rf eau2/
 
 $(ODIR):
-	mkdir -p ./build
+	mkdir -p ./$(ODIR)
 
-build/test.o: $(ODIR) tests/test.cpp
-	$(CC) $(CFLAGS) -o $@ -c tests/test.cpp
+$(ODIR)/test.o: ./tests/test.cpp
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(ODIR)/%.o: ./tests/%.cpp $(DEPS)
 	$(CC) $(CFLAGS) -Isrc/ -o $@ -c $<
@@ -34,7 +34,7 @@ $(TEST_OUT): $(OBJS) $(DEPS)
 
 .PHONY:test
 test: $(ODIR) $(TEST_OUT)
-	$(TEST_OUT)
+	@$(TEST_OUT)
 
 .PHONY: valgrind
 valgrind: $(TEST_OUT)
@@ -42,4 +42,4 @@ valgrind: $(TEST_OUT)
 
 .PHONY: clean
 clean:
-	rm -rf build/* submission.zip
+	rm -rf $(ODIR)/* submission.zip

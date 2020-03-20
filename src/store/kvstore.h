@@ -12,7 +12,9 @@ class KVStore : public Object {
     }
 
     ~KVStore() {
-        // TODO should we own and delete
+        // for (size_t i = 0; i < item_.size(); i++) {
+
+        // }
     }
 
     /**
@@ -20,7 +22,7 @@ class KVStore : public Object {
      * @arg k  the key
      * @return if it exists in the store
      */
-    bool in(Key* k) {
+    virtual bool in(Key* k) {
         std::map<Key*, Value*>::iterator check;
         check = items_.find(k);
         return check != items_.end();
@@ -31,7 +33,7 @@ class KVStore : public Object {
      * @arg k  the key
      * @return the value
      */
-    Value* get(Key* k) {
+    virtual Value* get(Key* k) {
         assert(in(k));
         return items_[k];
     }
@@ -41,10 +43,10 @@ class KVStore : public Object {
      * @arg k  the key
      * @return the value
      */
-    Value* wait_and_get(Key* k) {
+    virtual Value* wait_and_get(Key* k) {
         while (!in(k)) {
         }
-        return items_[k];
+        return get(k);
     }
 
     /**
@@ -52,7 +54,7 @@ class KVStore : public Object {
      * @arg k  the key to put the value at
      * @arg v  the value to put in the store
      */
-    void put(Key* k, Value* v) {
+    virtual void put(Key* k, Value* v) {
         items_[k] = v;
     }
 };

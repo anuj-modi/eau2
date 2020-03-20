@@ -11,12 +11,22 @@ class Value : public Object {
     char* blob_;
     size_t size_;
 
-    Value(char* blob, size_t size) : Object() {
-        blob_ = blob;
-        size_ = size;
+    Value(char* blob, size_t size) : Value(false, blob, size) {}
+
+    Value(bool steal, char* blob, size_t size) : Object() {
+        if (steal) {
+            blob_ = blob;
+            size_ = size;
+        } else {
+            blob_ = new char[size];
+            memcpy(blob_, blob, size);
+            size_ = size;
+        }
     }
 
-    virtual ~Value() {}
+    virtual ~Value() {
+        delete[] blob_;
+    }
 
     /**
      * Gets the data stored in the value object.
