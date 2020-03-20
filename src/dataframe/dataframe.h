@@ -34,7 +34,7 @@ class DataFrame : public DataFrameBase {
 
     virtual ~DataFrame() {}
 
-    static DataFrame* serializeAndPut(Key* k, KVStore* kv, DataFrame* df) {
+    static DataFrame* putDataFrame(Key* k, KVStore* kv, DataFrame* df) {
         Serializer serializer;
         df->serialize(&serializer);
         Value v(serializer.get_bytes(), serializer.size());
@@ -50,18 +50,72 @@ class DataFrame : public DataFrameBase {
             r.set(0, vals[i]);
             df->add_row(r);
         }
-        return serializeAndPut(k, kv, df);
+        return putDataFrame(k, kv, df);
     }
 
     static DataFrame* fromArray(Key* k, KVStore* kv, size_t size, int* vals) {
-        Schema s("D");
+        Schema s("I");
         Row r(s);
         DataFrame* df = new DataFrame(s);
         for (size_t i = 0; i < size; i++) {
             r.set(0, vals[i]);
             df->add_row(r);
         }
-        return serializeAndPut(k, kv, df);
+        return putDataFrame(k, kv, df);
+    }
+
+    static DataFrame* fromArray(Key* k, KVStore* kv, size_t size, bool* vals) {
+        Schema s("B");
+        Row r(s);
+        DataFrame* df = new DataFrame(s);
+        for (size_t i = 0; i < size; i++) {
+            r.set(0, vals[i]);
+            df->add_row(r);
+        }
+        return putDataFrame(k, kv, df);
+    }
+
+    static DataFrame* fromArray(Key* k, KVStore* kv, size_t size, String** vals) {
+        Schema s("S");
+        Row r(s);
+        DataFrame* df = new DataFrame(s);
+        for (size_t i = 0; i < size; i++) {
+            r.set(0, vals[i]);
+            df->add_row(r);
+        }
+        return putDataFrame(k, kv, df);
+    }
+
+    static DataFrame* fromScalar(Key* k, KVStore* kv, size_t size, double val) {
+        double* vals = new double[1];
+        vals[0] = val;
+        DataFrame* df = fromArray(k, kv, size, vals);
+        delete[] vals;
+        return df;
+    }
+
+    static DataFrame* fromScalar(Key* k, KVStore* kv, size_t size, int val) {
+        int* vals = new int[1];
+        vals[0] = val;
+        DataFrame* df = fromArray(k, kv, size, vals);
+        delete[] vals;
+        return df;
+    }
+
+    static DataFrame* fromScalar(Key* k, KVStore* kv, size_t size, bool val) {
+        bool* vals = new bool[1];
+        vals[0] = val;
+        DataFrame* df = fromArray(k, kv, size, vals);
+        delete[] vals;
+        return df;
+    }
+
+    static DataFrame* fromScalar(Key* k, KVStore* kv, size_t size, String* val) {
+        String** vals = new String*[1];
+        vals[0] = val;
+        DataFrame* df = fromArray(k, kv, size, vals);
+        delete[] vals;
+        return df;
     }
 
     /** Create a new dataframe, constructed from rows for which the given
