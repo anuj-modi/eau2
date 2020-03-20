@@ -24,34 +24,15 @@ class DataFrameBase : public Object {
      */
     DataFrameBase(DataFrameBase& df) : DataFrameBase(df.get_schema()) {}
 
-    /** 
+    /**
      * Create a data frame from a schema and columns. All columns are created
-     * empty. 
+     * empty.
      */
     DataFrameBase(Schema& schema) : Object() {
         df_schema_ = new Schema();
         columns_ = std::vector<Column*>();
         for (size_t i = 0; i < schema.width(); i++) {
-            switch (schema.col_type(i)) {
-                case 'S':
-                    df_schema_->add_column('S');
-                    columns_.push_back(new StringColumn());
-                    break;
-                case 'I':
-                    df_schema_->add_column('I');
-                    columns_.push_back(new IntColumn());
-                    break;
-                case 'B':
-                    df_schema_->add_column('B');
-                    columns_.push_back(new BoolColumn());
-                    break;
-                case 'D':
-                    df_schema_->add_column('D');
-                    columns_.push_back(new DoubleColumn());
-                    break;
-                default:
-                    assert(false);
-            }
+            columns_.push_back(Column::create_column(schema.col_type(i)));
         }
     }
 
@@ -74,22 +55,7 @@ class DataFrameBase : public Object {
     DataFrameBase(Deserializer* d) : Object() {
         df_schema_ = new Schema(d);
         for (size_t i = 0; i < df_schema_->width(); i++) {
-            switch (df_schema_->col_type(i)) {
-                case 'S':
-                    columns_.push_back(new StringColumn(d));
-                    break;
-                case 'I':
-                    columns_.push_back(new IntColumn(d));
-                    break;
-                case 'B':
-                    columns_.push_back(new BoolColumn(d));
-                    break;
-                case 'D':
-                    columns_.push_back(new DoubleColumn(d));
-                    break;
-                default:
-                    assert(false);
-            }
+            columns_.push_back(Column::deserialize_column(d, df_schema_->col_type(i)));
             // TODO implement deserialize for all child columns
         }
     }
