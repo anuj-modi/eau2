@@ -32,7 +32,9 @@ class DataFrameBase : public Object {
         df_schema_ = new Schema();
         columns_ = std::vector<Column*>();
         for (size_t i = 0; i < schema.width(); i++) {
-            switch (df_schema_->col_type(i)) {
+            char type = schema.col_type(i);
+            df_schema_->add_column(type);
+            switch (type) {
                 case 'S':
                     columns_.push_back(new StringColumn());
                     break;
@@ -60,8 +62,11 @@ class DataFrameBase : public Object {
             assert(columns[i]->size() == length);
         }
         df_schema_ = new Schema();
-        columns_ = std::vector<Column*>(columns);
         df_schema_->add_rows(length);
+        columns_ = std::vector<Column*>();
+        for (size_t i = 0; i < columns.size(); i++) {
+            add_column(columns[i]);
+        }
     }
 
     /**
