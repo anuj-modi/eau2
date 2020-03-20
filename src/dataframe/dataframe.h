@@ -34,7 +34,15 @@ class DataFrame : public DataFrameBase {
 
     virtual ~DataFrame() {}
 
-    static DataFrameBase* fromArray(Key* k, KVStore* kv, size_t size, double* vals) {
+    static DataFrame* serializeAndPut(Key* k, KVStore* kv, DataFrame* df) {
+        Serializer serializer;
+        df->serialize(&serializer);
+        Value v(serializer.get_bytes(), serializer.size());
+        kv->put(k, &v);
+        return df;
+    }
+
+    static DataFrame* fromArray(Key* k, KVStore* kv, size_t size, double* vals) {
         Schema s("D");
         Row r(s);
         DataFrame* df = new DataFrame(s);
@@ -42,12 +50,18 @@ class DataFrame : public DataFrameBase {
             r.set(0, vals[i]);
             df->add_row(r);
         }
+        return serializeAndPut(k, kv, df);
+    }
 
-        Serializer serializer;
-        df->serialize(&serializer);
-        Value v(serializer.get_bytes(), serializer.size());
-        kv->put(k, &v);
-        return df;
+    static DataFrame* fromArray(Key* k, KVStore* kv, size_t size, int* vals) {
+        Schema s("D");
+        Row r(s);
+        DataFrame* df = new DataFrame(s);
+        for (size_t i = 0; i < size; i++) {
+            r.set(0, vals[i]);
+            df->add_row(r);
+        }
+        return serializeAndPut(k, kv, df);
     }
 
     /** Create a new dataframe, constructed from rows for which the given
