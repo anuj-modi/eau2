@@ -27,6 +27,11 @@ class DataFrame : public DataFrameBase {
      */
     DataFrame(std::vector<Column*> columns) : DataFrameBase(columns) {}
 
+    /**
+     * Creates a data frame from the given deserializer.
+     */
+    DataFrame(Deserializer* d) : DataFrameBase(d) {}
+
     virtual ~DataFrame() {}
 
     static DataFrameBase* fromArray(Key* k, KVStore* kv, size_t size, double* vals) {
