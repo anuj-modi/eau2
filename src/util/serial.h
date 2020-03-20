@@ -53,16 +53,38 @@ class Serializer : public Object {
         }
     }
 
-    // void add_int(int val) {
-    //     size_t new_size = size_ + sizeof(val);
-    //     if (new_size > capacity_) {
-    //         expand_(new_size);
-    //     }
+    void add_int(int val) {
+        size_t new_size = size_ + sizeof(val);
+        if (new_size > capacity_) {
+            expand_(new_size);
+        }
 
-    //     int* ptr = (int*)(bytes_ + size_);
-    //     *ptr = val;
-    //     size_ = new_size;
-    // }
+        int* ptr = (int*)(bytes_ + size_);
+        *ptr = val;
+        size_ = new_size;
+    }
+
+    void add_double(double val) {
+        size_t new_size = size_ + sizeof(val);
+        if (new_size > capacity_) {
+            expand_(new_size);
+        }
+
+        double* ptr = (double*)(bytes_ + size_);
+        *ptr = val;
+        size_ = new_size;
+    }
+
+    void add_bool(bool val) {
+        size_t new_size = size_ + sizeof(val);
+        if (new_size > capacity_) {
+            expand_(new_size);
+        }
+
+        bool* ptr = (bool*)(bytes_ + size_);
+        *ptr = val;
+        size_ = new_size;
+    }
 
     void add_uint32_t(uint32_t val) {
         size_t new_size = size_ + sizeof(val);
@@ -130,6 +152,30 @@ class Deserializer : public Object {
 
     virtual ~Deserializer() {
         delete[] bytes_;
+    }
+
+    int get_int() {
+        assert(bytes_remaining_ >= sizeof(int));
+        int result = *((int*)current_);
+        current_ += sizeof(int);
+        bytes_remaining_ -= sizeof(int);
+        return result;
+    }
+
+    double get_double() {
+        assert(bytes_remaining_ >= sizeof(double));
+        double result = *((double*)current_);
+        current_ += sizeof(double);
+        bytes_remaining_ -= sizeof(double);
+        return result;
+    }
+
+    bool get_bool() {
+        assert(bytes_remaining_ >= sizeof(bool));
+        bool result = *((bool*)current_);
+        current_ += sizeof(bool);
+        bytes_remaining_ -= sizeof(bool);
+        return result;
     }
 
     uint32_t get_uint32_t() {
