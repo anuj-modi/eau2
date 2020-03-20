@@ -40,6 +40,11 @@ class Schema : public Object {
         }
     }
 
+    Schema(Deserializer* d) : Object() {
+        col_types_ = new IntArray(d);
+        num_rows_ = d->get_size_t();
+    }
+
     virtual ~Schema() {
         delete col_types_;
     }

@@ -3,6 +3,7 @@
 #include "key.h"
 #include "value.h"
 
+// TODO test kvstore methods
 class KVStore : public Object {
    public:
     std::map<Key*, Value*> items_;
@@ -12,9 +13,11 @@ class KVStore : public Object {
     }
 
     ~KVStore() {
-        // for (size_t i = 0; i < item_.size(); i++) {
-
-        // }
+        std::map<Key*, Value*>::iterator it;
+        for (it = items_.begin(); it != items_.end(); it++) {
+            delete it->first;
+            delete it->second;
+        }
     }
 
     /**
