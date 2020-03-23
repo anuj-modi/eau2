@@ -410,7 +410,7 @@ TEST_CASE("fromArray for all types", "[dataframe][kdstore]") {
     for (size_t i = 0; i < SZ; ++i) {
         double_vals[i] = i;
     }
-    DataFrame* df1 = DataFrame::fromArray(&doubles, &kd, SZ, double_vals);
+    delete DataFrame::fromArray(&doubles, &kd, SZ, double_vals);
     DataFrame* df1_copy = kd.get(&doubles);
     for (size_t i = 0; i < SZ; ++i) {
         REQUIRE(double_equal(df1_copy->get_double(0, i), double_vals[i]));
@@ -421,7 +421,7 @@ TEST_CASE("fromArray for all types", "[dataframe][kdstore]") {
     for (size_t i = 0; i < SZ; ++i) {
         int_vals[i] = i;
     }
-    DataFrame* df2 = DataFrame::fromArray(&ints, &kd, SZ, int_vals);
+    delete DataFrame::fromArray(&ints, &kd, SZ, int_vals);
     DataFrame* df2_copy = kd.get(&ints);
     for (size_t i = 0; i < SZ; ++i) {
         REQUIRE(df2_copy->get_int(0, i) == i);
@@ -432,7 +432,7 @@ TEST_CASE("fromArray for all types", "[dataframe][kdstore]") {
     for (size_t i = 0; i < SZ; ++i) {
         bool_vals[i] = true;
     }
-    DataFrame* df3 = DataFrame::fromArray(&bools, &kd, SZ, bool_vals);
+    delete DataFrame::fromArray(&bools, &kd, SZ, bool_vals);
     DataFrame* df3_copy = kd.get(&bools);
     for (size_t i = 0; i < SZ; ++i) {
         REQUIRE(df3_copy->get_bool(0, i));
@@ -444,19 +444,15 @@ TEST_CASE("fromArray for all types", "[dataframe][kdstore]") {
     for (size_t i = 0; i < SZ; ++i) {
         str_vals[i] = test;
     }
-    DataFrame* df4 = DataFrame::fromArray(&str, &kd, SZ, str_vals);
+    delete DataFrame::fromArray(&str, &kd, SZ, str_vals);
     DataFrame* df4_copy = kd.get(&str);
     for (size_t i = 0; i < SZ; ++i) {
         REQUIRE(df4_copy->get_string(0, i)->equals(test));
     }
 
-    delete df1;
     delete df1_copy;
-    delete df2;
     delete df2_copy;
-    delete df3;
     delete df3_copy;
-    delete df4;
     delete df4_copy;
     delete double_vals;
     delete int_vals;
@@ -490,4 +486,9 @@ TEST_CASE("fromScalar for all types", "[dataframe][kdstore]") {
     delete DataFrame::fromScalar(&strs, &kd, &test);
     DataFrame* df4_copy = kd.get(&strs);
     REQUIRE(df4_copy->get_string(0, 0)->equals(&test));
+
+    delete df1_copy;
+    delete df2_copy;
+    delete df3_copy;
+    delete df4_copy;
 }

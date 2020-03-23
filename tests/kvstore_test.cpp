@@ -17,7 +17,7 @@ TEST_CASE("key in kvstore", "[kvstore]") {
 }
 
 // test put and get methods
-TEST_CASE("put and get a value in kvstore", "[kdstore]") {
+TEST_CASE("put and get a value in kvstore", "[kvstore]") {
     String s("sdkfak");
     Key* k_1 = new Key("one");
     Value* v = new Value(s.c_str(), s.size());
