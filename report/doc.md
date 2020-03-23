@@ -5,12 +5,19 @@ eau2 is a distributed system used to run machine learning algorithms and other o
 
 ## Architecture
 The main parts of the system include:
-* KVStore and KDStore - stores data across multiple devices using keys and values (data frames for KDStore)
-* Dataframes and Columns - holds data in tabular format and works as an easy interface for the user
+* Store - stores data across multiple devices using keys and values (data frames for KDStore)
+* Dataframe - holds data in tabular format and works as an easy interface
 * Sorer - allows the system to read in ".sor" files 
 
 ## Implementation
-
+Classes included:
+* DataFrame - structure to hold data in a tabular format and works as an interface that the user can work with
+* Schema - defines the structure of a data frame
+* Row - represents a row in a data frame (used to easily add data to a data frame)
+* Column - structure that holds a list of the same data type (int, double, bool, or String) and stores its data in a distributed manner on a KVStore
+* KVStore - data structure containing keys and associated values that runs on multiple nodes and acts as one unified store
+* KDStore - wrapper around a KVStore to easily put and get DataFrame objects from the store
+* SorParser - reads in the ".sor" file and converts it into a DataFrame
 
 ## Use cases
 Store and retrieve data from eau2.
