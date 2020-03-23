@@ -1,5 +1,6 @@
 #include "dataframe/dataframe.h"
 #include "catch.hpp"
+#include "store/kdstore.h"
 
 /**
  * Determine if these two doubles are equal with respect to eps.
@@ -410,7 +411,7 @@ TEST_CASE("fromArray for all types", "[dataframe]") {
         double_vals[i] = i;
     }
     DataFrame* df1 = DataFrame::fromArray(&doubles, &kd, SZ, double_vals);
-    DataFrame* df1_copy = kd.get(doubles);
+    DataFrame* df1_copy = kd.get(&doubles);
     for (size_t i = 0; i < SZ; ++i) {
         REQUIRE(double_equal(df1_copy->get_double(0, i), double_vals[i]));
     }
@@ -421,7 +422,7 @@ TEST_CASE("fromArray for all types", "[dataframe]") {
         int_vals[i] = i;
     }
     DataFrame* df2 = DataFrame::fromArray(&ints, &kd, SZ, int_vals);
-    DataFrame* df2_copy = kd.get(ints);
+    DataFrame* df2_copy = kd.get(&ints);
     for (size_t i = 0; i < SZ; ++i) {
         REQUIRE(df2_copy->get_int(0, i) == i);
     }
@@ -432,7 +433,7 @@ TEST_CASE("fromArray for all types", "[dataframe]") {
         bool_vals[i] = true;
     }
     DataFrame* df3 = DataFrame::fromArray(&bools, &kd, SZ, bool_vals);
-    DataFrame* df3_copy = kd.get(bools);
+    DataFrame* df3_copy = kd.get(&bools);
     for (size_t i = 0; i < SZ; ++i) {
         REQUIRE(df3_copy->get_bool(0, i));
     }
@@ -444,7 +445,7 @@ TEST_CASE("fromArray for all types", "[dataframe]") {
         str_vals[i] = test;
     }
     DataFrame* df4 = DataFrame::fromArray(&str, &kd, SZ, str_vals);
-    DataFrame* df4_copy = kd.get(str);
+    DataFrame* df4_copy = kd.get(&str);
     for (size_t i = 0; i < SZ; ++i) {
         REQUIRE(df4_copy->get_string(0, i)->equals(test));
     }
@@ -469,24 +470,24 @@ TEST_CASE("fromScalar for all types", "[dataframe]") {
     KDStore kd;
     Key doubles("doubles");
     double double_val = 4.5;
-    DataFrame* df1 = DataFrame::fromScalar(&doubles, &kd, double_val);
-    DataFrame* df1_copy = kd.get(doubles);
+    delete DataFrame::fromScalar(&doubles, &kd, double_val);
+    DataFrame* df1_copy = kd.get(&doubles);
     REQUIRE(double_equal(df1_copy->get_double(0, 0), double_val));
 
     Key ints("ints");
     int int_val = -3;
-    DataFrame* df2 = DataFrame::fromScalar(&ints, &kd, int_val);
-    DataFrame* df2_copy = kd.get(ints);
+    delete DataFrame::fromScalar(&ints, &kd, int_val);
+    DataFrame* df2_copy = kd.get(&ints);
     REQUIRE(df2_copy->get_int(0, 0) == int_val);
 
     Key bools("bools");
-    DataFrame* df3 = DataFrame::fromScalar(&bools, &kd, true);
-    DataFrame* df3_copy = kd.get(bools);
+    delete DataFrame::fromScalar(&bools, &kd, true);
+    DataFrame* df3_copy = kd.get(&bools);
     REQUIRE(df3_copy->get_bool(0, 0));
 
     Key strs("strings");
     String test("Test");
-    DataFrame* df4 = DataFrame::fromScalar(&strs, &kd, &test);
-    DataFrame* df4_copy = kd.get(strs);
-    REQUIRE(df3_copy->get_string(0, 0)->equals(&test));
+    delete DataFrame::fromScalar(&strs, &kd, &test);
+    DataFrame* df4_copy = kd.get(&strs);
+    REQUIRE(df4_copy->get_string(0, 0)->equals(&test));
 }
