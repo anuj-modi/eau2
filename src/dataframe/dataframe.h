@@ -2,8 +2,9 @@
 #include <vector>
 #include "dataframe_base.h"
 #include "store/key.h"
-#include "store/kdstore.h"
 #include "worker.h"
+
+class KDStore;
 
 /****************************************************************************
  * DataFrame::
@@ -34,93 +35,15 @@ class DataFrame : public DataFrameBase {
 
     virtual ~DataFrame() {}
 
-    static DataFrame* putDataFrame(Key* k, KDStore* kd, DataFrame* df) {
-        Serializer serializer;
-        df->serialize(&serializer);
-        Value v(serializer.get_bytes(), serializer.size());
-        kd->put(k, &v);
-        return df;
-    }
+    static DataFrame* fromArray(Key* k, KDStore* kd, size_t size, double* vals);
+    static DataFrame* fromArray(Key* k, KDStore* kd, size_t size, int* vals);
+    static DataFrame* fromArray(Key* k, KDStore* kd, size_t size, bool* vals);
+    static DataFrame* fromArray(Key* k, KDStore* kd, size_t size, String** vals);
 
-    static DataFrame* fromArray(Key* k, KDStore* kd, size_t size, double* vals) {
-        Schema s("D");
-        Row r(s);
-        DataFrame* df = new DataFrame(s);
-        for (size_t i = 0; i < size; i++) {
-            r.set(0, vals[i]);
-            df->add_row(r);
-        }
-        return putDataFrame(k, kd, df);
-    }
-
-    static DataFrame* fromArray(Key* k, KDStore* kd, size_t size, int* vals) {
-        Schema s("I");
-        Row r(s);
-        DataFrame* df = new DataFrame(s);
-        for (size_t i = 0; i < size; i++) {
-            r.set(0, vals[i]);
-            df->add_row(r);
-        }
-        return putDataFrame(k, kd, df);
-    }
-
-    static DataFrame* fromArray(Key* k, KDStore* kd, size_t size, bool* vals) {
-        Schema s("B");
-        Row r(s);
-        DataFrame* df = new DataFrame(s);
-        for (size_t i = 0; i < size; i++) 
-            r.set(0, vals[i]);
-            df->add_row(r);
-        }
-        return putDataFrame(k, kd, df);
-    }
-
-    static DataFrame* fromArray(Key* k, KDStore* kd, size_t size, String** vals) {
-        Schema s("S");
-        Row r(s);
-        DataFrame* df = new DataFrame(s);
-        for (size_t i = 0; i < size; i++) {
-            r.set(0, vals[i]);
-            df->add_row(r);
-        }
-        return putDataFrame(k, kd, df);
-    }
-
-    static DataFrame* fromScalar(Key* k, KDStore* kd, size_t size, double val) {
-        Schema s("D");
-        Row r(s);
-        DataFrame* df = new DataFrame(s);
-        r.set(0, val);
-        df->add_row(r);
-        return putDataFrame(k, kd, df);
-    }
-
-    static DataFrame* fromScalar(Key* k, KDStore* kd, size_t size, int val) {
-        Schema s("I");
-        Row r(s);
-        DataFrame* df = new DataFrame(s);
-        r.set(0, val);
-        df->add_row(r);
-        return putDataFrame(k, kd, df);
-    }
-
-    static DataFrame* fromScalar(Key* k, KDStore* kd, size_t size, bool val) {
-        Schema s("B");
-        Row r(s);
-        DataFrame* df = new DataFrame(s);
-        r.set(0, val);
-        df->add_row(r);
-        return putDataFrame(k, kd, df);
-    }
-
-    static DataFrame* fromScalar(Key* k, KDStore* kd, size_t size, String* val) {
-        Schema s("S");
-        Row r(s);
-        DataFrame* df = new DataFrame(s);
-        r.set(0, val);
-        df->add_row(r);
-        return putDataFrame(k, kd, df);
-    }
+    static DataFrame* fromScalar(Key* k, KDStore* kd, double val);
+    static DataFrame* fromScalar(Key* k, KDStore* kd, int val);
+    static DataFrame* fromScalar(Key* k, KDStore* kd, bool val);
+    static DataFrame* fromScalar(Key* k, KDStore* kd, String* val);
 
     /** Create a new dataframe, constructed from rows for which the given
      * Rower returned true from its accept method. */
@@ -161,3 +84,89 @@ class DataFrame : public DataFrameBase {
         delete[] workers;
     }
 };
+
+DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, double* vals) {
+    Schema s("D");
+    Row r(s);
+    DataFrame* df = new DataFrame(s);
+    for (size_t i = 0; i < size; i++) {
+        r.set(0, vals[i]);
+        df->add_row(r);
+    }
+    kd->put(k, df);
+    return df;
+}
+
+DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, int* vals) {
+    Schema s("I");
+    Row r(s);
+    DataFrame* df = new DataFrame(s);
+    for (size_t i = 0; i < size; i++) {
+        r.set(0, vals[i]);
+        df->add_row(r);
+    }
+    kd->put(k, df);
+    return df;
+}
+
+DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, bool* vals) {
+    Schema s("B");
+    Row r(s);
+    DataFrame* df = new DataFrame(s);
+    for (size_t i = 0; i < size; i++) r.set(0, vals[i]);
+    df->add_row(r);
+    kd->put(k, df);
+    return df;
+}
+
+DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, String** vals) {
+    Schema s("S");
+    Row r(s);
+    DataFrame* df = new DataFrame(s);
+    for (size_t i = 0; i < size; i++) {
+        r.set(0, vals[i]);
+        df->add_row(r);
+    }
+    kd->put(k, df);
+    return df;
+}
+
+DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, double val) {
+    Schema s("D");
+    Row r(s);
+    DataFrame* df = new DataFrame(s);
+    r.set(0, val);
+    df->add_row(r);
+    kd->put(k, df);
+    return df;
+}
+
+DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, int val) {
+    Schema s("I");
+    Row r(s);
+    DataFrame* df = new DataFrame(s);
+    r.set(0, val);
+    df->add_row(r);
+    kd->put(k, df);
+    return df;
+}
+
+DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, bool val) {
+    Schema s("B");
+    Row r(s);
+    DataFrame* df = new DataFrame(s);
+    r.set(0, val);
+    df->add_row(r);
+    kd->put(k, df);
+    return df;
+}
+
+DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, String* val) {
+    Schema s("S");
+    Row r(s);
+    DataFrame* df = new DataFrame(s);
+    r.set(0, val);
+    df->add_row(r);
+    kd->put(k, df);
+    return df;
+}

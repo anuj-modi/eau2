@@ -402,5 +402,91 @@ TEST_CASE("pmap works unevenly distributed", "[dataframe]") {
 
 // test fromArray methods
 TEST_CASE("fromArray for all types", "[dataframe]") {
-    KVStore kv;
+    KDStore kd;
+    Key doubles("doubles");
+    size_t SZ = 10;
+    double* double_vals = new double[SZ];
+    for (size_t i = 0; i < SZ; ++i) {
+        double_vals[i] = i;
+    }
+    DataFrame* df1 = DataFrame::fromArray(&doubles, &kd, SZ, double_vals);
+    DataFrame* df1_copy = kd.get(doubles);
+    for (size_t i = 0; i < SZ; ++i) {
+        REQUIRE(double_equal(df1_copy->get_double(0, i), double_vals[i]));
+    }
+
+    Key ints("ints");
+    int* int_vals = new int[SZ];
+    for (size_t i = 0; i < SZ; ++i) {
+        int_vals[i] = i;
+    }
+    DataFrame* df2 = DataFrame::fromArray(&ints, &kd, SZ, int_vals);
+    DataFrame* df2_copy = kd.get(ints);
+    for (size_t i = 0; i < SZ; ++i) {
+        REQUIRE(df2_copy->get_int(0, i) == i);
+    }
+
+    Key bools("bools");
+    bool* bool_vals = new bool[SZ];
+    for (size_t i = 0; i < SZ; ++i) {
+        bool_vals[i] = true;
+    }
+    DataFrame* df3 = DataFrame::fromArray(&bools, &kd, SZ, bool_vals);
+    DataFrame* df3_copy = kd.get(bools);
+    for (size_t i = 0; i < SZ; ++i) {
+        REQUIRE(df3_copy->get_bool(0, i));
+    }
+
+    Key str("strings");
+    String* test = new String("Test");
+    String** str_vals = new String*[SZ];
+    for (size_t i = 0; i < SZ; ++i) {
+        str_vals[i] = test;
+    }
+    DataFrame* df4 = DataFrame::fromArray(&str, &kd, SZ, str_vals);
+    DataFrame* df4_copy = kd.get(str);
+    for (size_t i = 0; i < SZ; ++i) {
+        REQUIRE(df4_copy->get_string(0, i)->equals(test));
+    }
+
+    delete df1;
+    delete df1_copy;
+    delete df2;
+    delete df2_copy;
+    delete df3;
+    delete df3_copy;
+    delete df4;
+    delete df4_copy;
+    delete double_vals;
+    delete int_vals;
+    delete bool_vals;
+    delete str_vals;
+    delete test;
+}
+
+// test fromScalar methods
+TEST_CASE("fromScalar for all types", "[dataframe]") {
+    KDStore kd;
+    Key doubles("doubles");
+    double double_val = 4.5;
+    DataFrame* df1 = DataFrame::fromScalar(&doubles, &kd, double_val);
+    DataFrame* df1_copy = kd.get(doubles);
+    REQUIRE(double_equal(df1_copy->get_double(0, 0), double_val));
+
+    Key ints("ints");
+    int int_val = -3;
+    DataFrame* df2 = DataFrame::fromScalar(&ints, &kd, int_val);
+    DataFrame* df2_copy = kd.get(ints);
+    REQUIRE(df2_copy->get_int(0, 0) == int_val);
+
+    Key bools("bools");
+    DataFrame* df3 = DataFrame::fromScalar(&bools, &kd, true);
+    DataFrame* df3_copy = kd.get(bools);
+    REQUIRE(df3_copy->get_bool(0, 0));
+
+    Key strs("strings");
+    String test("Test");
+    DataFrame* df4 = DataFrame::fromScalar(&strs, &kd, &test);
+    DataFrame* df4_copy = kd.get(strs);
+    REQUIRE(df3_copy->get_string(0, 0)->equals(&test));
 }
