@@ -402,7 +402,7 @@ TEST_CASE("pmap works unevenly distributed", "[dataframe]") {
 }
 
 // test fromArray methods
-TEST_CASE("fromArray for all types", "[dataframe]") {
+TEST_CASE("fromArray for all types", "[dataframe][kdstore]") {
     KDStore kd;
     Key doubles("doubles");
     size_t SZ = 10;
@@ -466,7 +466,7 @@ TEST_CASE("fromArray for all types", "[dataframe]") {
 }
 
 // test fromScalar methods
-TEST_CASE("fromScalar for all types", "[dataframe]") {
+TEST_CASE("fromScalar for all types", "[dataframe][kdstore]") {
     KDStore kd;
     Key doubles("doubles");
     double double_val = 4.5;

@@ -2,7 +2,7 @@
 #include "catch.hpp"
 
 // test in method
-TEST_CASE("key in kdstore") {
+TEST_CASE("key in kdstore", "[kdstore]") {
     Key* k_1 = new Key("one");
     Key* k_2 = new Key("two");
     Schema s("I");
@@ -21,7 +21,7 @@ TEST_CASE("key in kdstore") {
 }
 
 // test get and put methods
-TEST_CASE("put and get a value in kdstore") {
+TEST_CASE("put and get a value in kdstore", "[kdstore]") {
     Key* k_1 = new Key("one");
     Schema s("I");
     DataFrame df(s);
