@@ -88,3 +88,4 @@ int main() {
 The KDStore and KVStore have been created and all of the classes that support it to work locally. Next steps include:
 - Making the KVStore distributed (having columns distribute their data over multiple KVStores)
 - Allow the KVStores to work over a network
+- Need to figure out errors caused by fixing circular dependencies in DataFrame and stores (kept us from doing final tests)
