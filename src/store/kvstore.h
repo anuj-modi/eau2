@@ -1,22 +1,18 @@
 #pragma once
-#include <map>
 #include "key.h"
+#include "util/map.h"
 #include "value.h"
 
 class KVStore : public Object {
    public:
-    std::map<Key*, Value*> items_;
+    Map* items_;
 
     KVStore() : Object() {
-        items_ = std::map<Key*, Value*>();
+        items_ = new Map();
     }
 
     virtual ~KVStore() {
-        std::map<Key*, Value*>::iterator it;
-        for (it = items_.begin(); it != items_.end(); it++) {
-            delete it->first;
-            delete it->second;
-        }
+        delete items_;
     }
 
     /**
@@ -25,9 +21,7 @@ class KVStore : public Object {
      * @return if it exists in the store
      */
     virtual bool in(Key* k) {
-        std::map<Key*, Value*>::iterator check;
-        check = items_.find(k);
-        return check != items_.end();
+        return items_->contains(k);
     }
 
     /**
@@ -36,8 +30,7 @@ class KVStore : public Object {
      * @return the value
      */
     virtual Value* get(Key* k) {
-        assert(in(k));
-        return items_[k];
+        return static_cast<Value*>(items_->get(k));
     }
 
     /**
@@ -57,6 +50,6 @@ class KVStore : public Object {
      * @arg v  the value to put in the store
      */
     virtual void put(Key* k, Value* v) {
-        items_[k] = v;
+        items_->add(k, v);
     }
 };
