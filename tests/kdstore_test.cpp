@@ -10,13 +10,13 @@ TEST_CASE("key in kdstore", "[kdstore]") {
     Row r(s);
     r.set(0, 5);
     df.add_row(r);
-    KDStore kd;
+    KVStore kv;
+    KDStore kd(&kv);
     kd.put(k_1, &df);
 
     REQUIRE(kd.in(k_1));
     REQUIRE_FALSE(kd.in(k_2));
 
-    delete k_1;
     delete k_2;
 }
 
@@ -28,7 +28,8 @@ TEST_CASE("put and get a value in kdstore", "[kdstore]") {
     Row r(s);
     r.set(0, 5);
     df.add_row(r);
-    KDStore kd;
+    KVStore kv;
+    KDStore kd(&kv);
     kd.put(k_1, &df);
     DataFrame* copy_df = kd.get(k_1);
 
@@ -36,7 +37,7 @@ TEST_CASE("put and get a value in kdstore", "[kdstore]") {
     REQUIRE(copy_df->ncols() == 1);
     REQUIRE(copy_df->nrows() == 1);
 
-    delete k_1;
+    delete copy_df;
 }
 
 // TODO test kdstore wait_and_get
