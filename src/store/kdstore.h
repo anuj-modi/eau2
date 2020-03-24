@@ -92,8 +92,10 @@ inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, bool* v
     Schema s("B");
     Row r(s);
     DataFrame* df = new DataFrame(s);
-    for (size_t i = 0; i < size; i++) r.set(0, vals[i]);
-    df->add_row(r);
+    for (size_t i = 0; i < size; i++) {
+        r.set(0, vals[i]);
+        df->add_row(r);
+    }
     kd->put(k, df);
     return df;
 }
