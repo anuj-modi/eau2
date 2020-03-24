@@ -64,7 +64,7 @@ class KDStore : public Object {
     }
 };
 
-DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, double* vals) {
+inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, double* vals) {
     Schema s("D");
     Row r(s);
     DataFrame* df = new DataFrame(s);
@@ -76,7 +76,7 @@ DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, double* vals) 
     return df;
 }
 
-DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, int* vals) {
+inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, int* vals) {
     Schema s("I");
     Row r(s);
     DataFrame* df = new DataFrame(s);
@@ -88,7 +88,7 @@ DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, int* vals) {
     return df;
 }
 
-DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, bool* vals) {
+inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, bool* vals) {
     Schema s("B");
     Row r(s);
     DataFrame* df = new DataFrame(s);
@@ -98,7 +98,7 @@ DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, bool* vals) {
     return df;
 }
 
-DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, String** vals) {
+inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, String** vals) {
     Schema s("S");
     Row r(s);
     DataFrame* df = new DataFrame(s);
@@ -110,7 +110,7 @@ DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, String** vals)
     return df;
 }
 
-DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, double val) {
+inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, double val) {
     Schema s("D");
     Row r(s);
     DataFrame* df = new DataFrame(s);
@@ -120,7 +120,7 @@ DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, double val) {
     return df;
 }
 
-DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, int val) {
+inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, int val) {
     Schema s("I");
     Row r(s);
     DataFrame* df = new DataFrame(s);
@@ -130,7 +130,7 @@ DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, int val) {
     return df;
 }
 
-DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, bool val) {
+inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, bool val) {
     Schema s("B");
     Row r(s);
     DataFrame* df = new DataFrame(s);
@@ -140,7 +140,7 @@ DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, bool val) {
     return df;
 }
 
-DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, String* val) {
+inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, String* val) {
     Schema s("S");
     Row r(s);
     DataFrame* df = new DataFrame(s);
