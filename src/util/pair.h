@@ -23,5 +23,8 @@ class Pair : public Object {
     /**
      * Deconstructs a pair.
      */
-    virtual ~Pair() {}
+    virtual ~Pair() {
+        delete key;
+        delete value;
+    }
 };
