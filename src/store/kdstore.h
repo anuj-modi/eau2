@@ -8,15 +8,11 @@ class KDStore : public Object {
    public:
     KVStore* store_;
 
-    KDStore() : Object() {
-        store_ = new KVStore();
-    }
-
     KDStore(KVStore* kv) : Object() {
         store_ = kv;
     }
 
-    ~KDStore() {}
+    virtual ~KDStore() {}
 
     /**
      * Checks if the given key is in the kvstore.
