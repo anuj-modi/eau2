@@ -1,8 +1,10 @@
 #pragma once
-#include "dataframe_base.h"
-#include "thread.h"
-#include "worker.h"
 #include <vector>
+#include "dataframe_base.h"
+#include "store/key.h"
+#include "worker.h"
+
+class KDStore;
 
 /****************************************************************************
  * DataFrame::
@@ -25,6 +27,23 @@ class DataFrame : public DataFrameBase {
      * Creates a data frame from a given set of columns.
      */
     DataFrame(std::vector<Column*> columns) : DataFrameBase(columns) {}
+
+    /**
+     * Creates a data frame from the given deserializer.
+     */
+    DataFrame(Deserializer* d) : DataFrameBase(d) {}
+
+    virtual ~DataFrame() {}
+
+    static DataFrame* fromArray(Key* k, KDStore* kd, size_t size, double* vals);
+    static DataFrame* fromArray(Key* k, KDStore* kd, size_t size, int* vals);
+    static DataFrame* fromArray(Key* k, KDStore* kd, size_t size, bool* vals);
+    static DataFrame* fromArray(Key* k, KDStore* kd, size_t size, String** vals);
+
+    static DataFrame* fromScalar(Key* k, KDStore* kd, double val);
+    static DataFrame* fromScalar(Key* k, KDStore* kd, int val);
+    static DataFrame* fromScalar(Key* k, KDStore* kd, bool val);
+    static DataFrame* fromScalar(Key* k, KDStore* kd, String* val);
 
     /** Create a new dataframe, constructed from rows for which the given
      * Rower returned true from its accept method. */

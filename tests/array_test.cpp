@@ -1,4 +1,4 @@
-#include "../src/array.h"
+#include "util/array.h"
 #include "catch.hpp"
 
 /**
@@ -504,7 +504,6 @@ TEST_CASE("size", "[array]") {
     delete l3;
     delete l4;
     delete l5;
-    
 }
 
 // test hash for all array types

@@ -1,8 +1,8 @@
 #pragma once
-#include "array.h"
 #include "network.h"
-#include "object.h"
-#include "serial.h"
+#include "util/array.h"
+#include "util/object.h"
+#include "util/serial.h"
 
 /**
  * Represents a message type to pass over a network.

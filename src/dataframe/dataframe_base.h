@@ -1,10 +1,10 @@
 #pragma once
 #include <assert.h>
+#include <vector>
 #include "column.h"
 #include "row.h"
 #include "rower.h"
 #include "schema.h"
-#include "vector"
 
 /****************************************************************************
  * DataFrame::
@@ -15,35 +15,37 @@
  */
 class DataFrameBase : public Object {
    public:
-    Array* columns_;
+    std::vector<Column*> columns_;
     Schema* df_schema_;
 
-    /** Create a data frame with the same columns as the given df but with no
-     * rows or rownmaes */
+    /**
+     * Create a data frame with the same columns as the given df but with no
+     * rows or rownmaes
+     */
     DataFrameBase(DataFrameBase& df) : DataFrameBase(df.get_schema()) {}
 
-    /** Create a data frame from a schema and columns. All columns are created
-     * empty. */
+    /**
+     * Create a data frame from a schema and columns. All columns are created
+     * empty.
+     */
     DataFrameBase(Schema& schema) : Object() {
         df_schema_ = new Schema();
-        columns_ = new Array();
+        columns_ = std::vector<Column*>();
         for (size_t i = 0; i < schema.width(); i++) {
-            switch (schema.col_type(i)) {
+            char type = schema.col_type(i);
+            df_schema_->add_column(type);
+            switch (type) {
                 case 'S':
-                    df_schema_->add_column('S');
-                    columns_->push_back(new StringColumn());
+                    columns_.push_back(new StringColumn());
                     break;
                 case 'I':
-                    df_schema_->add_column('I');
-                    columns_->push_back(new IntColumn());
+                    columns_.push_back(new IntColumn());
                     break;
                 case 'B':
-                    df_schema_->add_column('B');
-                    columns_->push_back(new BoolColumn());
+                    columns_.push_back(new BoolColumn());
                     break;
                 case 'D':
-                    df_schema_->add_column('D');
-                    columns_->push_back(new DoubleColumn());
+                    columns_.push_back(new DoubleColumn());
                     break;
                 default:
                     assert(false);
@@ -55,24 +57,48 @@ class DataFrameBase : public Object {
      * Creates a data frame from a given set of columns.
      */
     DataFrameBase(std::vector<Column*> columns) : Object() {
-        df_schema_ = new Schema();
-        columns_ = new Array();
         size_t length = columns[0]->size();
         for (size_t i = 1; i < columns.size(); i++) {
             assert(columns[i]->size() == length);
         }
+        df_schema_ = new Schema();
         df_schema_->add_rows(length);
+        columns_ = std::vector<Column*>();
         for (size_t i = 0; i < columns.size(); i++) {
             add_column(columns[i]);
         }
     }
 
+    /**
+     * Creates a data frame from the given deserializer.
+     */
+    DataFrameBase(Deserializer* d) : Object() {
+        df_schema_ = new Schema(d);
+        for (size_t i = 0; i < df_schema_->width(); i++) {
+            switch (df_schema_->col_type(i)) {
+                case 'S':
+                    columns_.push_back(new StringColumn(d));
+                    break;
+                case 'I':
+                    columns_.push_back(new IntColumn(d));
+                    break;
+                case 'B':
+                    columns_.push_back(new BoolColumn(d));
+                    break;
+                case 'D':
+                    columns_.push_back(new DoubleColumn(d));
+                    break;
+                default:
+                    assert(false);
+            }
+        }
+    }
+
     virtual ~DataFrameBase() {
-        for (size_t i = 0; i < columns_->size(); i++) {
-            delete columns_->get(i);
+        for (size_t i = 0; i < columns_.size(); i++) {
+            delete columns_[i];
         }
         delete df_schema_;
-        delete columns_;
     }
 
     /** Returns the dataframe's schema. Modifying the schema after a dataframe
@@ -86,11 +112,9 @@ class DataFrameBase : public Object {
      * A nullptr colum is undefined. */
     void add_column(Column* col) {
         assert(col != nullptr);
-        // TODO: Should this be an assert?
-        if (col->size() == df_schema_->length()) {
-            df_schema_->add_column(col->get_type());
-            columns_->push_back(col->clone());
-        }
+        assert(col->size() == df_schema_->length());
+        df_schema_->add_column(col->get_type());
+        columns_.push_back(col->clone());
     }
 
     /** Return the value at the given column and row. Accessing rows or
@@ -98,22 +122,22 @@ class DataFrameBase : public Object {
     int get_int(size_t col, size_t row) {
         assert(col < df_schema_->width() && row < df_schema_->length());
         assert(df_schema_->col_type(col) == 'I');
-        return static_cast<Column*>(columns_->get(col))->as_int()->get(row);
+        return columns_[col]->as_int()->get(row);
     }
     bool get_bool(size_t col, size_t row) {
         assert(col < df_schema_->width() && row < df_schema_->length());
         assert(df_schema_->col_type(col) == 'B');
-        return static_cast<Column*>(columns_->get(col))->as_bool()->get(row);
+        return columns_[col]->as_bool()->get(row);
     }
     double get_double(size_t col, size_t row) {
         assert(col < df_schema_->width() && row < df_schema_->length());
         assert(df_schema_->col_type(col) == 'D');
-        return static_cast<Column*>(columns_->get(col))->as_double()->get(row);
+        return columns_[col]->as_double()->get(row);
     }
     String* get_string(size_t col, size_t row) {
         assert(col < df_schema_->width() && row < df_schema_->length());
         assert(df_schema_->col_type(col) == 'S');
-        return static_cast<Column*>(columns_->get(col))->as_string()->get(row);
+        return columns_[col]->as_string()->get(row);
     }
 
     /** Set the value at the given column and row to the given value.
@@ -122,22 +146,22 @@ class DataFrameBase : public Object {
     void set(size_t col, size_t row, int val) {
         assert(col < df_schema_->width() && row < df_schema_->length());
         assert(df_schema_->col_type(col) == 'I');
-        static_cast<Column*>(columns_->get(col))->as_int()->set(row, val);
+        columns_[col]->as_int()->set(row, val);
     }
     void set(size_t col, size_t row, bool val) {
         assert(col < df_schema_->width() && row < df_schema_->length());
         assert(df_schema_->col_type(col) == 'B');
-        static_cast<Column*>(columns_->get(col))->as_bool()->set(row, val);
+        columns_[col]->as_bool()->set(row, val);
     }
     void set(size_t col, size_t row, double val) {
         assert(col < df_schema_->width() && row < df_schema_->length());
         assert(df_schema_->col_type(col) == 'D');
-        static_cast<Column*>(columns_->get(col))->as_double()->set(row, val);
+        columns_[col]->as_double()->set(row, val);
     }
     void set(size_t col, size_t row, String* val) {
         assert(col < df_schema_->width() && row < df_schema_->length());
         assert(df_schema_->col_type(col) == 'S');
-        static_cast<Column*>(columns_->get(col))->as_string()->set(row, val);
+        columns_[col]->as_string()->set(row, val);
     }
 
     /** Set the fields of the given row object with values from the columns at
@@ -155,16 +179,16 @@ class DataFrameBase : public Object {
             char c_type = row.col_type(j);
             switch (c_type) {
                 case 'S':
-                    row.set(j, static_cast<Column*>(columns_->get(j))->as_string()->get(idx));
+                    row.set(j, columns_[j]->as_string()->get(idx));
                     break;
                 case 'B':
-                    row.set(j, static_cast<Column*>(columns_->get(j))->as_bool()->get(idx));
+                    row.set(j, columns_[j]->as_bool()->get(idx));
                     break;
                 case 'I':
-                    row.set(j, static_cast<Column*>(columns_->get(j))->as_int()->get(idx));
+                    row.set(j, columns_[j]->as_int()->get(idx));
                     break;
                 case 'D':
-                    row.set(j, static_cast<Column*>(columns_->get(j))->as_double()->get(idx));
+                    row.set(j, columns_[j]->as_double()->get(idx));
                     break;
                 default:
                     assert(false);
@@ -183,16 +207,16 @@ class DataFrameBase : public Object {
             char c_type = row.col_type(j);
             switch (c_type) {
                 case 'S':
-                    static_cast<Column*>(columns_->get(j))->push_back(row.get_string(j));
+                    columns_[j]->push_back(row.get_string(j));
                     break;
                 case 'B':
-                    static_cast<Column*>(columns_->get(j))->push_back(row.get_bool(j));
+                    columns_[j]->push_back(row.get_bool(j));
                     break;
                 case 'I':
-                    static_cast<Column*>(columns_->get(j))->push_back(row.get_int(j));
+                    columns_[j]->push_back(row.get_int(j));
                     break;
                 case 'D':
-                    static_cast<Column*>(columns_->get(j))->push_back(row.get_double(j));
+                    columns_[j]->push_back(row.get_double(j));
                     break;
                 default:
                     assert(false);
@@ -238,5 +262,12 @@ class DataFrameBase : public Object {
     void print() {
         PrintRower pr = PrintRower();
         map(pr);
+    }
+
+    void serialize(Serializer* s) {
+        df_schema_->serialize(s);
+        for (size_t i = 0; i < columns_.size(); i++) {
+            columns_[i]->serialize(s);
+        }
     }
 };

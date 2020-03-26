@@ -1,57 +1,9 @@
-// Lang::CwC
 #pragma once
-
+// Lang::CwC
 #include <assert.h>
-#include <stdio.h>
-#include <string.h>
 #include <vector>
-#include "../column.h"
-#include "../object.h"
-
-/**
- * Enum for the different types of SoR columns this code supports.
- */
-enum class ColumnType { STRING, INTEGER, DOUBLE, BOOL, UNKNOWN };
-
-/**
- * Converts the given ColumnType to a string.
- * @param type the column type
- * @return A string representing this column type. Do not free or modify this string.
- */
-const char* columnTypeToString(ColumnType type) {
-    switch (type) {
-        case ColumnType::STRING:
-            return "STRING";
-        case ColumnType::INTEGER:
-            return "INTEGER";
-        case ColumnType::DOUBLE:
-            return "DOUBLE";
-        case ColumnType::BOOL:
-            return "BOOL";
-        default:
-            return "UNKNOWN";
-    }
-}
-
-/**
- * Creates the right subclass of BaseColumn based on the given type.
- * @param type The type of column to create
- * @return The newly created column. Caller must free.
- */
-Column* makeColumnFromType(ColumnType type) {
-    switch (type) {
-        case ColumnType::STRING:
-            return new StringColumn();
-        case ColumnType::INTEGER:
-            return new IntColumn();
-        case ColumnType::DOUBLE:
-            return new DoubleColumn();
-        case ColumnType::BOOL:
-            return new BoolColumn();
-        default:
-            assert(false);
-    }
-}
+#include "dataframe/column.h"
+#include "util/object.h"
 
 /**
  * Represents a fixed-size set of columns of potentially different types.
@@ -101,8 +53,22 @@ class ColumnSet : public Object {
     virtual void initializeColumn(size_t which, ColumnType type) {
         assert(which < getLength());
         assert(_columns[which] == nullptr);
-        Column* col = makeColumnFromType(type);
-        _columns[which] = col;
+        switch (type) {
+            case ColumnType::STRING:
+                _columns[which] = new StringColumn();
+                break;
+            case ColumnType::INTEGER:
+                _columns[which] = new IntColumn();
+                break;
+            case ColumnType::DOUBLE:
+                _columns[which] = new DoubleColumn();
+                break;
+            case ColumnType::BOOL:
+                _columns[which] = new BoolColumn();
+                break;
+            default:
+                assert(false);
+        }
     }
 
     /**

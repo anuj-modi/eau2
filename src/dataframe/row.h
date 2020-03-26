@@ -1,9 +1,9 @@
 #pragma once
-#include "array.h"
 #include "fielder.h"
-#include "object.h"
 #include "schema.h"
-#include "string.h"
+#include "util/array.h"
+#include "util/object.h"
+#include "util/string.h"
 
 /*************************************************************************
  * Row::

@@ -14,5 +14,5 @@ int main(int argc, char** argv) {
     Client* c = new Client(ip, 4444, server_ip, 4444);
     c->run();
     delete c;
-    return(0);
+    return 0;
 }
