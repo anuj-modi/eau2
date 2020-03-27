@@ -579,7 +579,9 @@ class IntArray : public Object {
      */
     void serialize(Serializer* s) {
         s->add_size_t(size_);
-        s->add_buffer(items_, size_ * sizeof(int));
+        if (size_ > 0) {
+            s->add_buffer(items_, size_ * sizeof(int));
+        }
     }
 };
 
@@ -952,7 +954,9 @@ class BoolArray : public Object {
      */
     void serialize(Serializer* s) {
         s->add_size_t(size_);
-        s->add_buffer(items_, size_ * sizeof(bool));
+        if (size_ > 0) {
+            s->add_buffer(items_, size_ * sizeof(bool));
+        }
     }
 };
 
@@ -1247,6 +1251,8 @@ class DoubleArray : public Object {
      */
     void serialize(Serializer* s) {
         s->add_size_t(size_);
-        s->add_buffer(items_, size_ * sizeof(double));
+        if (size_ > 0) {
+            s->add_buffer(items_, size_ * sizeof(double));
+        }
     }
 };

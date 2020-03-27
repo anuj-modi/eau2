@@ -120,6 +120,7 @@ class Serializer : public Object {
     }
 
     void add_buffer(const void* buf, size_t num_bytes) {
+        assert(num_bytes > 0);
         assert(buf != nullptr);
         size_t new_size = size_ + num_bytes;
         if (new_size > capacity_) {
