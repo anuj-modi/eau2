@@ -23,7 +23,7 @@ class Row : public Object {
     /** Build a row following a schema. */
     Row(Schema& scm) : Object() {
         values_ = std::vector<Object*>();
-        types_ = std::vector<int>();
+        types_ = std::vector<char>();
         for (size_t i = 0; i < scm.width(); i++) {
             switch (scm.col_type(i)) {
                 case 'S':
