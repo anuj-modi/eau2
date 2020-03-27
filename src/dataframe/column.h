@@ -139,7 +139,7 @@ class Column : public Object {
         Key* new_k = new Key(buffer);
         segments_.push_back(new_k);
         Serializer s;
-        s.add_size_t(0); 
+        s.add_size_t(0);
         store_->put(new_k, new Value(s.get_bytes(), s.size()));
         curr_segment_size_ = 0;
     }
@@ -161,12 +161,12 @@ class IntColumn : public Column {
         if (curr_segment_size_ == SEGMENT_CAPACITY) {
             expand_();
         }
-        Serializer s;
         Value* v = store_->get(segments_.back());
-        if (v->size() > 0) {
-            s.add_buffer(v->get_bytes(), v->size());
-        }
-        s.add_int(val);
+        Deserializer d(v->get_bytes(), v->size());
+        IntArray temp(&d);
+        temp.push_back(val);
+        Serializer s;
+        temp.serialize(&s);
         store_->put(segments_.back(), new Value(s.get_bytes(), s.size()));
         delete v;
         size_ += 1;
@@ -180,8 +180,11 @@ class IntColumn : public Column {
         Key* k = segments_[segment_index];
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
-        IntArray* temp = new IntArray();
-        for (size_t i = 0; 0 < )
+        IntArray temp(&d);
+        delete k;
+        delete v;
+        return temp.get(index_in_seg);
+        // TODO may have memory issues
     }
 
     IntColumn* as_int() {
@@ -191,7 +194,16 @@ class IntColumn : public Column {
     /** Set value at idx. An out of bound idx is undefined.  */
     void set(size_t idx, int val) {
         assert(idx < size());
-        segments_[idx / SEGMENT_CAPACITY][idx % SEGMENT_CAPACITY] = val;
+        size_t segment_index = idx / SEGMENT_CAPACITY;
+        int index_in_seg = idx % SEGMENT_CAPACITY;
+        Key* k = segments_[segment_index];
+        Value* v = store_->get(k);
+        Deserializer d(v->get_bytes(), v->size());
+        IntArray temp(&d);
+        temp.set(index_in_seg, val);
+        Serializer s;
+        temp.serialize(&s);
+        store_->put(k, new Value(s.get_bytes(), s.size()));
     }
 
     virtual char get_type() {
@@ -199,18 +211,11 @@ class IntColumn : public Column {
     }
 
     virtual Column* clone() {
-        IntColumn* result = new IntColumn();
+        IntColumn* result = new IntColumn(store_);
         for (size_t i = 0; i < size(); i++) {
             result->push_back(get(i));
         }
         return result;
-    }
-
-    virtual void serialize(Serializer* s) {
-        s->add_size_t(size_);
-        for (size_t i = 0; i < size_; i++) {
-            s->add_int(get(i));
-        }
     }
 };
 
