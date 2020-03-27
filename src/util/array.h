@@ -301,7 +301,7 @@ class IntArray : public Object {
     /**
      * Constructs a DoubleArray from a Deserializer.
      */
-    IntArray(Deserializer* d) {
+    IntArray(Deserializer* d) : Object() {
         size_ = d->get_size_t();
         capacity_ = size_;
         items_ = (int*)d->get_buffer(size_ * sizeof(int));

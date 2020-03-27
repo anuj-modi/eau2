@@ -4,9 +4,7 @@
 #include <array>
 #include <vector>
 #include "store/kvstore.h"
-#include "util/object.h"
 #include "util/serial.h"
-#include "util/string.h"
 
 /**
  * Enum for the different types of SoR columns this code supports.
@@ -41,18 +39,28 @@ class Column : public Object {
         curr_segment_size_ = 0;
         segments_ = std::vector<Key*>();
         store_ = store;
-        StrBuff* buff = new StrBuff();
+        StrBuff buff;
         for (size_t i = 0; i < 10; i++) {
-            buff->c(ALPHA[rand() % ALPHA_SIZE])
+            buff.c(ALPHA[rand() % ALPHA_SIZE]);
         }
-        col_id = buff->get();
+        col_id = buff.get();
         expand_();
-        printf("%s", col_id->c_str());
+        // printf("%s", col_id->c_str());
     }
 
-    Column(Deserialize)
+    Column(KVStore* store, Deserializer* d) : Object() {
+        size_ = d->get_size_t();
+        curr_segment_size_ = d->get_size_t();
+        col_id = d->get_string();
+        segments_ = std::vector<Key*>();
+        for (size_t i = 0; i < target_size; i++) {
+            segments_.push_back(new Key(d));
+        }
+    }
 
-        virtual ~Column() {}
+    virtual ~Column() {
+        delete col_id;
+    }
 
     /** Type converters: Return same column under its actual type, or
      *  nullptr if of the wrong type.  */
@@ -80,31 +88,11 @@ class Column : public Object {
     }
 
     virtual void push_back(double val) {
-        if (curr_segment_size_ == SEGMENT_CAPACITY) {
-            expand_();
-        }
-        Serializer s;
-        Value* v = store_->get(segments_.back());
-        if (v->size() > 0) {
-            s.add_buffer(v->get_bytes(), v->size());
-        }
-        s.add_double(val);
-        store_->put(segments_.back(), new Value(s.get_bytes(), s.size()));
-        delete v;
+        assert(false);
     }
 
     virtual void push_back(String* val) {
-        if (curr_segment_size_ == SEGMENT_CAPACITY) {
-            expand_();
-        }
-        Serializer s;
-        Value* v = store_->get(segments_.back());
-        if (v->size() > 0) {
-            s.add_buffer(v->get_bytes(), v->size());
-        }
-        s.add_string(val);
-        store_->put(segments_.back(), new Value(s.get_bytes(), s.size()));
-        delete v;
+        assert(false);
     }
 
     /** Returns the number of elements in the column. */
@@ -130,12 +118,17 @@ class Column : public Object {
      * Serializes the column.
      */
     virtual void serialize(Serializer* s) {
-        assert(false);
+        s->add_size_t(size_);
+        s->add_size_t(curr_segment_size_);
+        s->add_string(col_id);
+        for (size_t i = 0; i < size_; i++) {
+            segments_[i]->serialize(s);
+        }
     }
 
     virtual void expand_() {
         char buffer[15];
-        snprintf(buffer, 15, "%s%zu", col_id, segments_.size() + 1);
+        snprintf(buffer, 15, "%s%zu", col_id->c_str(), segments_.size() + 1);
         Key* new_k = new Key(buffer);
         segments_.push_back(new_k);
         store_->put(new_k, new Value());
@@ -151,17 +144,6 @@ class IntColumn : public Column {
    public:
     IntColumn(KDStore* store) : Column(store) {}
 
-    // IntColumn(int n, ...) : IntColumn() {
-    //     va_list args;
-    //     va_start(args, n);
-    //     int val = 0;
-    //     for (int i = 0; i < n; i++) {
-    //         val = va_arg(args, int);
-    //         push_back(val);
-    //     }
-    //     va_end(args);
-    // }
-
     IntColumn(Deserializer* d) : IntColumn() {
         size_t num_items = d->get_size_t();
         for (size_t i = 0; i < num_items; i++) {
@@ -170,24 +152,6 @@ class IntColumn : public Column {
     }
 
     virtual ~IntColumn() {}
-
-    void expand_() {
-        if (num_segments_ == segments_capacity_) {
-            size_t new_capacity = num_segments_ * 2;
-            int** new_segments = new int*[new_capacity];
-            for (size_t i = 0; i < num_segments_; i++) {
-                new_segments[i] = segments_[i];
-            }
-
-            delete[] segments_;
-            segments_ = new_segments;
-            segments_capacity_ = new_capacity;
-        }
-
-        segments_[num_segments_] = new int[SEGMENT_CAPACITY];
-        capacity_ += SEGMENT_CAPACITY;
-        num_segments_ += 1;
-    }
 
     void push_back(int val) {
         if (curr_segment_size_ == SEGMENT_CAPACITY) {
@@ -201,6 +165,8 @@ class IntColumn : public Column {
         s.add_int(val);
         store_->put(segments_.back(), new Value(s.get_bytes(), s.size()));
         delete v;
+        size_ += 1;
+        curr_segment_size_ += 1;
     }
 
     int get(size_t idx) {
@@ -216,10 +182,6 @@ class IntColumn : public Column {
     void set(size_t idx, int val) {
         assert(idx < size());
         segments_[idx / SEGMENT_CAPACITY][idx % SEGMENT_CAPACITY] = val;
-    }
-
-    virtual size_t size() {
-        return size_;
     }
 
     virtual char get_type() {
@@ -242,338 +204,270 @@ class IntColumn : public Column {
     }
 };
 
-/*************************************************************************
- * BoolColumn::
- * Holds bool values.
- */
-class BoolColumn : public Column {
-   public:
-    size_t size_;
-    size_t capacity_;
-    size_t num_segments_;
-    size_t segments_capacity_;
-    bool** segments_;
+// /*************************************************************************
+//  * BoolColumn::
+//  * Holds bool values.
+//  */
+// class BoolColumn : public Column {
+//    public:
+//     size_t size_;
+//     size_t capacity_;
+//     size_t num_segments_;
+//     size_t segments_capacity_;
+//     bool** segments_;
 
-    BoolColumn() : Column() {
-        size_ = 0;
-        capacity_ = SEGMENT_CAPACITY;
-        num_segments_ = 1;
-        segments_capacity_ = 10;
-        segments_ = new bool*[segments_capacity_];
-        segments_[0] = new bool[SEGMENT_CAPACITY];
-    }
+//     BoolColumn() : Column() {
+//         size_ = 0;
+//         capacity_ = SEGMENT_CAPACITY;
+//         num_segments_ = 1;
+//         segments_capacity_ = 10;
+//         segments_ = new bool*[segments_capacity_];
+//         segments_[0] = new bool[SEGMENT_CAPACITY];
+//     }
 
-    BoolColumn(int n, ...) : BoolColumn() {
-        va_list args;
-        va_start(args, n);
-        bool val = false;
-        for (int i = 0; i < n; i++) {
-            val = va_arg(args, bool);
-            push_back(val);
-        }
-        va_end(args);
-    }
+//     BoolColumn(Deserializer* d) : BoolColumn() {
+//         size_t num_items = d->get_size_t();
+//         for (size_t i = 0; i < num_items; i++) {
+//             push_back(d->get_bool());
+//         }
+//     }
 
-    BoolColumn(Deserializer* d) : BoolColumn() {
-        size_t num_items = d->get_size_t();
-        for (size_t i = 0; i < num_items; i++) {
-            push_back(d->get_bool());
-        }
-    }
+//     virtual ~BoolColumn() {
+//         for (size_t i = 0; i < num_segments_; i++) {
+//             delete[] segments_[i];
+//         }
+//         delete[] segments_;
+//     }
 
-    virtual ~BoolColumn() {
-        for (size_t i = 0; i < num_segments_; i++) {
-            delete[] segments_[i];
-        }
-        delete[] segments_;
-    }
+//     void push_back(bool val) {
+//         if (curr_segment_size_ == SEGMENT_CAPACITY) {
+//             expand_();
+//         }
+//         Serializer s;
+//         Value* v = store_->get(segments_.back());
+//         if (v->size() > 0) {
+//             s.add_buffer(v->get_bytes(), v->size());
+//         }
+//         s.add_bool(val);
+//         store_->put(segments_.back(), new Value(s.get_bytes(), s.size()));
+//         delete v;
+//     }
 
-    void expand_() {
-        if (num_segments_ == segments_capacity_) {
-            size_t new_capacity = num_segments_ * 2;
-            bool** new_segments = new bool*[new_capacity];
-            for (size_t i = 0; i < num_segments_; i++) {
-                new_segments[i] = segments_[i];
-            }
+//     bool get(size_t idx) {
+//         assert(idx < size());
+//         return segments_[idx / SEGMENT_CAPACITY][idx % SEGMENT_CAPACITY];
+//     }
 
-            delete[] segments_;
-            segments_ = new_segments;
-            segments_capacity_ = new_capacity;
-        }
+//     BoolColumn* as_bool() {
+//         return this;
+//     }
 
-        segments_[num_segments_] = new bool[SEGMENT_CAPACITY];
-        capacity_ += SEGMENT_CAPACITY;
-        num_segments_ += 1;
-    }
+//     /** Set value at idx. An out of bound idx is undefined.  */
+//     void set(size_t idx, bool val) {
+//         assert(idx < size());
+//         segments_[idx / SEGMENT_CAPACITY][idx % SEGMENT_CAPACITY] = val;
+//     }
 
-    void push_back(bool val) {
-        if (size() == capacity_) {
-            expand_();
-        }
-        segments_[num_segments_ - 1][size_ % SEGMENT_CAPACITY] = val;
-        size_ += 1;
-    }
+//     virtual char get_type() {
+//         return 'B';
+//     }
 
-    bool get(size_t idx) {
-        assert(idx < size());
-        return segments_[idx / SEGMENT_CAPACITY][idx % SEGMENT_CAPACITY];
-    }
+//     virtual Column* clone() {
+//         BoolColumn* result = new BoolColumn();
+//         for (size_t i = 0; i < size(); i++) {
+//             result->push_back(get(i));
+//         }
+//         return result;
+//     }
+// };
 
-    BoolColumn* as_bool() {
-        return this;
-    }
+// /*************************************************************************
+//  * DoubleColumn::
+//  * Holds double values.
+//  */
+// class DoubleColumn : public Column {
+//    public:
+//     size_t size_;
+//     size_t capacity_;
+//     size_t num_segments_;
+//     size_t segments_capacity_;
+//     double** segments_;
 
-    /** Set value at idx. An out of bound idx is undefined.  */
-    void set(size_t idx, bool val) {
-        assert(idx < size());
-        segments_[idx / SEGMENT_CAPACITY][idx % SEGMENT_CAPACITY] = val;
-    }
+//     DoubleColumn() : Column() {
+//         size_ = 0;
+//         capacity_ = SEGMENT_CAPACITY;
+//         num_segments_ = 1;
+//         segments_capacity_ = 10;
+//         segments_ = new double*[segments_capacity_];
+//         segments_[0] = new double[SEGMENT_CAPACITY];
+//     }
 
-    virtual size_t size() {
-        return size_;
-    }
+//     DoubleColumn(Deserializer* d) : DoubleColumn() {
+//         size_t num_items = d->get_size_t();
+//         for (size_t i = 0; i < num_items; i++) {
+//             push_back(d->get_double());
+//         }
+//     }
 
-    virtual char get_type() {
-        return 'B';
-    }
+//     virtual ~DoubleColumn() {
+//         for (size_t i = 0; i < num_segments_; i++) {
+//             delete[] segments_[i];
+//         }
+//         delete[] segments_;
+//     }
 
-    virtual Column* clone() {
-        BoolColumn* result = new BoolColumn();
-        for (size_t i = 0; i < size(); i++) {
-            result->push_back(get(i));
-        }
-        return result;
-    }
+//     void push_back(double val) {
+//         if (curr_segment_size_ == SEGMENT_CAPACITY) {
+//             expand_();
+//         }
+//         Serializer s;
+//         Value* v = store_->get(segments_.back());
+//         if (v->size() > 0) {
+//             s.add_buffer(v->get_bytes(), v->size());
+//         }
+//         s.add_bool(val);
+//         store_->put(segments_.back(), new Value(s.get_bytes(), s.size()));
+//         delete v;
+//     }
 
-    virtual void serialize(Serializer* s) {
-        s->add_size_t(size_);
-        for (size_t i = 0; i < size_; i++) {
-            s->add_bool(get(i));
-        }
-    }
-};
+//     double get(size_t idx) {
+//         assert(idx < size());
+//         return segments_[idx / SEGMENT_CAPACITY][idx % SEGMENT_CAPACITY];
+//     }
 
-/*************************************************************************
- * DoubleColumn::
- * Holds double values.
- */
-class DoubleColumn : public Column {
-   public:
-    size_t size_;
-    size_t capacity_;
-    size_t num_segments_;
-    size_t segments_capacity_;
-    double** segments_;
+//     DoubleColumn* as_double() {
+//         return this;
+//     }
 
-    DoubleColumn() : Column() {
-        size_ = 0;
-        capacity_ = SEGMENT_CAPACITY;
-        num_segments_ = 1;
-        segments_capacity_ = 10;
-        segments_ = new double*[segments_capacity_];
-        segments_[0] = new double[SEGMENT_CAPACITY];
-    }
+//     /** Set value at idx. An out of bound idx is undefined.  */
+//     void set(size_t idx, double val) {
+//         assert(idx < size());
+//         segments_[idx / SEGMENT_CAPACITY][idx % SEGMENT_CAPACITY] = val;
+//     }
 
-    DoubleColumn(int n, ...) : DoubleColumn() {
-        va_list args;
-        va_start(args, n);
-        double val = 0;
-        for (int i = 0; i < n; i++) {
-            val = va_arg(args, double);
-            push_back(val);
-        }
-        va_end(args);
-    }
+//     virtual size_t size() {
+//         return size_;
+//     }
 
-    DoubleColumn(Deserializer* d) : DoubleColumn() {
-        size_t num_items = d->get_size_t();
-        for (size_t i = 0; i < num_items; i++) {
-            push_back(d->get_double());
-        }
-    }
+//     virtual char get_type() {
+//         return 'D';
+//     }
 
-    virtual ~DoubleColumn() {
-        for (size_t i = 0; i < num_segments_; i++) {
-            delete[] segments_[i];
-        }
-        delete[] segments_;
-    }
+//     virtual Column* clone() {
+//         DoubleColumn* result = new DoubleColumn();
+//         for (size_t i = 0; i < size(); i++) {
+//             result->push_back(get(i));
+//         }
+//         return result;
+//     }
 
-    void expand_() {
-        if (num_segments_ == segments_capacity_) {
-            size_t new_capacity = num_segments_ * 2;
-            double** new_segments = new double*[new_capacity];
-            for (size_t i = 0; i < num_segments_; i++) {
-                new_segments[i] = segments_[i];
-            }
+//     virtual void serialize(Serializer* s) {
+//         s->add_size_t(size_);
+//         for (size_t i = 0; i < size_; i++) {
+//             s->add_double(get(i));
+//         }
+//     }
+// };
 
-            delete[] segments_;
-            segments_ = new_segments;
-            segments_capacity_ = new_capacity;
-        }
+// // Other primitive column classes similar...
 
-        segments_[num_segments_] = new double[SEGMENT_CAPACITY];
-        capacity_ += SEGMENT_CAPACITY;
-        num_segments_ += 1;
-    }
+// /*************************************************************************
+//  * StringColumn::
+//  * Holds string pointers. The strings are external.  Nullptr is a valid
+//  * value.
+//  */
+// class StringColumn : public Column {
+//    public:
+//     size_t size_;
+//     size_t capacity_;
+//     size_t num_segments_;
+//     size_t segments_capacity_;
+//     String*** segments_;
 
-    void push_back(double val) {
-        if (size() == capacity_) {
-            expand_();
-        }
-        segments_[num_segments_ - 1][size_ % SEGMENT_CAPACITY] = val;
-        size_ += 1;
-    }
+//     StringColumn() : Column() {
+//         size_ = 0;
+//         capacity_ = SEGMENT_CAPACITY;
+//         num_segments_ = 1;
+//         segments_capacity_ = 10;
+//         segments_ = new String**[segments_capacity_];
+//         segments_[0] = new String*[SEGMENT_CAPACITY];
+//     }
 
-    double get(size_t idx) {
-        assert(idx < size());
-        return segments_[idx / SEGMENT_CAPACITY][idx % SEGMENT_CAPACITY];
-    }
+//     // StringColumn(int n, ...) : StringColumn() {
+//     //     va_list args;
+//     //     va_start(args, n);
+//     //     String* val = nullptr;
+//     //     for (int i = 0; i < n; i++) {
+//     //         val = va_arg(args, String*);
+//     //         push_back(val);
+//     //     }
+//     //     va_end(args);
+//     // }
 
-    DoubleColumn* as_double() {
-        return this;
-    }
+//     StringColumn(Deserializer* d) : StringColumn() {
+//         size_t num_items = d->get_size_t();
+//         for (size_t i = 0; i < num_items; i++) {
+//             push_back(d->get_string());
+//         }
+//     }
 
-    /** Set value at idx. An out of bound idx is undefined.  */
-    void set(size_t idx, double val) {
-        assert(idx < size());
-        segments_[idx / SEGMENT_CAPACITY][idx % SEGMENT_CAPACITY] = val;
-    }
+//     virtual ~StringColumn() {
+//         for (size_t i = 0; i < num_segments_; i++) {
+//             delete[] segments_[i];
+//         }
+//         delete[] segments_;
+//     }
 
-    virtual size_t size() {
-        return size_;
-    }
+//     void expand_() {
+//         if (num_segments_ == segments_capacity_) {
+//             size_t new_capacity = num_segments_ * 2;
+//             String*** new_segments = new String**[new_capacity];
+//             for (size_t i = 0; i < num_segments_; i++) {
+//                 new_segments[i] = segments_[i];
+//             }
 
-    virtual char get_type() {
-        return 'D';
-    }
+//             delete[] segments_;
+//             segments_ = new_segments;
+//             segments_capacity_ = new_capacity;
+//         }
 
-    virtual Column* clone() {
-        DoubleColumn* result = new DoubleColumn();
-        for (size_t i = 0; i < size(); i++) {
-            result->push_back(get(i));
-        }
-        return result;
-    }
+//         segments_[num_segments_] = new String*[SEGMENT_CAPACITY];
+//         capacity_ += SEGMENT_CAPACITY;
+//         num_segments_ += 1;
+//     }
 
-    virtual void serialize(Serializer* s) {
-        s->add_size_t(size_);
-        for (size_t i = 0; i < size_; i++) {
-            s->add_double(get(i));
-        }
-    }
-};
+//     void push_back(String* val) {
+//         if (size() == capacity_) {
+//             expand_();
+//         }
+//         segments_[num_segments_ - 1][size_ % SEGMENT_CAPACITY] = val;
+//         size_ += 1;
+//     }
 
-// Other primitive column classes similar...
+//     String* get(size_t idx) {
+//         assert(idx < size());
+//         return segments_[idx / SEGMENT_CAPACITY][idx % SEGMENT_CAPACITY];
+//     }
 
-/*************************************************************************
- * StringColumn::
- * Holds string pointers. The strings are external.  Nullptr is a valid
- * value.
- */
-class StringColumn : public Column {
-   public:
-    size_t size_;
-    size_t capacity_;
-    size_t num_segments_;
-    size_t segments_capacity_;
-    String*** segments_;
+//     StringColumn* as_string() {
+//         return this;
+//     }
 
-    StringColumn() : Column() {
-        size_ = 0;
-        capacity_ = SEGMENT_CAPACITY;
-        num_segments_ = 1;
-        segments_capacity_ = 10;
-        segments_ = new String**[segments_capacity_];
-        segments_[0] = new String*[SEGMENT_CAPACITY];
-    }
+//     /** Set value at idx. An out of bound idx is undefined.  */
+//     void set(size_t idx, String* val) {
+//         assert(idx < size());
+//         segments_[idx / SEGMENT_CAPACITY][idx % SEGMENT_CAPACITY] = val;
+//     }
 
-    StringColumn(int n, ...) : StringColumn() {
-        va_list args;
-        va_start(args, n);
-        String* val = nullptr;
-        for (int i = 0; i < n; i++) {
-            val = va_arg(args, String*);
-            push_back(val);
-        }
-        va_end(args);
-    }
+//     virtual char get_type() {
+//         return 'S';
+//     }
 
-    StringColumn(Deserializer* d) : StringColumn() {
-        size_t num_items = d->get_size_t();
-        for (size_t i = 0; i < num_items; i++) {
-            push_back(d->get_string());
-        }
-    }
-
-    virtual ~StringColumn() {
-        for (size_t i = 0; i < num_segments_; i++) {
-            delete[] segments_[i];
-        }
-        delete[] segments_;
-    }
-
-    void expand_() {
-        if (num_segments_ == segments_capacity_) {
-            size_t new_capacity = num_segments_ * 2;
-            String*** new_segments = new String**[new_capacity];
-            for (size_t i = 0; i < num_segments_; i++) {
-                new_segments[i] = segments_[i];
-            }
-
-            delete[] segments_;
-            segments_ = new_segments;
-            segments_capacity_ = new_capacity;
-        }
-
-        segments_[num_segments_] = new String*[SEGMENT_CAPACITY];
-        capacity_ += SEGMENT_CAPACITY;
-        num_segments_ += 1;
-    }
-
-    void push_back(String* val) {
-        if (size() == capacity_) {
-            expand_();
-        }
-        segments_[num_segments_ - 1][size_ % SEGMENT_CAPACITY] = val;
-        size_ += 1;
-    }
-
-    String* get(size_t idx) {
-        assert(idx < size());
-        return segments_[idx / SEGMENT_CAPACITY][idx % SEGMENT_CAPACITY];
-    }
-
-    StringColumn* as_string() {
-        return this;
-    }
-
-    /** Set value at idx. An out of bound idx is undefined.  */
-    void set(size_t idx, String* val) {
-        assert(idx < size());
-        segments_[idx / SEGMENT_CAPACITY][idx % SEGMENT_CAPACITY] = val;
-    }
-
-    virtual size_t size() {
-        return size_;
-    }
-
-    virtual char get_type() {
-        return 'S';
-    }
-
-    virtual Column* clone() {
-        StringColumn* result = new StringColumn();
-        for (size_t i = 0; i < size(); i++) {
-            result->push_back(get(i));
-        }
-        return result;
-    }
-
-    virtual void serialize(Serializer* s) {
-        s->add_size_t(size_);
-        for (size_t i = 0; i < size_; i++) {
-            s->add_string(get(i));
-        }
-    }
-};
+//     virtual Column* clone() {
+//         StringColumn* result = new StringColumn();
+//         for (size_t i = 0; i < size(); i++) {
+//             result->push_back(get(i));
+//         }
+//         return result;
+//     }
+// };

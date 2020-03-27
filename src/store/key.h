@@ -1,6 +1,7 @@
 #pragma once
 #include "util/object.h"
 #include "util/string.h"
+#include "util/serial.h"
 
 /**
  * Array: Represents a key in a key value store.
@@ -18,12 +19,27 @@ class Key : public Object {
 
     Key(const char* k) : Key(k, 0) {}
 
+    Key(Deserializer* d) : Object() {
+        k_ = d->get_string();
+        node_ = d->get_size_t();
+    }
+
     virtual ~Key() {
         delete k_;
     }
 
     /**
+     * Sets the node number.
+     * @arg n  the node number
+     */
+    void set_node(size_t n) {
+        node_ = n;
+    }
+
+    /**
      * Checks if this key is equal to another object.
+     * Keys are equal if their String values are the same
+     * but they have different node numbers.
      * @arg other  the other object
      * @return if the two are equal
      */
@@ -31,11 +47,28 @@ class Key : public Object {
         if (other == this) return true;
         Key* o = dynamic_cast<Key*>(other);
         if (o == nullptr) return false;
-        return k_->equals(o->k_) && node_ == o->node_;
+        return k_->equals(o->k_);
     }
 
     /** Compute a hash for this key. */
     size_t hash_me() {
         return k_->hash() * (node_ + 1);
+    }
+
+    /**
+     * Makes a copy of the key.
+     * @return the copy
+     */
+    Key* clone() {
+        return new Key(k_->c_str(), node_);
+    }
+
+    /**
+     * Serializes the key.
+     * @arg s  the serializer
+     */
+    void serialize(Serializer* s) {
+        s->add_string(k_);
+        s->add_size_t(node_);
     }
 };

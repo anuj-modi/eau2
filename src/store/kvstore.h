@@ -26,6 +26,7 @@ class KVStore : public Object {
 
     /**
      * Gets the value at the given key.
+     * Returns a copy of the value.
      * @arg k  the key
      * @return the value
      */
@@ -46,10 +47,11 @@ class KVStore : public Object {
 
     /**
      * Puts the value at the given key.
+     * Copies the Key and consumes the Value.
      * @arg k  the key to put the value at
      * @arg v  the value to put in the store
      */
     virtual void put(Key* k, Value* v) {
-        items_->add(k, v);
+        items_->add(k->clone(), v);
     }
 };
