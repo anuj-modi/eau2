@@ -142,6 +142,7 @@ class Column : public Object {
         Serializer s;
         s.add_size_t(0);
         store_->put(new_k, new Value(s.get_bytes(), s.size()));
+        delete new_k;
         curr_segment_size_ = 0;
     }
 };
