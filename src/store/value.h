@@ -11,10 +11,15 @@ class Value : public Object {
     char* blob_;
     size_t size_;
 
+    Value() : Value(nullptr, 0) {}
+
     Value(char* blob, size_t size) : Value(false, blob, size) {}
 
     Value(bool steal, char* blob, size_t size) : Object() {
-        if (steal) {
+        if (blob == nullptr || size == 0) {
+            blob_ = nullptr;
+            size_ = 0;
+        } else if (steal) {
             blob_ = blob;
             size_ = size;
         } else {
@@ -25,11 +30,14 @@ class Value : public Object {
     }
 
     virtual ~Value() {
-        delete[] blob_;
+        if (size_ > 0) {
+            delete[] blob_;
+        }
     }
 
     /**
      * Gets the data stored in the value object.
+     * Returns a nullptr if Value is empty
      * @return the data as bytes
      */
     char* get_bytes() {
@@ -40,7 +48,7 @@ class Value : public Object {
      * Gets the size of the data stored in the value object.
      * @return the number of bytes
      */
-    size_t get_size() {
+    size_t size() {
         return size_;
     }
 
@@ -59,8 +67,16 @@ class Value : public Object {
     /** Compute a hash for this key. */
     size_t hash_me() {
         size_t hash = 0;
-        for (size_t i = 0; i < size_; ++i)
-            hash = blob_[i] + (hash << 6) + (hash << 16) - hash;
+        for (size_t i = 0; i < size_; ++i) hash = blob_[i] + (hash << 6) + (hash << 16) - hash;
         return hash;
+    }
+
+    // TODO test Value clone method
+    /**
+     * Makes a copy of the value.
+     * @return the copy
+     */
+    Value* clone() {
+        return new Value(blob_, size_);
     }
 };

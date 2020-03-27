@@ -30,7 +30,7 @@ class KVStore : public Object {
      * @return the value
      */
     virtual Value* get(Key* k) {
-        return static_cast<Value*>(items_->get(k));
+        return static_cast<Value*>(items_->get(k))->clone();
     }
 
     /**

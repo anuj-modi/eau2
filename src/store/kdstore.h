@@ -30,7 +30,7 @@ class KDStore : public Object {
      */
     DataFrame* get(Key* k) {
         Value* v = store_->get(k);
-        Deserializer d(v->get_bytes(), v->get_size());
+        Deserializer d(v->get_bytes(), v->size());
         DataFrame* df = new DataFrame(&d);
         return df;
     }
@@ -42,7 +42,7 @@ class KDStore : public Object {
      */
     DataFrame* wait_and_get(Key* k) {
         Value* v = store_->wait_and_get(k);
-        Deserializer d(v->get_bytes(), v->get_size());
+        Deserializer d(v->get_bytes(), v->size());
         DataFrame* df = new DataFrame(&d);
         return df;
     }
