@@ -169,12 +169,13 @@ class FilterGreater102 : public Rower {
  */
 TEST_CASE("Add column to dataframe is copy", "[column][dataframe]") {
     Schema s("S");
-    DataFrame df(s);
+    KVStore kv;
+    DataFrame df(s, &kv);
     Row r = Row(df.get_schema());
     String* str = new String("Test");
     r.set(0, str);
     df.add_row(r);
-    IntColumn* col = new IntColumn();
+    IntColumn* col = new IntColumn(&kv);
     col->push_back(4);
     df.add_column(col);
     col->as_int()->set(0, 8);
@@ -188,14 +189,15 @@ TEST_CASE("Add column to dataframe is copy", "[column][dataframe]") {
 // Tests that constructor for dataframe does not copy over rows.
 TEST_CASE("dataframe constructor doesn't copy rows", "[dataframe]") {
     Schema s("I");
-    DataFrame df(s);
+    KVStore kv;
+    DataFrame df(s, &kv);
     Row r = Row(df.get_schema());
     for (int i = 0; i < 10; i++) {
         r.set(0, i);
         df.add_row(r);
     }
-    DataFrame df2(df);
-    DataFrame df3(df.get_schema());
+    DataFrame df2(df, &kv);
+    DataFrame df3(df.get_schema(), &kv);
 
     REQUIRE(df.nrows() == 10);
     REQUIRE(df2.nrows() == 0);
@@ -205,8 +207,9 @@ TEST_CASE("dataframe constructor doesn't copy rows", "[dataframe]") {
 // tests that running map works
 TEST_CASE("map works", "[dataframe]") {
     Schema s("ISD");
-    DataFrame df(s);
-    BoolColumn* b = new BoolColumn();
+    KVStore kv;
+    DataFrame df(s, &kv);
+    BoolColumn* b = new BoolColumn(&kv);
     df.add_column(b);
     Row r = Row(df.get_schema());
     String* str = new String("Test");
@@ -239,8 +242,9 @@ TEST_CASE("map works", "[dataframe]") {
 // tests that running filter works
 TEST_CASE("filter works", "[dataframe]") {
     Schema s("ISD");
-    DataFrame df(s);
-    BoolColumn* b = new BoolColumn();
+    KVStore kv;
+    DataFrame df(s, &kv);
+    BoolColumn* b = new BoolColumn(&kv);
     df.add_column(b);
     Row r = Row(df.get_schema());
     String* str = new String("Test");
@@ -273,8 +277,9 @@ TEST_CASE("filter works", "[dataframe]") {
 // test adding column to the dataframe
 TEST_CASE("adding column to dataframe", "[dataframe]") {
     Schema s("ISD");
-    DataFrame df(s);
-    BoolColumn* b = new BoolColumn();
+    KVStore kv;
+    DataFrame df(s, &kv);
+    BoolColumn* b = new BoolColumn(&kv);
     df.add_column(b);
 
     REQUIRE(df.ncols() == 4);
@@ -286,7 +291,8 @@ TEST_CASE("adding column to dataframe", "[dataframe]") {
 // test adding a row to the dataframe
 TEST_CASE("adding row to dataframe", "[dataframe]") {
     Schema s("IDB");
-    DataFrame df(s);
+    KVStore kv;
+    DataFrame df(s, &kv);
     Row r = Row(df.get_schema());
     r.set(0, 8);
     r.set(1, 8.0f);
@@ -299,7 +305,8 @@ TEST_CASE("adding row to dataframe", "[dataframe]") {
 // setting and getting a value in a dataframe
 TEST_CASE("setting and getting values", "[dataframe]") {
     Schema s("ISDB");
-    DataFrame df(s);
+    KVStore kv;
+    DataFrame df(s, &kv);
     Row r = Row(df.get_schema());
     String* str = new String("Test");
     String* str2 = new String("ZZZZZZZZ");
@@ -338,7 +345,8 @@ TEST_CASE("setting and getting values", "[dataframe]") {
 // tests that running pmap works with equally divided dataframe
 TEST_CASE("pmap works evenly distributed", "[dataframe]") {
     Schema s("ISDB");
-    DataFrame df(s);
+    KVStore kv;
+    DataFrame df(s, &kv);
     Row r = Row(df.get_schema());
     String* str = new String("Test");
     String* str2 = new String("ZZZZZZZZ");
@@ -373,7 +381,8 @@ TEST_CASE("pmap works evenly distributed", "[dataframe]") {
 // tests that running pmap works with unequally divided dataframe
 TEST_CASE("pmap works unevenly distributed", "[dataframe]") {
     Schema s("ISDB");
-    DataFrame df(s);
+    KVStore kv;
+    DataFrame df(s, &kv);
     Row r = Row(df.get_schema());
     String* str = new String("Test");
     String* str2 = new String("ZZZZZZZZ");

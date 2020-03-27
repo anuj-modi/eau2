@@ -132,10 +132,10 @@ class MaxRower : public Rower {
 
 class ConcatStrRower : public Rower {
    public:
-    StringColumn* concat_strs;
+    StringArray* concat_strs;
 
     ConcatStrRower() : Rower() {
-        concat_strs = new StringColumn();
+        concat_strs = new StringArray();
     }
 
     virtual ~ConcatStrRower() {

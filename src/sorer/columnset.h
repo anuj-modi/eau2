@@ -50,21 +50,21 @@ class ColumnSet : public Object {
      * @param which The index for the column to initialize
      * @param type The type of column to create
      */
-    virtual void initializeColumn(size_t which, ColumnType type) {
+    virtual void initializeColumn(size_t which, ColumnType type, KVStore* store) {
         assert(which < getLength());
         assert(_columns[which] == nullptr);
         switch (type) {
             case ColumnType::STRING:
-                _columns[which] = new StringColumn();
+                _columns[which] = new StringColumn(store);
                 break;
             case ColumnType::INTEGER:
-                _columns[which] = new IntColumn();
+                _columns[which] = new IntColumn(store);
                 break;
             case ColumnType::DOUBLE:
-                _columns[which] = new DoubleColumn();
+                _columns[which] = new DoubleColumn(store);
                 break;
             case ColumnType::BOOL:
-                _columns[which] = new BoolColumn();
+                _columns[which] = new BoolColumn(store);
                 break;
             default:
                 assert(false);

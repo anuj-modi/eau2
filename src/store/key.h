@@ -28,6 +28,7 @@ class Key : public Object {
         delete k_;
     }
 
+    // TODO test key set_node
     /**
      * Sets the node number.
      * @arg n  the node number
@@ -55,6 +56,7 @@ class Key : public Object {
         return k_->hash() * (node_ + 1);
     }
 
+    // TODO test key clone
     /**
      * Makes a copy of the key.
      * @return the copy

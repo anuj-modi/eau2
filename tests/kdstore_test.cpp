@@ -6,11 +6,11 @@ TEST_CASE("key in kdstore", "[kdstore]") {
     Key* k_1 = new Key("one");
     Key* k_2 = new Key("two");
     Schema s("I");
-    DataFrame df(s);
+    KVStore kv;
+    DataFrame df(s, &kv);
     Row r(s);
     r.set(0, 5);
     df.add_row(r);
-    KVStore kv;
     KDStore kd(&kv);
     kd.put(k_1, &df);
 
@@ -24,11 +24,11 @@ TEST_CASE("key in kdstore", "[kdstore]") {
 TEST_CASE("put and get a value in kdstore", "[kdstore]") {
     Key* k_1 = new Key("one");
     Schema s("I");
-    DataFrame df(s);
+    KVStore kv;
+    DataFrame df(s, &kv);
     Row r(s);
     r.set(0, 5);
     df.add_row(r);
-    KVStore kv;
     KDStore kd(&kv);
     kd.put(k_1, &df);
     DataFrame* copy_df = kd.get(k_1);

@@ -17,21 +17,21 @@ class DataFrame : public DataFrameBase {
    public:
     /** Create a data frame with the same columns as the given df but with no
      * rows or rownmaes */
-    DataFrame(DataFrame& df, KDStore* store) : DataFrameBase(df, store) {}
+    DataFrame(DataFrame& df, KVStore* store) : DataFrameBase(df, store) {}
 
     /** Create a data frame from a schema and columns. All columns are created
      * empty. */
-    DataFrame(Schema& schema, KDStore* store) : DataFrameBase(schema, store) {}
+    DataFrame(Schema& schema, KVStore* store) : DataFrameBase(schema, store) {}
 
     /**
      * Creates a data frame from a given set of columns.
      */
-    DataFrame(std::vector<Column*> columns, KDStore* store) : DataFrameBase(columns, store) {}
+    DataFrame(std::vector<Column*> columns, KVStore* store) : DataFrameBase(columns, store) {}
 
     /**
      * Creates a data frame from the given deserializer.
      */
-    DataFrame(Deserializer* d, KDStore* store) : DataFrameBase(d, store) {}
+    DataFrame(Deserializer* d, KVStore* store) : DataFrameBase(d, store) {}
 
     virtual ~DataFrame() {}
 

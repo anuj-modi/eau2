@@ -17,7 +17,8 @@ static bool double_equal(double f1, double f2) {
 
 // tests for an Int Column
 TEST_CASE("test_int_column", "[column]") {
-    IntColumn* ic = new IntColumn();
+    KVStore kv;
+    IntColumn* ic = new IntColumn(&kv);
     int size = 10000;
     for (int i = 0; i < size; i++) {
         ic->push_back(i);
@@ -48,7 +49,8 @@ TEST_CASE("test_int_column", "[column]") {
 
 // tests for a Float Column
 TEST_CASE("test_double_column", "[column]") {
-    DoubleColumn* fc = new DoubleColumn();
+    KVStore kv;
+    DoubleColumn* fc = new DoubleColumn(&kv);
     int size = 1000;
     for (int i = 0; i < size; i++) {
         fc->push_back(i * 1.5f);
@@ -78,7 +80,8 @@ TEST_CASE("test_double_column", "[column]") {
 }
 // tests for an Int Column
 TEST_CASE("test_bool_column", "[column]") {
-    BoolColumn* bc = new BoolColumn();
+    KVStore kv;
+    BoolColumn* bc = new BoolColumn(&kv);
     int size = 10000;
     for (int i = 0; i < size; i++) {
         bool val = i % 2 ? false : true;
@@ -115,7 +118,8 @@ TEST_CASE("test_bool_column", "[column]") {
 }
 
 TEST_CASE("test_string_column", "[column]") {
-    StringColumn* sc = new StringColumn();
+    KVStore kv;
+    StringColumn* sc = new StringColumn(&kv);
     String* a = new String("a");
     String* b = new String("b");
     String* c = new String("c");

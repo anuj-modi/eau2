@@ -71,7 +71,7 @@ class Value : public Object {
         return hash;
     }
 
-    // TODO test Value clone method
+    // TODO test Value clone
     /**
      * Makes a copy of the value.
      * @return the copy

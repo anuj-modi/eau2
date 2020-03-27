@@ -17,19 +17,19 @@ class DataFrameBase : public Object {
    public:
     std::vector<Column*> columns_;
     Schema* df_schema_;
-    KDStore* store_;
+    KVStore* store_;
 
     /**
      * Create a data frame with the same columns as the given df but with no
      * rows or rownmaes
      */
-    DataFrameBase(DataFrameBase& df, KDStore* store) : DataFrameBase(df.get_schema(), store) {}
+    DataFrameBase(DataFrameBase& df, KVStore* store) : DataFrameBase(df.get_schema(), store) {}
 
     /**
      * Create a data frame from a schema and columns. All columns are created
      * empty.
      */
-    DataFrameBase(Schema& schema, KDStore* store) : Object() {
+    DataFrameBase(Schema& schema, KVStore* store) : Object() {
         df_schema_ = new Schema();
         columns_ = std::vector<Column*>();
         store_ = store;
@@ -38,16 +38,16 @@ class DataFrameBase : public Object {
             df_schema_->add_column(type);
             switch (type) {
                 case 'S':
-                    columns_.push_back(new StringColumn(store->get_kvstore()));
+                    columns_.push_back(new StringColumn(store));
                     break;
                 case 'I':
-                    columns_.push_back(new IntColumn(store->get_kvstore()));
+                    columns_.push_back(new IntColumn(store));
                     break;
                 case 'B':
-                    columns_.push_back(new BoolColumn(store->get_kvstore()));
+                    columns_.push_back(new BoolColumn(store));
                     break;
                 case 'D':
-                    columns_.push_back(new DoubleColumn(store->get_kvstore()));
+                    columns_.push_back(new DoubleColumn(store));
                     break;
                 default:
                     assert(false);
@@ -58,7 +58,7 @@ class DataFrameBase : public Object {
     /**
      * Creates a data frame from a given set of columns.
      */
-    DataFrameBase(std::vector<Column*> columns, KDStore* store) : Object() {
+    DataFrameBase(std::vector<Column*> columns, KVStore* store) : Object() {
         size_t length = columns[0]->size();
         for (size_t i = 1; i < columns.size(); i++) {
             assert(columns[i]->size() == length);
@@ -75,22 +75,22 @@ class DataFrameBase : public Object {
     /**
      * Creates a data frame from the given deserializer.
      */
-    DataFrameBase(Deserializer* d, KDStore* store) : Object() {
+    DataFrameBase(Deserializer* d, KVStore* store) : Object() {
         df_schema_ = new Schema(d);
         store_ = store;
         for (size_t i = 0; i < df_schema_->width(); i++) {
             switch (df_schema_->col_type(i)) {
                 case 'S':
-                    columns_.push_back(new StringColumn(store->get_kvstore(), d));
+                    columns_.push_back(new StringColumn(store, d));
                     break;
                 case 'I':
-                    columns_.push_back(new IntColumn(store->get_kvstore(), d));
+                    columns_.push_back(new IntColumn(store, d));
                     break;
                 case 'B':
-                    columns_.push_back(new BoolColumn(store->get_kvstore(), d));
+                    columns_.push_back(new BoolColumn(store, d));
                     break;
                 case 'D':
-                    columns_.push_back(new DoubleColumn(store->get_kvstore(), d));
+                    columns_.push_back(new DoubleColumn(store, d));
                     break;
                 default:
                     assert(false);

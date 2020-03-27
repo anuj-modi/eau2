@@ -18,12 +18,13 @@ static bool double_equal(double f1, double f2) {
 
 TEST_CASE("test simple sor", "[sor]") {
     FILE* file = fopen("./data/data1.sor", "r");
-    SorParser parser(file);
+    KVStore kv;
+    SorParser parser(file, &kv);
     parser.guessSchema();
     parser.parseFile();
     ColumnSet* cols = parser.getColumnSet();
     String* result_str = new String("string with > inside ");
-    DataFrame df(cols->getColumns());
+    DataFrame df(cols->getColumns(), &kv);
 
     REQUIRE(df.ncols() == 5);
     REQUIRE(df.nrows() == 1);
@@ -40,11 +41,12 @@ TEST_CASE("test simple sor", "[sor]") {
 
 TEST_CASE("test single value in sor file", "[sor]") {
     FILE* file = fopen("./data/data2.sor", "r");
-    SorParser parser(file);
+    KVStore kv;
+    SorParser parser(file, &kv);
     parser.guessSchema();
     parser.parseFile();
     ColumnSet* cols = parser.getColumnSet();
-    DataFrame df(cols->getColumns());
+    DataFrame df(cols->getColumns(), &kv);
 
     REQUIRE(df.ncols() == 1);
     REQUIRE(df.nrows() == 1);
@@ -55,11 +57,12 @@ TEST_CASE("test single value in sor file", "[sor]") {
 
 TEST_CASE("test type inferencing", "[sor]") {
     FILE* file = fopen("./data/data3.sor", "r");
-    SorParser parser(file);
+    KVStore kv;
+    SorParser parser(file, &kv);
     parser.guessSchema();
     parser.parseFile();
     ColumnSet* cols = parser.getColumnSet();
-    DataFrame df(cols->getColumns());
+    DataFrame df(cols->getColumns(), &kv);
 
     REQUIRE(df.ncols() == 4);
     REQUIRE(df.nrows() == 4);
@@ -77,11 +80,12 @@ TEST_CASE("test type inferencing", "[sor]") {
 
 TEST_CASE("test sor file over 500 lines", "[sor]") {
     FILE* file = fopen("./data/data4.sor", "r");
-    SorParser parser(file);
+    KVStore kv;
+    SorParser parser(file, &kv);
     parser.guessSchema();
     parser.parseFile();
     ColumnSet* cols = parser.getColumnSet();
-    DataFrame df(cols->getColumns());
+    DataFrame df(cols->getColumns(), &kv);
     String* s = new String("0.4");
 
     REQUIRE(df.ncols() == 4);

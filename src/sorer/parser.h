@@ -342,6 +342,7 @@ class SorParser : public Object {
     ColumnType* _typeGuesses;
     /** The number of columns we have detected */
     size_t _num_columns;
+    KVStore* _store;
 
     /**
      * Creates a new SorParser with the given parameters.
@@ -350,14 +351,15 @@ class SorParser : public Object {
      * @param file_end The ending index
      * @param file_size The total size of the file (as obtained by e.g. ftell)
      */
-    SorParser(FILE* file, size_t file_start, size_t file_end, size_t file_size) : Object() {
+    SorParser(FILE* file, size_t file_start, size_t file_end, size_t file_size, KVStore* store) : Object() {
         _reader = new LineReader(file, file_start, file_end, file_size);
         _columns = nullptr;
         _typeGuesses = nullptr;
         _num_columns = 0;
+        _store = store;
     }
 
-    SorParser(FILE* file) : Object() {
+    SorParser(FILE* file, KVStore* store) : Object() {
         size_t file_start = 0;
         fseek(file, 0, SEEK_END);
         size_t file_size = ftell(file);
@@ -367,6 +369,7 @@ class SorParser : public Object {
         _columns = nullptr;
         _typeGuesses = nullptr;
         _num_columns = 0;
+        _store = store;
     }
 
     /**
@@ -567,7 +570,7 @@ class SorParser : public Object {
                 // Assume bool for anything we still don't have a guess for as per spec
                 _typeGuesses[i] = ColumnType::BOOL;
             }
-            _columns->initializeColumn(i, _typeGuesses[i]);
+            _columns->initializeColumn(i, _typeGuesses[i], _store);
         }
     }
 
