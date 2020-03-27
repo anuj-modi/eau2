@@ -17,35 +17,37 @@ class DataFrameBase : public Object {
    public:
     std::vector<Column*> columns_;
     Schema* df_schema_;
+    KDStore* store_;
 
     /**
      * Create a data frame with the same columns as the given df but with no
      * rows or rownmaes
      */
-    DataFrameBase(DataFrameBase& df) : DataFrameBase(df.get_schema()) {}
+    DataFrameBase(DataFrameBase& df, KDStore* store) : DataFrameBase(df.get_schema(), store) {}
 
     /**
      * Create a data frame from a schema and columns. All columns are created
      * empty.
      */
-    DataFrameBase(Schema& schema) : Object() {
+    DataFrameBase(Schema& schema, KDStore* store) : Object() {
         df_schema_ = new Schema();
         columns_ = std::vector<Column*>();
+        store_ = store;
         for (size_t i = 0; i < schema.width(); i++) {
             char type = schema.col_type(i);
             df_schema_->add_column(type);
             switch (type) {
                 case 'S':
-                    columns_.push_back(new StringColumn());
+                    columns_.push_back(new StringColumn(store->get_kvstore()));
                     break;
                 case 'I':
-                    columns_.push_back(new IntColumn());
+                    columns_.push_back(new IntColumn(store->get_kvstore()));
                     break;
                 case 'B':
-                    columns_.push_back(new BoolColumn());
+                    columns_.push_back(new BoolColumn(store->get_kvstore()));
                     break;
                 case 'D':
-                    columns_.push_back(new DoubleColumn());
+                    columns_.push_back(new DoubleColumn(store->get_kvstore()));
                     break;
                 default:
                     assert(false);
@@ -56,11 +58,12 @@ class DataFrameBase : public Object {
     /**
      * Creates a data frame from a given set of columns.
      */
-    DataFrameBase(std::vector<Column*> columns) : Object() {
+    DataFrameBase(std::vector<Column*> columns, KDStore* store) : Object() {
         size_t length = columns[0]->size();
         for (size_t i = 1; i < columns.size(); i++) {
             assert(columns[i]->size() == length);
         }
+        store_ = store;
         df_schema_ = new Schema();
         df_schema_->add_rows(length);
         columns_ = std::vector<Column*>();
@@ -72,21 +75,22 @@ class DataFrameBase : public Object {
     /**
      * Creates a data frame from the given deserializer.
      */
-    DataFrameBase(Deserializer* d) : Object() {
+    DataFrameBase(Deserializer* d, KDStore* store) : Object() {
         df_schema_ = new Schema(d);
+        store_ = store;
         for (size_t i = 0; i < df_schema_->width(); i++) {
             switch (df_schema_->col_type(i)) {
                 case 'S':
-                    columns_.push_back(new StringColumn(d));
+                    columns_.push_back(new StringColumn(store->get_kvstore(), d));
                     break;
                 case 'I':
-                    columns_.push_back(new IntColumn(d));
+                    columns_.push_back(new IntColumn(store->get_kvstore(), d));
                     break;
                 case 'B':
-                    columns_.push_back(new BoolColumn(d));
+                    columns_.push_back(new BoolColumn(store->get_kvstore(), d));
                     break;
                 case 'D':
-                    columns_.push_back(new DoubleColumn(d));
+                    columns_.push_back(new DoubleColumn(store->get_kvstore(), d));
                     break;
                 default:
                     assert(false);
@@ -246,17 +250,17 @@ class DataFrameBase : public Object {
 
     /** Create a new dataframe, constructed from rows for which the given
      * Rower returned true from its accept method. */
-    virtual DataFrameBase* filter(Rower& r) {
-        DataFrameBase* new_df = new DataFrameBase(*df_schema_);
-        for (size_t i = 0; i < df_schema_->length(); i++) {
-            Row curr_row = Row(*df_schema_);
-            fill_row(i, curr_row);
-            if (r.accept(curr_row)) {
-                new_df->add_row(curr_row);
-            }
-        }
-        return new_df;
-    }
+    // virtual DataFrameBase* filter(Rower& r) {
+    //     DataFrameBase* new_df = new DataFrameBase(*df_schema_, store_);
+    //     for (size_t i = 0; i < df_schema_->length(); i++) {
+    //         Row curr_row = Row(*df_schema_);
+    //         fill_row(i, curr_row);
+    //         if (r.accept(curr_row)) {
+    //             new_df->add_row(curr_row);
+    //         }
+    //     }
+    //     return new_df;
+    // }
 
     /** Print the dataframe in SoR format to standard output. */
     void print() {

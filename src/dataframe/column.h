@@ -12,6 +12,7 @@
  */
 enum class ColumnType { STRING, INTEGER, DOUBLE, BOOL, UNKNOWN };
 
+class KDStore;
 class IntColumn;
 class DoubleColumn;
 class BoolColumn;

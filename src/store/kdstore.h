@@ -31,8 +31,16 @@ class KDStore : public Object {
     DataFrame* get(Key* k) {
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
-        DataFrame* df = new DataFrame(&d);
+        DataFrame* df = new DataFrame(&d, this);
         return df;
+    }
+
+    /**
+     * Gets underlying KVStore.
+     * @return the kvstore
+     */
+    KVStore* get_kvstore() {
+        return store_;
     }
 
     /**
@@ -43,7 +51,7 @@ class KDStore : public Object {
     DataFrame* wait_and_get(Key* k) {
         Value* v = store_->wait_and_get(k);
         Deserializer d(v->get_bytes(), v->size());
-        DataFrame* df = new DataFrame(&d);
+        DataFrame* df = new DataFrame(&d, this);
         return df;
     }
 
@@ -63,7 +71,7 @@ class KDStore : public Object {
 inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, double* vals) {
     Schema s("D");
     Row r(s);
-    DataFrame* df = new DataFrame(s);
+    DataFrame* df = new DataFrame(s, kd);
     for (size_t i = 0; i < size; i++) {
         r.set(0, vals[i]);
         df->add_row(r);
@@ -75,7 +83,7 @@ inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, double*
 inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, int* vals) {
     Schema s("I");
     Row r(s);
-    DataFrame* df = new DataFrame(s);
+    DataFrame* df = new DataFrame(s, kd);
     for (size_t i = 0; i < size; i++) {
         r.set(0, vals[i]);
         df->add_row(r);
@@ -87,7 +95,7 @@ inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, int* va
 inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, bool* vals) {
     Schema s("B");
     Row r(s);
-    DataFrame* df = new DataFrame(s);
+    DataFrame* df = new DataFrame(s, kd);
     for (size_t i = 0; i < size; i++) {
         r.set(0, vals[i]);
         df->add_row(r);
@@ -99,7 +107,7 @@ inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, bool* v
 inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, String** vals) {
     Schema s("S");
     Row r(s);
-    DataFrame* df = new DataFrame(s);
+    DataFrame* df = new DataFrame(s, kd);
     for (size_t i = 0; i < size; i++) {
         r.set(0, vals[i]);
         df->add_row(r);
@@ -111,7 +119,7 @@ inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, String*
 inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, double val) {
     Schema s("D");
     Row r(s);
-    DataFrame* df = new DataFrame(s);
+    DataFrame* df = new DataFrame(s, kd);
     r.set(0, val);
     df->add_row(r);
     kd->put(k, df);
@@ -121,7 +129,7 @@ inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, double val) {
 inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, int val) {
     Schema s("I");
     Row r(s);
-    DataFrame* df = new DataFrame(s);
+    DataFrame* df = new DataFrame(s, kd);
     r.set(0, val);
     df->add_row(r);
     kd->put(k, df);
@@ -131,7 +139,7 @@ inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, int val) {
 inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, bool val) {
     Schema s("B");
     Row r(s);
-    DataFrame* df = new DataFrame(s);
+    DataFrame* df = new DataFrame(s, kd);
     r.set(0, val);
     df->add_row(r);
     kd->put(k, df);
@@ -141,7 +149,7 @@ inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, bool val) {
 inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, String* val) {
     Schema s("S");
     Row r(s);
-    DataFrame* df = new DataFrame(s);
+    DataFrame* df = new DataFrame(s, kd);
     r.set(0, val);
     df->add_row(r);
     kd->put(k, df);

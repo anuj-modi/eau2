@@ -17,21 +17,21 @@ class DataFrame : public DataFrameBase {
    public:
     /** Create a data frame with the same columns as the given df but with no
      * rows or rownmaes */
-    DataFrame(DataFrame& df) : DataFrameBase(df) {}
+    DataFrame(DataFrame& df, KDStore* store) : DataFrameBase(df, store) {}
 
     /** Create a data frame from a schema and columns. All columns are created
      * empty. */
-    DataFrame(Schema& schema) : DataFrameBase(schema) {}
+    DataFrame(Schema& schema, KDStore* store) : DataFrameBase(schema, store) {}
 
     /**
      * Creates a data frame from a given set of columns.
      */
-    DataFrame(std::vector<Column*> columns) : DataFrameBase(columns) {}
+    DataFrame(std::vector<Column*> columns, KDStore* store) : DataFrameBase(columns, store) {}
 
     /**
      * Creates a data frame from the given deserializer.
      */
-    DataFrame(Deserializer* d) : DataFrameBase(d) {}
+    DataFrame(Deserializer* d, KDStore* store) : DataFrameBase(d, store) {}
 
     virtual ~DataFrame() {}
 
@@ -48,7 +48,7 @@ class DataFrame : public DataFrameBase {
     /** Create a new dataframe, constructed from rows for which the given
      * Rower returned true from its accept method. */
     DataFrame* filter(Rower& r) {
-        DataFrame* new_df = new DataFrame(*df_schema_);
+        DataFrame* new_df = new DataFrame(*df_schema_, store_);
         for (size_t i = 0; i < df_schema_->length(); i++) {
             Row curr_row = Row(*df_schema_);
             fill_row(i, curr_row);
