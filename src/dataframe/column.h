@@ -138,7 +138,9 @@ class Column : public Object {
         snprintf(buffer, 15, "%s%zu", col_id->c_str(), segments_.size() + 1);
         Key* new_k = new Key(buffer);
         segments_.push_back(new_k);
-        store_->put(new_k, new Value());
+        Serializer s;
+        s.add_size_t(0); 
+        store_->put(new_k, new Value(s.get_bytes(), s.size()));
         curr_segment_size_ = 0;
     }
 };
@@ -151,7 +153,7 @@ class IntColumn : public Column {
    public:
     IntColumn(KVStore* store) : Column(store) {}
 
-    IntColumn(KVStore store, Deserializer* d) : Column() {}
+    IntColumn(KVStore* store, Deserializer* d) : Column(store, d) {}
 
     virtual ~IntColumn() {}
 
@@ -173,7 +175,13 @@ class IntColumn : public Column {
 
     int get(size_t idx) {
         assert(idx < size());
-        return segments_[idx / SEGMENT_CAPACITY][idx % SEGMENT_CAPACITY];
+        size_t segment_index = idx / SEGMENT_CAPACITY;
+        int index_in_seg = idx % SEGMENT_CAPACITY;
+        Key* k = segments_[segment_index];
+        Value* v = store_->get(k);
+        Deserializer d(v->get_bytes(), v->size());
+        IntArray* temp = new IntArray();
+        for (size_t i = 0; 0 < )
     }
 
     IntColumn* as_int() {

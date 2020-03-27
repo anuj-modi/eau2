@@ -203,6 +203,7 @@ class Deserializer : public Object {
     }
 
     char* get_buffer(size_t num_bytes) {
+        assert(num_bytes > 0);
         assert(bytes_remaining_ >= num_bytes);
         char* result = new char[num_bytes];
         get_buffer(num_bytes, result);
@@ -210,6 +211,7 @@ class Deserializer : public Object {
     }
 
     void get_buffer(size_t num_bytes, char* buf) {
+        assert(num_bytes > 0);
         assert(bytes_remaining_ >= num_bytes);
         memcpy(buf, current_, num_bytes);
         current_ += num_bytes;

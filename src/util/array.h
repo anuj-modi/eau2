@@ -303,8 +303,13 @@ class IntArray : public Object {
      */
     IntArray(Deserializer* d) : Object() {
         size_ = d->get_size_t();
-        capacity_ = size_;
-        items_ = (int*)d->get_buffer(size_ * sizeof(int));
+        if (size_ == 0) {
+            capacity_ = 10;
+            items_ = new int[capacity_];
+        } else {
+            capacity_ = size_;
+            items_ = (int*)d->get_buffer(size_ * sizeof(int));
+        }
     }
 
     /**
@@ -671,8 +676,13 @@ class BoolArray : public Object {
      */
     BoolArray(Deserializer* d) {
         size_ = d->get_size_t();
-        capacity_ = size_;
-        items_ = (bool*)d->get_buffer(size_ * sizeof(bool));
+        if (size_ == 0) {
+            capacity_ = 10;
+            items_ = new bool[capacity_];
+        } else {
+            capacity_ = size_;
+            items_ = (bool*)d->get_buffer(size_ * sizeof(bool));
+        }
     }
 
     /**
@@ -961,8 +971,13 @@ class DoubleArray : public Object {
      */
     DoubleArray(Deserializer* d) {
         size_ = d->get_size_t();
-        capacity_ = size_;
-        items_ = (double*)d->get_buffer(size_ * sizeof(double));
+        if (size_ == 0) {
+            capacity_ = 10;
+            items_ = new double[capacity_];
+        } else {
+            capacity_ = size_;
+            items_ = (double*)d->get_buffer(size_ * sizeof(double));
+        }
     }
 
     /**
