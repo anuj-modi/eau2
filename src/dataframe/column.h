@@ -48,12 +48,18 @@ class Column : public Object {
         // printf("%s", col_id->c_str());
     }
 
+    /**
+     * Not providing this constructor with the same KVStore as
+     * the serialized column is undefined behavior.
+     */
     Column(KVStore* store, Deserializer* d) : Object() {
+        store_ = store;
         size_ = d->get_size_t();
         curr_segment_size_ = d->get_size_t();
         col_id = d->get_string();
+        size_t num_segments = d->get_size_t();
         segments_ = std::vector<Key*>();
-        for (size_t i = 0; i < target_size; i++) {
+        for (size_t i = 0; i < num_segments; i++) {
             segments_.push_back(new Key(d));
         }
     }
@@ -121,6 +127,7 @@ class Column : public Object {
         s->add_size_t(size_);
         s->add_size_t(curr_segment_size_);
         s->add_string(col_id);
+        s->add_size_t(segments_.size());
         for (size_t i = 0; i < size_; i++) {
             segments_[i]->serialize(s);
         }
@@ -142,14 +149,9 @@ class Column : public Object {
  */
 class IntColumn : public Column {
    public:
-    IntColumn(KDStore* store) : Column(store) {}
+    IntColumn(KVStore* store) : Column(store) {}
 
-    IntColumn(Deserializer* d) : IntColumn() {
-        size_t num_items = d->get_size_t();
-        for (size_t i = 0; i < num_items; i++) {
-            push_back(d->get_int());
-        }
-    }
+    IntColumn(KVStore store, Deserializer* d) : Column() {}
 
     virtual ~IntColumn() {}
 
