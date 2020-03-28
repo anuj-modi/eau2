@@ -53,7 +53,7 @@ class Key : public Object {
 
     /** Compute a hash for this key. */
     size_t hash_me() {
-        return k_->hash() * (node_ + 1);
+        return k_->hash();
     }
 
     // TODO test key clone

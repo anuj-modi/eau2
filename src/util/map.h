@@ -62,6 +62,7 @@ class Map : public Object {
         for (size_t i = 0; i < key_values_[hash_key]->size(); i++) {
             Pair* p = static_cast<Pair*>(key_values_[hash_key]->get(i));
             if (p->key->equals(key)) {
+                // delete p->value;
                 p->value = value;
                 updated = true;
             }

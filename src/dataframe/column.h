@@ -33,7 +33,7 @@ class Column : public Object {
     KVStore* store_;
     size_t size_;
     size_t curr_segment_size_;
-    String* col_id;
+    String* col_id_;
 
     Column(KVStore* store) : Object() {
         size_ = 0;
@@ -41,12 +41,13 @@ class Column : public Object {
         segments_ = std::vector<Key*>();
         store_ = store;
         StrBuff buff;
+        char c[2];
+        c[1] = '\0';
         for (size_t i = 0; i < 10; i++) {
-            buff.c(ALPHA[rand() % ALPHA_SIZE]);
+            c[0] = ALPHA[rand() % ALPHA_SIZE];
+            buff.c(c);
         }
-        col_id = buff.get();
-        expand_();
-        // printf("%s", col_id->c_str());
+        col_id_ = buff.get();
     }
 
     /**
@@ -57,7 +58,7 @@ class Column : public Object {
         store_ = store;
         size_ = d->get_size_t();
         curr_segment_size_ = d->get_size_t();
-        col_id = d->get_string();
+        col_id_ = d->get_string();
         size_t num_segments = d->get_size_t();
         segments_ = std::vector<Key*>();
         for (size_t i = 0; i < num_segments; i++) {
@@ -66,7 +67,10 @@ class Column : public Object {
     }
 
     virtual ~Column() {
-        delete col_id;
+        for (size_t i = 0; i < segments_.size(); i++) {
+            delete segments_[i];
+        }
+        delete col_id_;
     }
 
     /** Type converters: Return same column under its actual type, or
@@ -127,22 +131,22 @@ class Column : public Object {
     virtual void serialize(Serializer* s) {
         s->add_size_t(size_);
         s->add_size_t(curr_segment_size_);
-        s->add_string(col_id);
+        s->add_string(col_id_);
         s->add_size_t(segments_.size());
-        for (size_t i = 0; i < size_; i++) {
+        for (size_t i = 0; i < segments_.size(); i++) {
             segments_[i]->serialize(s);
         }
     }
 
     virtual void expand_() {
         char buffer[15];
-        snprintf(buffer, 15, "%s%zu", col_id->c_str(), segments_.size() + 1);
+        snprintf(buffer, 15, "%s_%zu", col_id_->c_str(), segments_.size());
         Key* new_k = new Key(buffer);
         segments_.push_back(new_k);
         Serializer s;
         s.add_size_t(0);
-        store_->put(new_k, new Value(s.get_bytes(), s.size()));
-        delete new_k;
+        Value* v = new Value(s.get_bytes(), s.size());
+        store_->put(new_k, v);
         curr_segment_size_ = 0;
     }
 };
@@ -160,7 +164,7 @@ class IntColumn : public Column {
     virtual ~IntColumn() {}
 
     void push_back(int val) {
-        if (curr_segment_size_ == SEGMENT_CAPACITY) {
+        if (size_ == segments_.size() * SEGMENT_CAPACITY) {
             expand_();
         }
         Key* k = segments_.back();
@@ -172,7 +176,6 @@ class IntColumn : public Column {
         temp.serialize(&s);
         store_->put(k, new Value(s.get_bytes(), s.size()));
         delete v;
-        delete k;
         size_ += 1;
         curr_segment_size_ += 1;
     }
@@ -185,10 +188,8 @@ class IntColumn : public Column {
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         IntArray temp(&d);
-        delete k;
         delete v;
         return temp.get(index_in_seg);
-        // TODO may have memory issues
     }
 
     IntColumn* as_int() {
@@ -208,7 +209,6 @@ class IntColumn : public Column {
         Serializer s;
         temp.serialize(&s);
         store_->put(k, new Value(s.get_bytes(), s.size()));
-        delete k;
         delete v;
     }
 
@@ -250,7 +250,6 @@ class BoolColumn : public Column {
         temp.serialize(&s);
         store_->put(k, new Value(s.get_bytes(), s.size()));
         delete v;
-        delete k;
         size_ += 1;
         curr_segment_size_ += 1;
     }
@@ -263,10 +262,8 @@ class BoolColumn : public Column {
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         BoolArray temp(&d);
-        delete k;
         delete v;
         return temp.get(index_in_seg);
-        // TODO may have memory issues
     }
 
     BoolColumn* as_bool() {
@@ -286,7 +283,6 @@ class BoolColumn : public Column {
         Serializer s;
         temp.serialize(&s);
         store_->put(k, new Value(s.get_bytes(), s.size()));
-        delete k;
         delete v;
     }
 
@@ -328,7 +324,6 @@ class DoubleColumn : public Column {
         temp.serialize(&s);
         store_->put(k, new Value(s.get_bytes(), s.size()));
         delete v;
-        delete k;
         size_ += 1;
         curr_segment_size_ += 1;
     }
@@ -341,10 +336,8 @@ class DoubleColumn : public Column {
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         DoubleArray temp(&d);
-        delete k;
         delete v;
         return temp.get(index_in_seg);
-        // TODO may have memory issues
     }
 
     DoubleColumn* as_double() {
@@ -364,7 +357,6 @@ class DoubleColumn : public Column {
         Serializer s;
         temp.serialize(&s);
         store_->put(k, new Value(s.get_bytes(), s.size()));
-        delete k;
         delete v;
     }
 
@@ -408,12 +400,14 @@ class StringColumn : public Column {
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         StringArray temp(&d);
-        temp.push_back(val);
+        temp.push_back(val->clone());
         Serializer s;
         temp.serialize(&s);
         store_->put(k, new Value(s.get_bytes(), s.size()));
+        for (size_t i = 0; i < temp.size(); i++) {
+            delete temp.get(i);
+        }
         delete v;
-        delete k;
         size_ += 1;
         curr_segment_size_ += 1;
     }
@@ -426,10 +420,8 @@ class StringColumn : public Column {
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         StringArray temp(&d);
-        delete k;
         delete v;
         return temp.get(index_in_seg);
-        // TODO may have memory issues
     }
 
     StringColumn* as_string() {
@@ -449,7 +441,6 @@ class StringColumn : public Column {
         Serializer s;
         temp.serialize(&s);
         store_->put(k, new Value(s.get_bytes(), s.size()));
-        delete k;
         delete v;
     }
 
