@@ -177,7 +177,7 @@ TEST_CASE("Add column to dataframe is copy", "[dataframe]") {
     df.add_row(r);
     IntColumn* col = new IntColumn(&kv);
     col->push_back(4);
-    df.add_column(col);
+    df.add_column_(col);
     col->as_int()->set(0, 8);
 
     REQUIRE(df.get_int(1, 0) == 4);
@@ -210,7 +210,7 @@ TEST_CASE("map works", "[dataframe]") {
     KVStore kv;
     DataFrame df(s, &kv);
     BoolColumn* b = new BoolColumn(&kv);
-    df.add_column(b);
+    df.add_column_(b);
     Row r = Row(df.get_schema());
     String* str = new String("Test");
     String* str2 = new String("ZZZZZZZZ");
@@ -245,7 +245,7 @@ TEST_CASE("filter works", "[dataframe]") {
     KVStore kv;
     DataFrame df(s, &kv);
     BoolColumn* b = new BoolColumn(&kv);
-    df.add_column(b);
+    df.add_column_(b);
     Row r = Row(df.get_schema());
     String* str = new String("Test");
     String* str2 = new String("ZZZZZZZZ");
@@ -280,7 +280,7 @@ TEST_CASE("adding column to dataframe", "[dataframe]") {
     KVStore kv;
     DataFrame df(s, &kv);
     BoolColumn* b = new BoolColumn(&kv);
-    df.add_column(b);
+    df.add_column_(b);
 
     REQUIRE(df.ncols() == 4);
     REQUIRE(df.df_schema_->col_type(3) == 'B');

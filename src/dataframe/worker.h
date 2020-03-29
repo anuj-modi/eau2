@@ -6,17 +6,17 @@
 class Worker : public Thread {
    public:
     Rower* rower;
-    DataFrameBase* df_;
+    DataFrame* df_;
     size_t worker_num_;
     size_t chunk_size_;
     size_t leftovers_;
 
     Worker() : Thread() {}
 
-    Worker(Rower* r, DataFrameBase* df, size_t worker_num, size_t chunk_size)
+    Worker(Rower* r, DataFrame* df, size_t worker_num, size_t chunk_size)
         : Worker(r, df, worker_num, chunk_size, 0) {}
 
-    Worker(Rower* r, DataFrameBase* df, size_t worker_num, size_t chunk_size, size_t leftovers)
+    Worker(Rower* r, DataFrame* df, size_t worker_num, size_t chunk_size, size_t leftovers)
         : Worker() {
         rower = r->clone();
         df_ = df;

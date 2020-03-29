@@ -112,6 +112,13 @@ class Column : public Object {
     }
 
     /**
+     * Marks the column as final and doesn't allow for any more additions.
+     */
+    void finalize() {
+
+    }
+
+    /**
      * Makes a copy of the column.
      */
     virtual Column* clone() {
@@ -188,22 +195,6 @@ class IntColumn : public Column {
         return this;
     }
 
-    /** Set value at idx. An out of bound idx is undefined.  */
-    void set(size_t idx, int val) {
-        assert(idx < size());
-        size_t segment_index = idx / SEGMENT_CAPACITY;
-        int index_in_seg = idx % SEGMENT_CAPACITY;
-        Key& k = segments_[segment_index];
-        Value* v = store_->get(k);
-        Deserializer d(v->get_bytes(), v->size());
-        IntArray temp(&d);
-        temp.set(index_in_seg, val);
-        Serializer s;
-        temp.serialize(&s);
-        store_->put(k, new Value(s.get_bytes(), s.size()));
-        delete v;
-    }
-
     virtual char get_type() {
         return 'I';
     }
@@ -261,22 +252,6 @@ class BoolColumn : public Column {
         return this;
     }
 
-    /** Set value at idx. An out of bound idx is undefined.  */
-    void set(size_t idx, bool val) {
-        assert(idx < size());
-        size_t segment_index = idx / SEGMENT_CAPACITY;
-        int index_in_seg = idx % SEGMENT_CAPACITY;
-        Key& k = segments_[segment_index];
-        Value* v = store_->get(k);
-        Deserializer d(v->get_bytes(), v->size());
-        BoolArray temp(&d);
-        temp.set(index_in_seg, val);
-        Serializer s;
-        temp.serialize(&s);
-        store_->put(k, new Value(s.get_bytes(), s.size()));
-        delete v;
-    }
-
     virtual char get_type() {
         return 'B';
     }
@@ -332,22 +307,6 @@ class DoubleColumn : public Column {
 
     DoubleColumn* as_double() {
         return this;
-    }
-
-    /** Set value at idx. An out of bound idx is undefined.  */
-    void set(size_t idx, double val) {
-        assert(idx < size());
-        size_t segment_index = idx / SEGMENT_CAPACITY;
-        int index_in_seg = idx % SEGMENT_CAPACITY;
-        Key& k = segments_[segment_index];
-        Value* v = store_->get(k);
-        Deserializer d(v->get_bytes(), v->size());
-        DoubleArray temp(&d);
-        temp.set(index_in_seg, val);
-        Serializer s;
-        temp.serialize(&s);
-        store_->put(k, new Value(s.get_bytes(), s.size()));
-        delete v;
     }
 
     virtual size_t size() {
@@ -415,24 +374,6 @@ class StringColumn : public Column {
 
     StringColumn* as_string() {
         return this;
-    }
-
-    /** Set value at idx. An out of bound idx is undefined.  */
-    void set(size_t idx, String* val) {
-        assert(idx < size());
-        size_t segment_index = idx / SEGMENT_CAPACITY;
-        int index_in_seg = idx % SEGMENT_CAPACITY;
-        Key& k = segments_[segment_index];
-        Value* v = store_->get(k);
-        Deserializer d(v->get_bytes(), v->size());
-        StringArray temp(&d);
-        delete temp.get(index_in_seg);
-        temp.set(index_in_seg, val->clone());
-        Serializer s;
-        temp.serialize(&s);
-        store_->put(k, new Value(s.get_bytes(), s.size()));
-        temp.delete_items();
-        delete v;
     }
 
     virtual char get_type() {
