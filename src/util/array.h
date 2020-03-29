@@ -648,7 +648,7 @@ class StringArray : public Array {
      * Calling get on this array after calling this method
      * is undefined behavior.
      */
-    void clear() {
+    void delete_items() {
         for (size_t i = 0; i < size_; i++) {
             delete get(i);
         }

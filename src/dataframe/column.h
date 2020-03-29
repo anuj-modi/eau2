@@ -32,12 +32,10 @@ class Column : public Object {
     std::vector<Key> segments_;
     KVStore* store_;
     size_t size_;
-    size_t curr_segment_size_;
     String* col_id_;
 
     Column(KVStore* store) : Object() {
         size_ = 0;
-        curr_segment_size_ = 0;
         segments_ = std::vector<Key>();
         store_ = store;
         StrBuff buff;
@@ -57,7 +55,6 @@ class Column : public Object {
     Column(KVStore* store, Deserializer* d) : Object() {
         store_ = store;
         size_ = d->get_size_t();
-        curr_segment_size_ = d->get_size_t();
         col_id_ = d->get_string();
         size_t num_segments = d->get_size_t();
         segments_ = std::vector<Key>();
@@ -130,7 +127,6 @@ class Column : public Object {
      */
     virtual void serialize(Serializer* s) {
         s->add_size_t(size_);
-        s->add_size_t(curr_segment_size_);
         s->add_string(col_id_);
         s->add_size_t(segments_.size());
         for (size_t i = 0; i < segments_.size(); i++) {
@@ -147,7 +143,6 @@ class Column : public Object {
         s.add_size_t(0);
         Value* v = new Value(s.get_bytes(), s.size());
         store_->put(new_k, v);
-        curr_segment_size_ = 0;
     }
 };
 
@@ -178,7 +173,6 @@ class IntColumn : public Column {
         store_->put(k, new_v);
         delete v;
         size_ += 1;
-        curr_segment_size_ += 1;
     }
 
     int get(size_t idx) {
@@ -252,9 +246,6 @@ class BoolColumn : public Column {
         store_->put(k, new Value(s.get_bytes(), s.size()));
         delete v;
         size_ += 1;
-
-        // TODO remove this
-        curr_segment_size_ += 1;
     }
 
     bool get(size_t idx) {
@@ -328,7 +319,6 @@ class DoubleColumn : public Column {
         store_->put(k, new Value(s.get_bytes(), s.size()));
         delete v;
         size_ += 1;
-        curr_segment_size_ += 1;
     }
 
     double get(size_t idx) {
@@ -407,10 +397,9 @@ class StringColumn : public Column {
         Serializer s;
         temp.serialize(&s);
         store_->put(k, new Value(s.get_bytes(), s.size()));
-        temp.clear();
+        temp.delete_items();
         delete v;
         size_ += 1;
-        curr_segment_size_ += 1;
     }
 
     String* get(size_t idx) {
@@ -423,7 +412,7 @@ class StringColumn : public Column {
         StringArray temp(&d);
         delete v;
         String* result = temp.get(index_in_seg)->clone();
-        temp.clear();
+        temp.delete_items();
         return result;
     }
 
@@ -445,7 +434,7 @@ class StringColumn : public Column {
         Serializer s;
         temp.serialize(&s);
         store_->put(k, new Value(s.get_bytes(), s.size()));
-        temp.clear();
+        temp.delete_items();
         delete v;
     }
 

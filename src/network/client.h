@@ -65,7 +65,7 @@ class Client : public Object {
      */
     void handle_directory_message(Deserializer* d) {
         // clear my held addresses
-        peer_addresses_->clear();
+        peer_addresses_->delete_items();
 
         // create Address array
         Directory* dir = new Directory(d);
