@@ -61,7 +61,6 @@ class Key : public Object {
         return k_->hash();
     }
 
-    // TODO test key clone
     /**
      * Makes a copy of the key.
      * @return the copy

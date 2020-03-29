@@ -28,11 +28,18 @@ TEST_CASE("hash a key", "[key]") {
 }
 
 // test clone method
-TEST_CASE("clone a key", "[key") {
+TEST_CASE("clone a key", "[key]") {
     Key k("first");
     Key* k_clone = k.clone();
-
     REQUIRE(k.equals(k_clone));
 
     delete k_clone;
+}
+
+// test set_node
+TEST_CASE("set node key's node", "[key]") {
+    Key k("first");
+    REQUIRE(k.node_ == 0);
+    k.set_node(5);
+    REQUIRE(k.node_ == 5);
 }
