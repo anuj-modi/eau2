@@ -33,7 +33,6 @@ class Key : public Object {
         delete k_;
     }
 
-    // TODO test key set_node
     /**
      * Sets the node number.
      * @arg n  the node number
