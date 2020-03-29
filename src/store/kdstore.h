@@ -19,7 +19,7 @@ class KDStore : public Object {
      * @arg k  the key
      * @return if it exists in the store
      */
-    virtual bool in(Key* k) {
+    virtual bool in(Key& k) {
         return store_->in(k);
     }
 
@@ -28,10 +28,11 @@ class KDStore : public Object {
      * @arg k  the key
      * @return the value
      */
-    DataFrame* get(Key* k) {
+    DataFrame* get(Key& k) {
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         DataFrame* df = new DataFrame(&d, store_);
+        delete v;
         return df;
     }
 
@@ -48,10 +49,11 @@ class KDStore : public Object {
      * @arg k  the key
      * @return the value
      */
-    DataFrame* wait_and_get(Key* k) {
-        Value* v = store_->wait_and_get(k);
+    DataFrame* waitAndGet(Key& k) {
+        Value* v = store_->waitAndGet(k);
         Deserializer d(v->get_bytes(), v->size());
         DataFrame* df = new DataFrame(&d, store_);
+        delete v;
         return df;
     }
 
@@ -60,7 +62,7 @@ class KDStore : public Object {
      * @arg k  the key to put the value at
      * @arg v  the value to put in the store
      */
-    void put(Key* k, DataFrame* df) {
+    void put(Key& k, DataFrame* df) {
         Serializer s;
         df->serialize(&s);
         Value* v = new Value(s.get_bytes(), s.size());
@@ -76,7 +78,7 @@ inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, double*
         r.set(0, vals[i]);
         df->add_row(r);
     }
-    kd->put(k, df);
+    kd->put(*k, df);
     return df;
 }
 
@@ -88,7 +90,7 @@ inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, int* va
         r.set(0, vals[i]);
         df->add_row(r);
     }
-    kd->put(k, df);
+    kd->put(*k, df);
     return df;
 }
 
@@ -100,7 +102,7 @@ inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, bool* v
         r.set(0, vals[i]);
         df->add_row(r);
     }
-    kd->put(k, df);
+    kd->put(*k, df);
     return df;
 }
 
@@ -112,7 +114,7 @@ inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, String*
         r.set(0, vals[i]);
         df->add_row(r);
     }
-    kd->put(k, df);
+    kd->put(*k, df);
     return df;
 }
 
@@ -122,7 +124,7 @@ inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, double val) {
     DataFrame* df = new DataFrame(s, kd->get_kvstore());
     r.set(0, val);
     df->add_row(r);
-    kd->put(k, df);
+    kd->put(*k, df);
     return df;
 }
 
@@ -132,7 +134,7 @@ inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, int val) {
     DataFrame* df = new DataFrame(s, kd->get_kvstore());
     r.set(0, val);
     df->add_row(r);
-    kd->put(k, df);
+    kd->put(*k, df);
     return df;
 }
 
@@ -142,7 +144,7 @@ inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, bool val) {
     DataFrame* df = new DataFrame(s, kd->get_kvstore());
     r.set(0, val);
     df->add_row(r);
-    kd->put(k, df);
+    kd->put(*k, df);
     return df;
 }
 
@@ -152,6 +154,6 @@ inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, String* val) {
     DataFrame* df = new DataFrame(s, kd->get_kvstore());
     r.set(0, val);
     df->add_row(r);
-    kd->put(k, df);
+    kd->put(*k, df);
     return df;
 }

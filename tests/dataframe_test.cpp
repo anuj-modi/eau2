@@ -336,8 +336,10 @@ TEST_CASE("setting and getting values", "[dataframe]") {
     REQUIRE(double_equal(df.get_double(2, 88), 11.0));
 
     // test get_string and set
-    REQUIRE(df.get_string(1, 94)->equals(str2));
+    String* result = df.get_string(1, 94);
+    REQUIRE(result->equals(str2));
 
+    delete result;
     delete str;
     delete str2;
 }
@@ -422,7 +424,7 @@ TEST_CASE("fromArray for all types", "[dataframe][kdstore]") {
     }
     delete DataFrame::fromArray(doubles, &kd, SZ, double_vals);
     Key db("doubles");
-    DataFrame* df1_copy = kd.get(&db);
+    DataFrame* df1_copy = kd.get(db);
     for (size_t i = 0; i < SZ; ++i) {
         REQUIRE(double_equal(df1_copy->get_double(0, i), double_vals[i]));
     }
@@ -435,7 +437,7 @@ TEST_CASE("fromArray for all types", "[dataframe][kdstore]") {
     delete DataFrame::fromArray(ints, &kd, SZ, int_vals);
 
     Key in("ints");
-    DataFrame* df2_copy = kd.get(&in);
+    DataFrame* df2_copy = kd.get(in);
     for (size_t i = 0; i < SZ; ++i) {
         REQUIRE(df2_copy->get_int(0, i) == i);
     }
@@ -448,7 +450,7 @@ TEST_CASE("fromArray for all types", "[dataframe][kdstore]") {
     delete DataFrame::fromArray(bools, &kd, SZ, bool_vals);
 
     Key b("bools");
-    DataFrame* df3_copy = kd.get(&b);
+    DataFrame* df3_copy = kd.get(b);
     for (size_t i = 0; i < SZ; ++i) {
         REQUIRE(df3_copy->get_bool(0, i));
     }
@@ -462,24 +464,27 @@ TEST_CASE("fromArray for all types", "[dataframe][kdstore]") {
     delete DataFrame::fromArray(str, &kd, SZ, str_vals);
 
     Key s("strings");
-    DataFrame* df4_copy = kd.get(&s);
+    String* result;
+    DataFrame* df4_copy = kd.get(s);
     for (size_t i = 0; i < SZ; ++i) {
-        REQUIRE_FALSE(df4_copy->get_string(0, i) == test);
-        REQUIRE(df4_copy->get_string(0, i)->equals(test));
+        result = df4_copy->get_string(0, i);
+        REQUIRE(result->equals(test));
+        delete result;
     }
 
     delete df1_copy;
     delete df2_copy;
     delete df3_copy;
-    for (size_t i = 0; i < df4_copy->nrows(); i++) {
-        delete df4_copy->get_string(0, i);
-    }
     delete df4_copy;
     delete[] double_vals;
     delete[] int_vals;
     delete[] bool_vals;
     delete[] str_vals;
     delete test;
+    delete ints;
+    delete bools;
+    delete str;
+    delete doubles;
 }
 
 // test fromScalar methods
@@ -491,7 +496,7 @@ TEST_CASE("fromScalar for all types", "[dataframe][kdstore]") {
     delete DataFrame::fromScalar(doubles, &kd, double_val);
 
     Key db("doubles");
-    DataFrame* df1_copy = kd.get(&db);
+    DataFrame* df1_copy = kd.get(db);
     REQUIRE(double_equal(df1_copy->get_double(0, 0), double_val));
 
     Key* ints = new Key("ints");
@@ -499,14 +504,14 @@ TEST_CASE("fromScalar for all types", "[dataframe][kdstore]") {
     delete DataFrame::fromScalar(ints, &kd, int_val);
 
     Key in("ints");
-    DataFrame* df2_copy = kd.get(&in);
+    DataFrame* df2_copy = kd.get(in);
     REQUIRE(df2_copy->get_int(0, 0) == int_val);
 
     Key* bools = new Key("bools");
     delete DataFrame::fromScalar(bools, &kd, true);
 
     Key b("bools");
-    DataFrame* df3_copy = kd.get(&b);
+    DataFrame* df3_copy = kd.get(b);
     REQUIRE(df3_copy->get_bool(0, 0));
 
     Key* strs = new Key("strings");
@@ -514,15 +519,17 @@ TEST_CASE("fromScalar for all types", "[dataframe][kdstore]") {
     delete DataFrame::fromScalar(strs, &kd, &test);
 
     Key s("strings");
-    DataFrame* df4_copy = kd.get(&s);
-    REQUIRE(df4_copy->get_string(0, 0)->equals(&test));
+    DataFrame* df4_copy = kd.get(s);
+    String* result = df4_copy->get_string(0, 0);
+    REQUIRE(result->equals(&test));
 
     delete df1_copy;
     delete df2_copy;
     delete df3_copy;
-
-    for (size_t i = 0; i < df4_copy->nrows(); i++) {
-        delete df4_copy->get_string(0, i);
-    }
     delete df4_copy;
+    delete result;
+    delete ints;
+    delete bools;
+    delete strs;
+    delete doubles;
 }

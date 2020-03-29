@@ -24,6 +24,11 @@ class Key : public Object {
         node_ = d->get_size_t();
     }
 
+    Key(const Key& k) : Object() {
+        node_ = k.node_;
+        k_ = new String(k.k_->c_str());
+    }
+
     virtual ~Key() {
         delete k_;
     }
@@ -72,6 +77,10 @@ class Key : public Object {
     void serialize(Serializer* s) {
         s->add_string(k_);
         s->add_size_t(node_);
+    }
+
+    bool operator==(const Key& k) const {
+        return k.k_->equals(k_);
     }
 };
 

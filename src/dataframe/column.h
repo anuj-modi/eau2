@@ -29,7 +29,7 @@ static const size_t ALPHA_SIZE = 52;
  * equality. */
 class Column : public Object {
    public:
-    std::vector<Key*> segments_;
+    std::vector<Key> segments_;
     KVStore* store_;
     size_t size_;
     size_t curr_segment_size_;
@@ -38,7 +38,7 @@ class Column : public Object {
     Column(KVStore* store) : Object() {
         size_ = 0;
         curr_segment_size_ = 0;
-        segments_ = std::vector<Key*>();
+        segments_ = std::vector<Key>();
         store_ = store;
         StrBuff buff;
         char c[2];
@@ -60,16 +60,16 @@ class Column : public Object {
         curr_segment_size_ = d->get_size_t();
         col_id_ = d->get_string();
         size_t num_segments = d->get_size_t();
-        segments_ = std::vector<Key*>();
+        segments_ = std::vector<Key>();
         for (size_t i = 0; i < num_segments; i++) {
-            segments_.push_back(new Key(d));
+            segments_.push_back(Key(d));
         }
     }
 
     virtual ~Column() {
-        for (size_t i = 0; i < segments_.size(); i++) {
-            delete segments_[i];
-        }
+        // for (size_t i = 0; i < segments_.size(); i++) {
+        //     delete segments_[i];
+        // }
         delete col_id_;
     }
 
@@ -134,14 +134,14 @@ class Column : public Object {
         s->add_string(col_id_);
         s->add_size_t(segments_.size());
         for (size_t i = 0; i < segments_.size(); i++) {
-            segments_[i]->serialize(s);
+            segments_[i].serialize(s);
         }
     }
 
     virtual void expand_() {
         char buffer[15];
         snprintf(buffer, 15, "%s_%zu", col_id_->c_str(), segments_.size());
-        Key* new_k = new Key(buffer);
+        Key new_k = Key(buffer);
         segments_.push_back(new_k);
         Serializer s;
         s.add_size_t(0);
@@ -167,14 +167,15 @@ class IntColumn : public Column {
         if (size_ == segments_.size() * SEGMENT_CAPACITY) {
             expand_();
         }
-        Key* k = segments_.back();
+        Key& k = segments_.back();
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         IntArray temp(&d);
         temp.push_back(val);
         Serializer s;
         temp.serialize(&s);
-        store_->put(k, new Value(s.get_bytes(), s.size()));
+        Value* new_v = new Value(s.get_bytes(), s.size());
+        store_->put(k, new_v);
         delete v;
         size_ += 1;
         curr_segment_size_ += 1;
@@ -184,7 +185,7 @@ class IntColumn : public Column {
         assert(idx < size());
         size_t segment_index = idx / SEGMENT_CAPACITY;
         int index_in_seg = idx % SEGMENT_CAPACITY;
-        Key* k = segments_[segment_index];
+        Key& k = segments_[segment_index];
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         IntArray temp(&d);
@@ -201,7 +202,7 @@ class IntColumn : public Column {
         assert(idx < size());
         size_t segment_index = idx / SEGMENT_CAPACITY;
         int index_in_seg = idx % SEGMENT_CAPACITY;
-        Key* k = segments_[segment_index];
+        Key& k = segments_[segment_index];
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         IntArray temp(&d);
@@ -238,10 +239,10 @@ class BoolColumn : public Column {
     virtual ~BoolColumn() {}
 
     void push_back(bool val) {
-        if (curr_segment_size_ == SEGMENT_CAPACITY) {
+        if (size_ == segments_.size() * SEGMENT_CAPACITY) {
             expand_();
         }
-        Key* k = segments_.back();
+        Key& k = segments_.back();
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         BoolArray temp(&d);
@@ -251,6 +252,8 @@ class BoolColumn : public Column {
         store_->put(k, new Value(s.get_bytes(), s.size()));
         delete v;
         size_ += 1;
+
+        // TODO remove this
         curr_segment_size_ += 1;
     }
 
@@ -258,7 +261,7 @@ class BoolColumn : public Column {
         assert(idx < size());
         size_t segment_index = idx / SEGMENT_CAPACITY;
         int index_in_seg = idx % SEGMENT_CAPACITY;
-        Key* k = segments_[segment_index];
+        Key& k = segments_[segment_index];
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         BoolArray temp(&d);
@@ -275,7 +278,7 @@ class BoolColumn : public Column {
         assert(idx < size());
         size_t segment_index = idx / SEGMENT_CAPACITY;
         int index_in_seg = idx % SEGMENT_CAPACITY;
-        Key* k = segments_[segment_index];
+        Key& k = segments_[segment_index];
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         BoolArray temp(&d);
@@ -312,10 +315,10 @@ class DoubleColumn : public Column {
     virtual ~DoubleColumn() {}
 
     void push_back(double val) {
-        if (curr_segment_size_ == SEGMENT_CAPACITY) {
+        if (size_ == segments_.size() * SEGMENT_CAPACITY) {
             expand_();
         }
-        Key* k = segments_.back();
+        Key& k = segments_.back();
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         DoubleArray temp(&d);
@@ -332,7 +335,7 @@ class DoubleColumn : public Column {
         assert(idx < size());
         size_t segment_index = idx / SEGMENT_CAPACITY;
         int index_in_seg = idx % SEGMENT_CAPACITY;
-        Key* k = segments_[segment_index];
+        Key& k = segments_[segment_index];
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         DoubleArray temp(&d);
@@ -349,7 +352,7 @@ class DoubleColumn : public Column {
         assert(idx < size());
         size_t segment_index = idx / SEGMENT_CAPACITY;
         int index_in_seg = idx % SEGMENT_CAPACITY;
-        Key* k = segments_[segment_index];
+        Key& k = segments_[segment_index];
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         DoubleArray temp(&d);
@@ -393,10 +396,10 @@ class StringColumn : public Column {
     virtual ~StringColumn() {}
 
     void push_back(String* val) {
-        if (curr_segment_size_ == SEGMENT_CAPACITY) {
+        if (size_ == segments_.size() * SEGMENT_CAPACITY) {
             expand_();
         }
-        Key* k = segments_.back();
+        Key& k = segments_.back();
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         StringArray temp(&d);
@@ -404,9 +407,7 @@ class StringColumn : public Column {
         Serializer s;
         temp.serialize(&s);
         store_->put(k, new Value(s.get_bytes(), s.size()));
-        for (size_t i = 0; i < temp.size(); i++) {
-            delete temp.get(i);
-        }
+        temp.clear();
         delete v;
         size_ += 1;
         curr_segment_size_ += 1;
@@ -416,12 +417,14 @@ class StringColumn : public Column {
         assert(idx < size());
         size_t segment_index = idx / SEGMENT_CAPACITY;
         int index_in_seg = idx % SEGMENT_CAPACITY;
-        Key* k = segments_[segment_index];
+        Key& k = segments_[segment_index];
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         StringArray temp(&d);
         delete v;
-        return temp.get(index_in_seg);
+        String* result = temp.get(index_in_seg)->clone();
+        temp.clear();
+        return result;
     }
 
     StringColumn* as_string() {
@@ -433,14 +436,16 @@ class StringColumn : public Column {
         assert(idx < size());
         size_t segment_index = idx / SEGMENT_CAPACITY;
         int index_in_seg = idx % SEGMENT_CAPACITY;
-        Key* k = segments_[segment_index];
+        Key& k = segments_[segment_index];
         Value* v = store_->get(k);
         Deserializer d(v->get_bytes(), v->size());
         StringArray temp(&d);
-        temp.set(index_in_seg, val);
+        delete temp.get(index_in_seg);
+        temp.set(index_in_seg, val->clone());
         Serializer s;
         temp.serialize(&s);
         store_->put(k, new Value(s.get_bytes(), s.size()));
+        temp.clear();
         delete v;
     }
 

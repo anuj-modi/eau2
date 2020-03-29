@@ -3,8 +3,8 @@
 
 // test in method
 TEST_CASE("key in kdstore", "[kdstore]") {
-    Key* k_1 = new Key("one");
-    Key* k_2 = new Key("two");
+    Key k_1 = Key("one");
+    Key k_2 = Key("two");
     Schema s("I");
     KVStore kv;
     DataFrame df(s, &kv);
@@ -16,13 +16,11 @@ TEST_CASE("key in kdstore", "[kdstore]") {
 
     REQUIRE(kd.in(k_1));
     REQUIRE_FALSE(kd.in(k_2));
-
-    delete k_2;
 }
 
 // test get and put methods
 TEST_CASE("put and get a value in kdstore", "[kdstore]") {
-    Key* k_1 = new Key("one");
+    Key k_1 = Key("one");
     Schema s("I");
     KVStore kv;
     DataFrame df(s, &kv);
@@ -40,4 +38,4 @@ TEST_CASE("put and get a value in kdstore", "[kdstore]") {
     delete copy_df;
 }
 
-// TODO test kdstore wait_and_get
+// TODO test kdstore waitAndGet

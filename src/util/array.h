@@ -644,6 +644,17 @@ class StringArray : public Array {
     }
 
     /**
+     * Deletes all string pointers in the array.
+     * Calling get on this array after calling this method
+     * is undefined behavior.
+     */
+    void clear() {
+        for (size_t i = 0; i < size_; i++) {
+            delete get(i);
+        }
+    }
+
+    /**
      * Gets a copy of the array.
      * @return the copy of the array
      */
