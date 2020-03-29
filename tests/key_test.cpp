@@ -4,7 +4,7 @@
 // test equal method
 TEST_CASE("equal for key", "[key]") {
     Key k_1("first");
-    Key* same = new Key("first", 0);
+    Key* same = new Key("first", 1);
     Key* different = new Key("second", 3);
 
     REQUIRE(k_1.equals(same));
@@ -25,4 +25,14 @@ TEST_CASE("hash a key", "[key]") {
 
     delete same;
     delete different;
+}
+
+// test clone method
+TEST_CASE("clone a key", "[key") {
+    Key k("first");
+    Key* k_clone = k.clone();
+
+    REQUIRE(k.equals(k_clone));
+
+    delete k_clone;
 }
