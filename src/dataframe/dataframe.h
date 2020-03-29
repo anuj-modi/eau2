@@ -2,7 +2,6 @@
 #include <assert.h>
 #include <vector>
 #include "column.h"
-#include "row.h"
 #include "schema.h"
 #include "store/key.h"
 
@@ -16,56 +15,10 @@ class KDStore;
  * describes it. This is a data frame with only sequential map.
  */
 class DataFrame : public Object {
-    /** Adds a column this dataframe, updates the schema, the new column
-     * is external, and appears as the last column of the dataframe.
-     * A nullptr colum is undefined. */
-    void add_column_(Column* col) {
-        assert(col != nullptr);
-        assert(col->size() == df_schema_->length());
-        df_schema_->add_column(col->get_type());
-        columns_.push_back(col->clone());
-    }
-
    public:
     std::vector<Column*> columns_;
     Schema* df_schema_;
     KVStore* store_;
-
-    /**
-     * Create a data frame with the same columns as the given df but with no
-     * rows or rownmaes
-     */
-    DataFrame(DataFrame& df, KVStore* store) : DataFrame(df.get_schema(), store) {}
-
-    /**
-     * Create a data frame from a schema and columns. All columns are created
-     * empty.
-     */
-    DataFrame(Schema& schema, KVStore* store) : Object() {
-        df_schema_ = new Schema();
-        columns_ = std::vector<Column*>();
-        store_ = store;
-        for (size_t i = 0; i < schema.width(); i++) {
-            char type = schema.col_type(i);
-            df_schema_->add_column(type);
-            switch (type) {
-                case 'S':
-                    columns_.push_back(new StringColumn(store));
-                    break;
-                case 'I':
-                    columns_.push_back(new IntColumn(store));
-                    break;
-                case 'B':
-                    columns_.push_back(new BoolColumn(store));
-                    break;
-                case 'D':
-                    columns_.push_back(new DoubleColumn(store));
-                    break;
-                default:
-                    assert(false);
-            }
-        }
-    }
 
     /**
      * Creates a data frame from a given set of columns.
@@ -161,6 +114,16 @@ class DataFrame : public Object {
         for (size_t i = 0; i < columns_.size(); i++) {
             columns_[i]->serialize(s);
         }
+    }
+    
+    /** Adds a column this dataframe, updates the schema, the new column
+     * is external, and appears as the last column of the dataframe.
+     * A nullptr colum is undefined. */
+    void add_column_(Column* col) {
+        assert(col != nullptr);
+        assert(col->size() == df_schema_->length());
+        df_schema_->add_column(col->get_type());
+        columns_.push_back(col->clone());
     }
 
     static DataFrame* fromArray(Key* k, KDStore* kd, size_t size, double* vals);

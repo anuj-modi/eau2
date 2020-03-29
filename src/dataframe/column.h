@@ -31,13 +31,17 @@ class Column : public Object {
    public:
     std::vector<Key> segments_;
     KVStore* store_;
+    bool finalized_;
     size_t size_;
     String* col_id_;
+    Array* cache_;
+    Key* cache_key_;
 
     Column(KVStore* store) : Object() {
         size_ = 0;
         segments_ = std::vector<Key>();
         store_ = store;
+        finalized_ = false;
         StrBuff buff;
         char c[2];
         c[1] = '\0';
@@ -46,6 +50,7 @@ class Column : public Object {
             buff.c(c);
         }
         col_id_ = buff.get();
+        cache_key_ = nullptr;
     }
 
     /**
@@ -54,6 +59,7 @@ class Column : public Object {
      */
     Column(KVStore* store, Deserializer* d) : Object() {
         store_ = store;
+        finalized_ = true;
         size_ = d->get_size_t();
         col_id_ = d->get_string();
         size_t num_segments = d->get_size_t();
@@ -61,6 +67,7 @@ class Column : public Object {
         for (size_t i = 0; i < num_segments; i++) {
             segments_.push_back(Key(d));
         }
+        cache_key_ = nullptr;
     }
 
     virtual ~Column() {
@@ -115,7 +122,7 @@ class Column : public Object {
      * Marks the column as final and doesn't allow for any more additions.
      */
     void finalize() {
-
+        // TODO implement finalize
     }
 
     /**
@@ -144,8 +151,10 @@ class Column : public Object {
         Key new_k = Key(buffer);
         segments_.push_back(new_k);
         Serializer s;
-        s.add_size_t(0);
+        cache_->serialize(&s);
         Value* v = new Value(s.get_bytes(), s.size());
+        delete cache_;
+        cache_ = nullptr;
         store_->put(new_k, v);
     }
 };
@@ -156,13 +165,21 @@ class Column : public Object {
  */
 class IntColumn : public Column {
    public:
-    IntColumn(KVStore* store) : Column(store) {}
+    IntColumn(KVStore* store) : Column(store) {
+        cache_ = new IntArray(SEGMENT_CAPACITY);
+    }
 
     IntColumn(KVStore* store, Deserializer* d) : Column(store, d) {}
 
     virtual ~IntColumn() {}
 
+    void expand_() {
+        Column::expand_();
+        cache_ = new IntArray(SEGMENT_CAPACITY);
+    }
+
     void push_back(int val) {
+        assert(!finalized_);
         if (size_ == segments_.size() * SEGMENT_CAPACITY) {
             expand_();
         }
@@ -220,6 +237,11 @@ class BoolColumn : public Column {
 
     virtual ~BoolColumn() {}
 
+    void expand_() {
+        Column::expand_();
+        cache_ = new BoolArray(SEGMENT_CAPACITY);
+    }
+
     void push_back(bool val) {
         if (size_ == segments_.size() * SEGMENT_CAPACITY) {
             expand_();
@@ -276,6 +298,11 @@ class DoubleColumn : public Column {
     DoubleColumn(KVStore* store, Deserializer* d) : Column(store, d) {}
 
     virtual ~DoubleColumn() {}
+
+    void expand_() {
+        Column::expand_();
+        cache_ = new DoubleArray(SEGMENT_CAPACITY);
+    }
 
     void push_back(double val) {
         if (size_ == segments_.size() * SEGMENT_CAPACITY) {
@@ -340,6 +367,11 @@ class StringColumn : public Column {
     StringColumn(KVStore* store, Deserializer* d) : Column(store, d) {}
 
     virtual ~StringColumn() {}
+
+    void expand_() {
+        Column::expand_();
+        cache_ = new StringArray(SEGMENT_CAPACITY);
+    }
 
     void push_back(String* val) {
         if (size_ == segments_.size() * SEGMENT_CAPACITY) {
