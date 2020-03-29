@@ -1,7 +1,7 @@
 #pragma once
 #include "util/object.h"
-#include "util/string.h"
 #include "util/serial.h"
+#include "util/string.h"
 
 /**
  * Array: Represents a key in a key value store.
@@ -74,3 +74,14 @@ class Key : public Object {
         s->add_size_t(node_);
     }
 };
+
+namespace std {
+template <>
+struct hash<Key> {
+    size_t operator()(const Key& k) const {
+        // Compute individual hash values for two data members and combine them using XOR and bit
+        // shifting
+        return (k.k_->hash());
+    }
+};
+}  // namespace std
