@@ -64,9 +64,6 @@ class Column : public Object {
     }
 
     virtual ~Column() {
-        // for (size_t i = 0; i < segments_.size(); i++) {
-        //     delete segments_[i];
-        // }
         delete col_id_;
     }
 

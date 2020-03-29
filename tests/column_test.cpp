@@ -16,7 +16,7 @@ static bool double_equal(double f1, double f2) {
 }
 
 // tests for an Int Column
-TEST_CASE("test_int_column", "[column][sa]") {
+TEST_CASE("test_int_column", "[column]") {
     KVStore kv;
     IntColumn* ic = new IntColumn(&kv);
     int size = 1000;

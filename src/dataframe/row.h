@@ -50,9 +50,6 @@ class Row : public Object {
 
     virtual ~Row() {
         for (size_t i = 0; i < values_.size(); i++) {
-            if (types_[i] == 'S') {
-                static_cast<StringArray*>(values_[i])->delete_items();
-            }
             delete values_[i];
         }
     }

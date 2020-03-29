@@ -70,8 +70,7 @@ class Value : public Object {
         for (size_t i = 0; i < size_; ++i) hash = blob_[i] + (hash << 6) + (hash << 16) - hash;
         return hash;
     }
-
-    // TODO test Value clone
+    
     /**
      * Makes a copy of the value.
      * @return the copy

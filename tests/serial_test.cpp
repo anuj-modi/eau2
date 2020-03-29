@@ -129,7 +129,7 @@ TEST_CASE("test_serialize_deserialize_string", "[serialize][deserialize][string]
 }
 
 TEST_CASE("test serialize deserialize string array",
-          "[serialize][deserialize][array][string][bad]") {
+          "[serialize][deserialize][array][string]") {
     StringArray* strs = new StringArray();
     String* h1 = new String("hello there");
     String* h2 = new String("why howdy!");

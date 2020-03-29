@@ -167,7 +167,7 @@ class FilterGreater102 : public Rower {
 /** Tests that adding a column to the dataframe adds a copy of it,
  * since it was mentioned on Piazza that it should be a copy
  */
-TEST_CASE("Add column to dataframe is copy", "[column][dataframe]") {
+TEST_CASE("Add column to dataframe is copy", "[dataframe]") {
     Schema s("S");
     KVStore kv;
     DataFrame df(s, &kv);
