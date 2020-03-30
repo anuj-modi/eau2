@@ -1,53 +1,60 @@
-// #include "dataframe/dataframe.h"
-// #include "catch.hpp"
-// #include "store/kdstore.h"
+#include "dataframe/dataframe.h"
+#include "catch.hpp"
+#include "store/kdstore.h"
 
-// // test get_schema
-// TEST_CASE("get schema from a dataframe", "[dataframe]") {
-    
-// }
+// test get_schema
+TEST_CASE("get schema from a dataframe", "[dataframe]") {
+    KVStore kv;
+    IntColumn ic(&kv);
+    ic.push_back(5);
+    DataFrame df(&ic, &kv);
+    Schema s = df.get_schema();
+    REQUIRE(s.col_type(0) == 'S');
+    REQUIRE(s.length() == 1);
+    REQUIRE(s.width() == 1);
+}
 
-// // setting and getting a value in a dataframe
-// TEST_CASE("setting and getting values", "[dataframe]") {
-//     Schema s("ISDB");
-//     KVStore kv;
-//     DataFrame df(s, &kv);
-//     Row r = Row(df.get_schema());
-//     String* str = new String("Test");
-//     String* str2 = new String("ZZZZZZZZ");
-//     for (int i = 0; i < 100; i++) {
-//         r.set(0, 8);
-//         r.set(1, str);
-//         r.set(2, 8.0f);
-//         r.set(3, false);
-//         df.add_row(r);
-//     }
+// getting a value in a dataframe
+TEST_CASE("getting values out of dataframe", "[dataframe]") {
+    Schema s("ISDB");
+    KVStore kv;
+    DataFrame df(s, &kv);
+    Row r = Row(df.get_schema());
+    String* str = new String("Test");
+    String* str2 = new String("ZZZZZZZZ");
+    for (int i = 0; i < 100; i++) {
+        r.set(0, 8);
+        r.set(1, str);
+        r.set(2, 8.0f);
+        r.set(3, false);
+        df.add_row(r);
+    }
 
-//     df.set(0, 19, 11);
-//     df.set(1, 94, str2);
-//     df.set(2, 88, (double)11.0);
-//     df.set(3, 76, true);
+    df.set(0, 19, 11);
+    df.set(1, 94, str2);
+    df.set(2, 88, (double)11.0);
+    df.set(3, 76, true);
 
-//     REQUIRE(df.nrows() == 100);
-//     REQUIRE(df.ncols() == 4);
+    REQUIRE(df.nrows() == 100);
+    REQUIRE(df.ncols() == 4);
 
-//     // test get_int and set
-//     REQUIRE(df.get_int(0, 19) == 11);
+    // test get_int and set
+    REQUIRE(df.get_int(0, 19) == 11);
 
-//     // test get_bool and set
-//     REQUIRE(df.get_bool(3, 76));
+    // test get_bool and set
+    REQUIRE(df.get_bool(3, 76));
 
-//     // test get_double and set
-//     REQUIRE(double_equal(df.get_double(2, 88), 11.0));
+    // test get_double and set
+    REQUIRE(double_equal(df.get_double(2, 88), 11.0));
 
-//     // test get_string and set
-//     String* result = df.get_string(1, 94);
-//     REQUIRE(result->equals(str2));
+    // test get_string and set
+    String* result = df.get_string(1, 94);
+    REQUIRE(result->equals(str2));
 
-//     delete result;
-//     delete str;
-//     delete str2;
-// }
+    delete result;
+    delete str;
+    delete str2;
+}
 
 // // test fromArray methods
 // TEST_CASE("fromArray for all types", "[dataframe][kdstore]") {

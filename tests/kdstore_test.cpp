@@ -10,10 +10,7 @@ TEST_CASE("key in kdstore", "[kdstore]") {
     KVStore kv;
     StringColumn* sc = new StringColumn(&kv);
     sc->push_back(&blah);
-
-    std::vector<Column*> cs;
-    cs.push_back(sc);
-    DataFrame df(cs, &kv);
+    DataFrame df(sc, &kv);
 
     KDStore kd(&kv);
     kd.put(k_1, &df);
@@ -29,10 +26,7 @@ TEST_CASE("put and get a value in kdstore", "[kdstore]") {
     KVStore kv;
     IntColumn* ic = new IntColumn(&kv);
     ic->push_back(5);
-
-    std::vector<Column*> cs;
-    cs.push_back(ic);
-    DataFrame df(cs, &kv);
+    DataFrame df(ic, &kv);
     
     KDStore kd(&kv);
     kd.put(k_1, &df);

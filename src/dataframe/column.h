@@ -123,7 +123,9 @@ class Column : public Object {
      * Column cannot already be finalized.
      */
     void finalize() {
-        assert(!finalized_);
+        if (finalized_) {
+            return;
+        }
         finalized_ = true;
         put_in_store_();
     }
