@@ -156,5 +156,7 @@ inline DataFrame* fromFile(Key* k, KDStore* kd, const char* file_name) {
     ColumnSet* cols = parser.getColumnSet();
     DataFrame* df = new DataFrame(cols->getColumns(), &kv);
     kd->put(*k, df);
+    fclose(file);
+    // delete cols;
     return df;
 }
