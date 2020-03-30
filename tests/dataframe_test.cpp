@@ -201,13 +201,12 @@ TEST_CASE("create data frame from file", "[dataframe][kdstore]") {
 
     REQUIRE(df->ncols() == 4);
     REQUIRE(df->nrows() == 4);
-    REQUIRE(df->col_type(0) == 'B');
     REQUIRE(df->get_bool(0, 1));
-    // REQUIRE(df->get_int(1, 654) == -11);
-    // REQUIRE(double_equal(df->get_double(2, 83), -17.5));
-    // String* s = new String("0.4");
-    // String* s2 = df->get_string(3, 294);
-    // REQUIRE(s2->equals(s));
-    // delete s2;
+    REQUIRE(df->get_int(1, 2) == -11);
+    REQUIRE(double_equal(df->get_double(2, 83), -17.5));
+    String* s = new String("0.4");
+    String* s2 = df->get_string(3, 294);
+    REQUIRE(s2->equals(s));
+    delete s2;
     delete df;
 }
