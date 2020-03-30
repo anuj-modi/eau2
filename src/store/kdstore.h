@@ -147,7 +147,7 @@ inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, String* val) {
     return df;
 }
 
-inline DataFrame* fromFile(Key* k, KDStore* kd, const char* file_name) {
+inline DataFrame* DataFrame::fromFile(Key* k, KDStore* kd, const char* file_name) {
     FILE* file = fopen(file_name, "r");
     KVStore kv;
     SorParser parser(file, &kv);
