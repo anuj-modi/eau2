@@ -43,8 +43,6 @@ TEST_CASE("push_back and get for all types", "[array]") {
     l6->push_back(t);
     REQUIRE((l6->get_string(0)->equals(s) && l6->get_string(1)->equals(t) && l6->size() == 2));
 
-    delete s;
-    delete t;
     delete l2;
     delete l3;
     delete l4;

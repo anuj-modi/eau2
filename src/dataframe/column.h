@@ -71,6 +71,7 @@ class Column : public Object {
 
     virtual ~Column() {
         delete col_id_;
+        delete cache_;
     }
 
     /** Type converters: Return same column under its actual type, or
@@ -174,12 +175,15 @@ class IntColumn : public Column {
         cache_ = new IntArray(SEGMENT_CAPACITY);
     }
 
-    IntColumn(KVStore* store, Deserializer* d) : Column(store, d) {}
+    IntColumn(KVStore* store, Deserializer* d) : Column(store, d) {
+        cache_ = new IntArray(SEGMENT_CAPACITY);
+    }
 
     virtual ~IntColumn() {}
 
     void expand_() {
         Column::expand_();
+        delete cache_;
         cache_ = new IntArray(SEGMENT_CAPACITY);
     }
 
@@ -208,14 +212,15 @@ class IntColumn : public Column {
         assert(idx < size());
         assert(finalized_);
         size_t segment_index = idx / SEGMENT_CAPACITY;
-        int index_in_seg = idx % SEGMENT_CAPACITY;
+        size_t index_in_seg = idx % SEGMENT_CAPACITY;
         Key& k = segments_[segment_index];
-        if (!k.equals(&k)) {
+        if (!k.equals(&cache_key_)) {
             delete cache_;
             Value* v = store_->get(k);
             Deserializer d(v->get_bytes(), v->size());
             cache_ = new IntArray(&d);
             cache_key_ = k;
+            delete v;
         }
         return cache_->get_int(index_in_seg);
     }
@@ -243,14 +248,19 @@ class IntColumn : public Column {
  */
 class BoolColumn : public Column {
    public:
-    BoolColumn(KVStore* store) : Column(store) {}
+    BoolColumn(KVStore* store) : Column(store) {
+        cache_ = new BoolArray(SEGMENT_CAPACITY);
+    }
 
-    BoolColumn(KVStore* store, Deserializer* d) : Column(store, d) {}
+    BoolColumn(KVStore* store, Deserializer* d) : Column(store, d) {
+        cache_ = new BoolArray(SEGMENT_CAPACITY);
+    }
 
     virtual ~BoolColumn() {}
 
     void expand_() {
         Column::expand_();
+        delete cache_;
         cache_ = new BoolArray(SEGMENT_CAPACITY);
     }
 
@@ -262,6 +272,7 @@ class BoolColumn : public Column {
     void push_back(bool val) {
         assert(!finalized_);
         if (size_ == segments_.size() * SEGMENT_CAPACITY) {
+            put_in_store_();
             expand_();
         }
         static_cast<BoolArray*>(cache_)->push_back(val);
@@ -280,12 +291,13 @@ class BoolColumn : public Column {
         size_t segment_index = idx / SEGMENT_CAPACITY;
         int index_in_seg = idx % SEGMENT_CAPACITY;
         Key& k = segments_[segment_index];
-        if (!k.equals(&k)) {
+        if (!k.equals(&cache_key_)) {
             delete cache_;
             Value* v = store_->get(k);
             Deserializer d(v->get_bytes(), v->size());
             cache_ = new BoolArray(&d);
             cache_key_ = k;
+            delete v;
         }
         return cache_->get_bool(index_in_seg);
     }
@@ -313,14 +325,19 @@ class BoolColumn : public Column {
  */
 class DoubleColumn : public Column {
    public:
-    DoubleColumn(KVStore* store) : Column(store) {}
+    DoubleColumn(KVStore* store) : Column(store) {
+        cache_ = new DoubleArray(SEGMENT_CAPACITY);
+    }
 
-    DoubleColumn(KVStore* store, Deserializer* d) : Column(store, d) {}
+    DoubleColumn(KVStore* store, Deserializer* d) : Column(store, d) {
+        cache_ = new DoubleArray(SEGMENT_CAPACITY);
+    }
 
     virtual ~DoubleColumn() {}
 
     void expand_() {
         Column::expand_();
+        delete cache_;
         cache_ = new DoubleArray(SEGMENT_CAPACITY);
     }
 
@@ -332,6 +349,7 @@ class DoubleColumn : public Column {
     void push_back(double val) {
         assert(!finalized_);
         if (size_ == segments_.size() * SEGMENT_CAPACITY) {
+            put_in_store_();
             expand_();
         }
         static_cast<DoubleArray*>(cache_)->push_back(val);
@@ -350,12 +368,13 @@ class DoubleColumn : public Column {
         size_t segment_index = idx / SEGMENT_CAPACITY;
         int index_in_seg = idx % SEGMENT_CAPACITY;
         Key& k = segments_[segment_index];
-        if (!k.equals(&k)) {
+        if (!k.equals(&cache_key_)) {
             delete cache_;
             Value* v = store_->get(k);
             Deserializer d(v->get_bytes(), v->size());
             cache_ = new DoubleArray(&d);
             cache_key_ = k;
+            delete v;
         }
         return cache_->get_double(index_in_seg);
     }
@@ -390,14 +409,19 @@ class DoubleColumn : public Column {
  */
 class StringColumn : public Column {
    public:
-    StringColumn(KVStore* store) : Column(store) {}
+    StringColumn(KVStore* store) : Column(store) {
+        cache_ = new StringArray(SEGMENT_CAPACITY);
+    }
 
-    StringColumn(KVStore* store, Deserializer* d) : Column(store, d) {}
+    StringColumn(KVStore* store, Deserializer* d) : Column(store, d) {
+        cache_ = new StringArray(SEGMENT_CAPACITY);
+    }
 
     virtual ~StringColumn() {}
 
     void expand_() {
         Column::expand_();
+        delete cache_;
         cache_ = new StringArray(SEGMENT_CAPACITY);
     }
 
@@ -409,6 +433,7 @@ class StringColumn : public Column {
     void push_back(String* val) {
         assert(!finalized_);
         if (size_ == segments_.size() * SEGMENT_CAPACITY) {
+            put_in_store_();
             expand_();
         }
         static_cast<StringArray*>(cache_)->push_back(val->clone());
@@ -427,14 +452,15 @@ class StringColumn : public Column {
         size_t segment_index = idx / SEGMENT_CAPACITY;
         int index_in_seg = idx % SEGMENT_CAPACITY;
         Key& k = segments_[segment_index];
-        if (!k.equals(&k)) {
+        if (!k.equals(&cache_key_)) {
             delete cache_;
             Value* v = store_->get(k);
             Deserializer d(v->get_bytes(), v->size());
             cache_ = new StringArray(&d);
             cache_key_ = k;
+            delete v;
         }
-        return cache_->get_string(index_in_seg);
+        return cache_->get_string(index_in_seg)->clone();
     }
 
     StringColumn* as_string() {

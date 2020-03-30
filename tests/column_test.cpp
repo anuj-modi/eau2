@@ -63,6 +63,7 @@ TEST_CASE("test double column", "[column]") {
 
     delete fc;
 }
+
 // tests for an bool Column
 TEST_CASE("test bool column", "[column]") {
     KVStore kv;
@@ -108,7 +109,6 @@ TEST_CASE("test string column", "[column]") {
     REQUIRE(sc->get_type() == 'S');
     String* s = sc->get(0);
     REQUIRE(a->equals(s));
-    delete s;
 
     REQUIRE(sc->as_int() == nullptr);
     REQUIRE(sc->as_bool() == nullptr);

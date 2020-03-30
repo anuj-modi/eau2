@@ -414,6 +414,7 @@ class SorParser : public Object {
                 s = new String(true, slice.toCString(), str_len);
                 assert(s != nullptr);
                 column->push_back(s);
+                delete s;
                 break;
             case 'I':
                 column->push_back(slice.toInt());

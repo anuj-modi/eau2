@@ -37,6 +37,14 @@ class DataFrame : public Object {
         }
     }
 
+    DataFrame(Column* c, KVStore* store) : Object() {
+        assert(c != nullptr && store != nullptr);
+        store_ = store;
+        df_schema_ = new Schema();
+        df_schema_->add_rows(c->size());
+        add_column_(c);
+    }
+
     /**
      * Creates a data frame from the given deserializer.
      */
@@ -123,7 +131,8 @@ class DataFrame : public Object {
         assert(col != nullptr);
         assert(col->size() == df_schema_->length());
         df_schema_->add_column(col->get_type());
-        columns_.push_back(col->clone());
+        col->finalize();
+        columns_.push_back(col);
     }
 
     static DataFrame* fromArray(Key* k, KDStore* kd, size_t size, double* vals);

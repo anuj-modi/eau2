@@ -29,13 +29,7 @@ class ColumnSet : public Object {
     /**
      * Destructor for ColumnSet
      */
-    virtual ~ColumnSet() {
-        for (size_t i = 0; i < getLength(); i++) {
-            if (_columns[i] != nullptr) {
-                delete _columns[i];
-            }
-        }
-    }
+    virtual ~ColumnSet() {}
 
     /**
      * Gets the number of columns that can be held in this ColumnSet.

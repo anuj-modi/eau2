@@ -108,14 +108,14 @@ class Array : public Object {
  * Author: gomes.chri, modi.an
  */
 class IntArray : public Array {
-    public:
+   public:
     IntArray(size_t max_size) : Array(max_size) {}
 
     IntArray(Deserializer* d) : IntArray(d->get_size_t()) {
         // size_ = d->get_size_t();
         // capacity_ = size_;
         // items_ = new Data[capacity_];
-        for(size_t i = 0; i < capacity_; i++) {
+        for (size_t i = 0; i < capacity_; i++) {
             push_back(d->get_int());
         }
     }
@@ -146,7 +146,7 @@ class IntArray : public Array {
      */
     virtual void serialize(Serializer* s) {
         s->add_size_t(size_);
-        for(size_t i = 0; i < size_; i++) {
+        for (size_t i = 0; i < size_; i++) {
             s->add_int(get_int(i));
         }
     }
@@ -157,14 +157,14 @@ class IntArray : public Array {
  * Author: gomes.chri, modi.an
  */
 class DoubleArray : public Array {
-    public:
+   public:
     DoubleArray(size_t max_size) : Array(max_size) {}
 
     DoubleArray(Deserializer* d) : DoubleArray(d->get_size_t()) {
         // size_ = d->get_size_t();
         // capacity_ = size_;
         // items_ = new Data[capacity_];
-        for(size_t i = 0; i < capacity_; i++) {
+        for (size_t i = 0; i < capacity_; i++) {
             push_back(d->get_double());
         }
     }
@@ -195,7 +195,7 @@ class DoubleArray : public Array {
      */
     virtual void serialize(Serializer* s) {
         s->add_size_t(size_);
-        for(size_t i = 0; i < size_; i++) {
+        for (size_t i = 0; i < size_; i++) {
             s->add_double(get_double(i));
         }
     }
@@ -206,14 +206,14 @@ class DoubleArray : public Array {
  * Author: gomes.chri, modi.an
  */
 class BoolArray : public Array {
-    public:
+   public:
     BoolArray(size_t max_size) : Array(max_size) {}
 
     BoolArray(Deserializer* d) : BoolArray(d->get_size_t()) {
         // size_ = d->get_size_t();
         // capacity_ = size_;
         // items_ = new Data[capacity_];
-        for(size_t i = 0; i < capacity_; i++) {
+        for (size_t i = 0; i < capacity_; i++) {
             push_back(d->get_bool());
         }
     }
@@ -244,7 +244,7 @@ class BoolArray : public Array {
      */
     virtual void serialize(Serializer* s) {
         s->add_size_t(size_);
-        for(size_t i = 0; i < size_; i++) {
+        for (size_t i = 0; i < size_; i++) {
             s->add_bool(get_bool(i));
         }
     }
@@ -255,15 +255,21 @@ class BoolArray : public Array {
  * Author: gomes.chri, modi.an
  */
 class StringArray : public Array {
-    public:
+   public:
     StringArray(size_t max_size) : Array(max_size) {}
 
     StringArray(Deserializer* d) : StringArray(d->get_size_t()) {
         // size_ = d->get_size_t();
         // capacity_ = size_;
         // items_ = new Data[capacity_];
-        for(size_t i = 0; i < capacity_; i++) {
+        for (size_t i = 0; i < capacity_; i++) {
             push_back(d->get_string());
+        }
+    }
+
+    virtual ~StringArray() {
+        for (size_t i = 0; i < size(); i++) {
+            delete get_string(i);
         }
     }
 
@@ -288,21 +294,12 @@ class StringArray : public Array {
     }
 
     /**
-     * Deletes the strings in the array.
-     */
-    void delete_items() {
-        for (size_t i = 0; i < size(); i++) {
-            delete get(i).payload.s;
-        }
-    }
-
-    /**
      * Serializes the array.
      * arg s  the serializer to use
      */
     virtual void serialize(Serializer* s) {
         s->add_size_t(size_);
-        for(size_t i = 0; i < size_; i++) {
+        for (size_t i = 0; i < size_; i++) {
             s->add_string(get_string(i));
         }
     }

@@ -2,6 +2,7 @@
 #include "util/object.h"
 #include "util/serial.h"
 #include "util/string.h"
+#include <string>
 
 /**
  * Array: Represents a key in a key value store.
@@ -9,30 +10,31 @@
  */
 class Key : public Object {
    public:
-    String* k_;
+    std::string k_;
     size_t node_;
 
     Key() : Key("", 0) {}
 
     Key(const char* k, size_t node) : Object() {
-        k_ = new String(k);
+        k_ = std::string(k);
         node_ = node;
     }
 
     Key(const char* k) : Key(k, 0) {}
 
     Key(Deserializer* d) : Object() {
-        k_ = d->get_string();
+        String* temp = d->get_string();
+        k_ = std::string(temp->c_str());
         node_ = d->get_size_t();
+        delete temp;
     }
 
     Key(const Key& k) : Object() {
         node_ = k.node_;
-        k_ = new String(k.k_->c_str());
+        k_ = std::string(k.k_);
     }
 
     virtual ~Key() {
-        delete k_;
     }
 
     /**
@@ -54,12 +56,12 @@ class Key : public Object {
         if (other == this) return true;
         Key* o = dynamic_cast<Key*>(other);
         if (o == nullptr) return false;
-        return k_->equals(o->k_);
+        return k_ == o->k_;
     }
 
     /** Compute a hash for this key. */
     size_t hash_me() {
-        return k_->hash();
+        return std::hash<std::string>()(k_);
     }
 
     /**
@@ -67,7 +69,7 @@ class Key : public Object {
      * @return the copy
      */
     Key* clone() {
-        return new Key(k_->c_str(), node_);
+        return new Key(*this);
     }
 
     /**
@@ -75,12 +77,14 @@ class Key : public Object {
      * @arg s  the serializer
      */
     void serialize(Serializer* s) {
-        s->add_string(k_);
+        String* temp = new String(k_.c_str());
+        s->add_string(temp);
         s->add_size_t(node_);
+        delete temp;
     }
 
     bool operator==(const Key& k) const {
-        return k.k_->equals(k_);
+        return k.k_ == k_;
     }
 };
 
@@ -88,9 +92,7 @@ namespace std {
 template <>
 struct hash<Key> {
     size_t operator()(const Key& k) const {
-        // Compute individual hash values for two data members and combine them using XOR and bit
-        // shifting
-        return (k.k_->hash());
+        return hash<string>()(k.k_);
     }
 };
 }  // namespace std
