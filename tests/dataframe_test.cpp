@@ -200,6 +200,7 @@ TEST_CASE("create data frame from file", "[dataframe][kdstore]") {
     DataFrame* df_copy = kd.get(k);
 
     REQUIRE(df->ncols() == 4);
+<<<<<<< HEAD
     REQUIRE(df->nrows() == 672);
     REQUIRE(df->get_bool(0, 486));
     REQUIRE(df->get_int(1, 654) == -11);
@@ -214,6 +215,16 @@ TEST_CASE("create data frame from file", "[dataframe][kdstore]") {
     String* s3 = df_copy->get_string(3, 294);
     REQUIRE(s2->equals(s));
     REQUIRE(s3->equals(s));
+=======
+    REQUIRE(df->nrows() == 4);
+    REQUIRE(df->get_bool(0, 1));
+    REQUIRE(df->get_int(1, 2) == -11);
+    REQUIRE(double_equal(df->get_double(2, 83), -17.5));
+    String* s = new String("0.4");
+    String* s2 = df->get_string(3, 294);
+    REQUIRE(s2->equals(s));
+    delete s2;
+>>>>>>> fixed bug in fromFile
     delete df;
     delete df_copy;
     delete s;
