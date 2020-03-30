@@ -3,6 +3,7 @@
 #include "key.h"
 #include "kvstore.h"
 #include "util/serial.h"
+#include "sorer/parser.h"
 
 /**
  * Wrapper to hold DataFrames in a KVStore.
@@ -142,6 +143,18 @@ inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, String* val) {
     StringColumn* sc = new StringColumn(kd->get_kvstore());
     sc->push_back(val);
     DataFrame* df = new DataFrame(sc, kd->get_kvstore());
+    kd->put(*k, df);
+    return df;
+}
+
+inline DataFrame* fromFile(Key* k, KDStore* kd, const char* file_name) {
+    FILE* file = fopen(file_name, "r");
+    KVStore kv;
+    SorParser parser(file, &kv);
+    parser.guessSchema();
+    parser.parseFile();
+    ColumnSet* cols = parser.getColumnSet();
+    DataFrame* df = new DataFrame(cols->getColumns(), &kv);
     kd->put(*k, df);
     return df;
 }
