@@ -12,6 +12,8 @@ class Key : public Object {
     String* k_;
     size_t node_;
 
+    Key() : Key("", 0) {}
+
     Key(const char* k, size_t node) : Object() {
         k_ = new String(k);
         node_ = node;

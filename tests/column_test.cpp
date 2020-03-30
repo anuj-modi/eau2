@@ -16,29 +16,21 @@ static bool double_equal(double f1, double f2) {
 }
 
 // tests for an Int Column
-TEST_CASE("test_int_column", "[column]") {
+TEST_CASE("test int column", "[column]") {
     KVStore kv;
     IntColumn* ic = new IntColumn(&kv);
     int size = 1000;
     for (int i = 0; i < size; i++) {
         ic->push_back(i);
     }
-
-    REQUIRE(ic->get_type() == 'I');
+    ic->finalize();
 
     for (int i = 0; i < size; i++) {
         REQUIRE(ic->get(i) == i);
     }
 
+    REQUIRE(ic->get_type() == 'I');
     REQUIRE(ic->size() == size);
-    ic->set(size - 1, 9001);
-    for (int i = 0; i < size - 1; i++) {
-        REQUIRE(ic->get(i) == i);
-    }
-
-    REQUIRE(ic->size() == size);
-    REQUIRE(ic->get(size - 1) == 9001);
-
     REQUIRE(ic->as_int() == ic);
     REQUIRE(ic->as_bool() == nullptr);
     REQUIRE(ic->as_double() == nullptr);
@@ -47,14 +39,15 @@ TEST_CASE("test_int_column", "[column]") {
     delete ic;
 }
 
-// tests for a Float Column
-TEST_CASE("test_double_column", "[column]") {
+// tests for a double Column
+TEST_CASE("test double column", "[column]") {
     KVStore kv;
     DoubleColumn* fc = new DoubleColumn(&kv);
     int size = 1000;
     for (int i = 0; i < size; i++) {
         fc->push_back(i * 1.5f);
     }
+    fc->finalize();
 
     REQUIRE(fc->get_type() == 'D');
 
@@ -63,14 +56,6 @@ TEST_CASE("test_double_column", "[column]") {
     }
 
     REQUIRE(fc->size() == size);
-    fc->set(size - 1, 9001.9001);
-    for (int i = 0; i < size - 1; i++) {
-        REQUIRE(double_equal(fc->get(i), i * 1.5f));
-    }
-
-    REQUIRE(fc->size() == size);
-    REQUIRE(double_equal(fc->get(size - 1), 9001.9001));
-
     REQUIRE(fc->as_int() == nullptr);
     REQUIRE(fc->as_double() == fc);
     REQUIRE(fc->as_bool() == nullptr);
@@ -78,8 +63,8 @@ TEST_CASE("test_double_column", "[column]") {
 
     delete fc;
 }
-// tests for an Int Column
-TEST_CASE("test_bool_column", "[column]") {
+// tests for an bool Column
+TEST_CASE("test bool column", "[column]") {
     KVStore kv;
     BoolColumn* bc = new BoolColumn(&kv);
     int size = 10000;
@@ -87,6 +72,7 @@ TEST_CASE("test_bool_column", "[column]") {
         bool val = i % 2 ? false : true;
         bc->push_back(val);
     }
+    bc->finalize();
 
     REQUIRE(bc->get_type() == 'B');
 
@@ -96,19 +82,6 @@ TEST_CASE("test_bool_column", "[column]") {
     }
 
     REQUIRE(bc->size() == size);
-    bool old_last = bc->get(size - 1);
-    bc->set(size - 1, !old_last);
-    for (int i = 0; i < size - 1; i++) {
-        if (i % 2 == 0) {
-            REQUIRE(bc->get(i));
-        } else {
-            REQUIRE_FALSE(bc->get(i));
-        }
-    }
-
-    REQUIRE(bc->size() == size);
-    REQUIRE(bc->get(size - 1) == !old_last);
-
     REQUIRE(bc->as_int() == nullptr);
     REQUIRE(bc->as_bool() == bc);
     REQUIRE(bc->as_double() == nullptr);
@@ -117,7 +90,7 @@ TEST_CASE("test_bool_column", "[column]") {
     delete bc;
 }
 
-TEST_CASE("test_string_column", "[column]") {
+TEST_CASE("test string column", "[column]") {
     KVStore kv;
     StringColumn* sc = new StringColumn(&kv);
     String* a = new String("a");
@@ -129,16 +102,13 @@ TEST_CASE("test_string_column", "[column]") {
     sc->push_back(a);
     sc->push_back(b);
     sc->push_back(c);
+    sc->finalize();
 
     REQUIRE(sc->size() == 3);
     REQUIRE(sc->get_type() == 'S');
     String* s = sc->get(0);
     REQUIRE(a->equals(s));
     delete s;
-
-    sc->set(0, c);
-    s = sc->get(0);
-    REQUIRE(c->equals(s));
 
     REQUIRE(sc->as_int() == nullptr);
     REQUIRE(sc->as_bool() == nullptr);

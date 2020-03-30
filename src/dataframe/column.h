@@ -35,7 +35,7 @@ class Column : public Object {
     size_t size_;
     String* col_id_;
     Array* cache_;
-    Key* cache_key_;
+    Key cache_key_;
 
     Column(KVStore* store) : Object() {
         size_ = 0;
@@ -50,7 +50,7 @@ class Column : public Object {
             buff.c(c);
         }
         col_id_ = buff.get();
-        cache_key_ = nullptr;
+        expand_();
     }
 
     /**
@@ -67,7 +67,6 @@ class Column : public Object {
         for (size_t i = 0; i < num_segments; i++) {
             segments_.push_back(Key(d));
         }
-        cache_key_ = nullptr;
     }
 
     virtual ~Column() {
@@ -120,9 +119,12 @@ class Column : public Object {
 
     /**
      * Marks the column as final and doesn't allow for any more additions.
+     * Column cannot already be finalized.
      */
     void finalize() {
-        // TODO implement finalize
+        assert(!finalized_);
+        finalized_ = true;
+        put_in_store_();
     }
 
     /**
@@ -135,8 +137,10 @@ class Column : public Object {
 
     /**
      * Serializes the column.
+     * Column must be finalized.
      */
     virtual void serialize(Serializer* s) {
+        assert(finalized_);
         s->add_size_t(size_);
         s->add_string(col_id_);
         s->add_size_t(segments_.size());
@@ -150,12 +154,13 @@ class Column : public Object {
         snprintf(buffer, 15, "%s_%zu", col_id_->c_str(), segments_.size());
         Key new_k = Key(buffer);
         segments_.push_back(new_k);
+    }
+
+    virtual void put_in_store_() {
         Serializer s;
         cache_->serialize(&s);
         Value* v = new Value(s.get_bytes(), s.size());
-        delete cache_;
-        cache_ = nullptr;
-        store_->put(new_k, v);
+        store_->put(segments_.back(), v);
     }
 };
 
@@ -178,34 +183,41 @@ class IntColumn : public Column {
         cache_ = new IntArray(SEGMENT_CAPACITY);
     }
 
+    /**
+     * Pushes item onto the column.
+     * Column must not be finalized.
+     * @arg val  the value to add
+     */
     void push_back(int val) {
         assert(!finalized_);
         if (size_ == segments_.size() * SEGMENT_CAPACITY) {
+            put_in_store_();
             expand_();
         }
-        Key& k = segments_.back();
-        Value* v = store_->get(k);
-        Deserializer d(v->get_bytes(), v->size());
-        IntArray temp(&d);
-        temp.push_back(val);
-        Serializer s;
-        temp.serialize(&s);
-        Value* new_v = new Value(s.get_bytes(), s.size());
-        store_->put(k, new_v);
-        delete v;
+        static_cast<IntArray*>(cache_)->push_back(val);
         size_ += 1;
     }
 
+    /**
+     * Gets the item at the given index.
+     * Column must be finalized.
+     * @arg idx  the index to get at
+     * @return the item at the index
+     */
     int get(size_t idx) {
         assert(idx < size());
+        assert(finalized_);
         size_t segment_index = idx / SEGMENT_CAPACITY;
         int index_in_seg = idx % SEGMENT_CAPACITY;
         Key& k = segments_[segment_index];
-        Value* v = store_->get(k);
-        Deserializer d(v->get_bytes(), v->size());
-        IntArray temp(&d);
-        delete v;
-        return temp.get(index_in_seg);
+        if (!k.equals(&k)) {
+            delete cache_;
+            Value* v = store_->get(k);
+            Deserializer d(v->get_bytes(), v->size());
+            cache_ = new IntArray(&d);
+            cache_key_ = k;
+        }
+        return cache_->get_int(index_in_seg);
     }
 
     IntColumn* as_int() {
@@ -242,32 +254,40 @@ class BoolColumn : public Column {
         cache_ = new BoolArray(SEGMENT_CAPACITY);
     }
 
+    /**
+     * Pushes item onto the column.
+     * Column must not be finalized.
+     * @arg val  the value to add
+     */
     void push_back(bool val) {
+        assert(!finalized_);
         if (size_ == segments_.size() * SEGMENT_CAPACITY) {
             expand_();
         }
-        Key& k = segments_.back();
-        Value* v = store_->get(k);
-        Deserializer d(v->get_bytes(), v->size());
-        BoolArray temp(&d);
-        temp.push_back(val);
-        Serializer s;
-        temp.serialize(&s);
-        store_->put(k, new Value(s.get_bytes(), s.size()));
-        delete v;
+        static_cast<BoolArray*>(cache_)->push_back(val);
         size_ += 1;
     }
 
+    /**
+     * Gets the item at the given index.
+     * Column must be finalized.
+     * @arg idx  the index to get at
+     * @return the item at the index
+     */
     bool get(size_t idx) {
         assert(idx < size());
+        assert(finalized_);
         size_t segment_index = idx / SEGMENT_CAPACITY;
         int index_in_seg = idx % SEGMENT_CAPACITY;
         Key& k = segments_[segment_index];
-        Value* v = store_->get(k);
-        Deserializer d(v->get_bytes(), v->size());
-        BoolArray temp(&d);
-        delete v;
-        return temp.get(index_in_seg);
+        if (!k.equals(&k)) {
+            delete cache_;
+            Value* v = store_->get(k);
+            Deserializer d(v->get_bytes(), v->size());
+            cache_ = new BoolArray(&d);
+            cache_key_ = k;
+        }
+        return cache_->get_bool(index_in_seg);
     }
 
     BoolColumn* as_bool() {
@@ -304,32 +324,40 @@ class DoubleColumn : public Column {
         cache_ = new DoubleArray(SEGMENT_CAPACITY);
     }
 
+    /**
+     * Pushes item onto the column.
+     * Column must not be finalized.
+     * @arg val  the value to add
+     */
     void push_back(double val) {
+        assert(!finalized_);
         if (size_ == segments_.size() * SEGMENT_CAPACITY) {
             expand_();
         }
-        Key& k = segments_.back();
-        Value* v = store_->get(k);
-        Deserializer d(v->get_bytes(), v->size());
-        DoubleArray temp(&d);
-        temp.push_back(val);
-        Serializer s;
-        temp.serialize(&s);
-        store_->put(k, new Value(s.get_bytes(), s.size()));
-        delete v;
+        static_cast<DoubleArray*>(cache_)->push_back(val);
         size_ += 1;
     }
 
+    /**
+     * Gets the item at the given index.
+     * Column must be finalized.
+     * @arg idx  the index to get at
+     * @return the item at the index
+     */
     double get(size_t idx) {
         assert(idx < size());
+        assert(finalized_);
         size_t segment_index = idx / SEGMENT_CAPACITY;
         int index_in_seg = idx % SEGMENT_CAPACITY;
         Key& k = segments_[segment_index];
-        Value* v = store_->get(k);
-        Deserializer d(v->get_bytes(), v->size());
-        DoubleArray temp(&d);
-        delete v;
-        return temp.get(index_in_seg);
+        if (!k.equals(&k)) {
+            delete cache_;
+            Value* v = store_->get(k);
+            Deserializer d(v->get_bytes(), v->size());
+            cache_ = new DoubleArray(&d);
+            cache_key_ = k;
+        }
+        return cache_->get_double(index_in_seg);
     }
 
     DoubleColumn* as_double() {
@@ -373,35 +401,40 @@ class StringColumn : public Column {
         cache_ = new StringArray(SEGMENT_CAPACITY);
     }
 
+    /**
+     * Pushes item onto the column.
+     * Column must not be finalized.
+     * @arg val  the value to add
+     */
     void push_back(String* val) {
+        assert(!finalized_);
         if (size_ == segments_.size() * SEGMENT_CAPACITY) {
             expand_();
         }
-        Key& k = segments_.back();
-        Value* v = store_->get(k);
-        Deserializer d(v->get_bytes(), v->size());
-        StringArray temp(&d);
-        temp.push_back(val->clone());
-        Serializer s;
-        temp.serialize(&s);
-        store_->put(k, new Value(s.get_bytes(), s.size()));
-        temp.delete_items();
-        delete v;
+        static_cast<StringArray*>(cache_)->push_back(val->clone());
         size_ += 1;
     }
 
+    /**
+     * Gets the item at the given index.
+     * Column must be finalized.
+     * @arg idx  the index to get at
+     * @return the item at the index
+     */
     String* get(size_t idx) {
         assert(idx < size());
+        assert(finalized_);
         size_t segment_index = idx / SEGMENT_CAPACITY;
         int index_in_seg = idx % SEGMENT_CAPACITY;
         Key& k = segments_[segment_index];
-        Value* v = store_->get(k);
-        Deserializer d(v->get_bytes(), v->size());
-        StringArray temp(&d);
-        delete v;
-        String* result = temp.get(index_in_seg)->clone();
-        temp.delete_items();
-        return result;
+        if (!k.equals(&k)) {
+            delete cache_;
+            Value* v = store_->get(k);
+            Deserializer d(v->get_bytes(), v->size());
+            cache_ = new StringArray(&d);
+            cache_key_ = k;
+        }
+        return cache_->get_string(index_in_seg);
     }
 
     StringColumn* as_string() {

@@ -69,6 +69,24 @@ class Array : public Object {
     }
 
     /**
+     * Getters for each type. responsibility of children.
+     * @arg i  index of the element to get
+     * @return element at the index
+     */
+    virtual int get_int(size_t i) {
+        assert(false);
+    }
+    virtual bool get_bool(size_t i) {
+        assert(false);
+    }
+    virtual double get_double(size_t i) {
+        assert(false);
+    }
+    virtual String* get_string(size_t i) {
+        assert(false);
+    }
+
+    /**
      * Gets the number of elements in the array.
      * @return the number of elements
      */
@@ -92,6 +110,15 @@ class Array : public Object {
 class IntArray : public Array {
     public:
     IntArray(size_t max_size) : Array(max_size) {}
+
+    IntArray(Deserializer* d) : IntArray(d->get_size_t()) {
+        // size_ = d->get_size_t();
+        // capacity_ = size_;
+        // items_ = new Data[capacity_];
+        for(size_t i = 0; i < capacity_; i++) {
+            push_back(d->get_int());
+        }
+    }
 
     /**
      * Adds an element to the end the array.
@@ -133,6 +160,15 @@ class DoubleArray : public Array {
     public:
     DoubleArray(size_t max_size) : Array(max_size) {}
 
+    DoubleArray(Deserializer* d) : DoubleArray(d->get_size_t()) {
+        // size_ = d->get_size_t();
+        // capacity_ = size_;
+        // items_ = new Data[capacity_];
+        for(size_t i = 0; i < capacity_; i++) {
+            push_back(d->get_double());
+        }
+    }
+
     /**
      * Adds an element to the end the array.
      * @arg i  element to add
@@ -173,6 +209,15 @@ class BoolArray : public Array {
     public:
     BoolArray(size_t max_size) : Array(max_size) {}
 
+    BoolArray(Deserializer* d) : BoolArray(d->get_size_t()) {
+        // size_ = d->get_size_t();
+        // capacity_ = size_;
+        // items_ = new Data[capacity_];
+        for(size_t i = 0; i < capacity_; i++) {
+            push_back(d->get_bool());
+        }
+    }
+
     /**
      * Adds an element to the end the array.
      * @arg b  element to add
@@ -212,6 +257,15 @@ class BoolArray : public Array {
 class StringArray : public Array {
     public:
     StringArray(size_t max_size) : Array(max_size) {}
+
+    StringArray(Deserializer* d) : StringArray(d->get_size_t()) {
+        // size_ = d->get_size_t();
+        // capacity_ = size_;
+        // items_ = new Data[capacity_];
+        for(size_t i = 0; i < capacity_; i++) {
+            push_back(d->get_string());
+        }
+    }
 
     /**
      * Adds an element to the end the array.
