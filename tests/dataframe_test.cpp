@@ -69,6 +69,25 @@ TEST_CASE("getting values out of dataframe", "[dataframe]") {
     delete str;
 }
 
+// test col_type method
+TEST_CASE("get the type of column in data frame", "[dataframe]") {
+    KVStore kv;
+    IntColumn* ic = new IntColumn(&kv);
+    BoolColumn* bc = new BoolColumn(&kv);
+    StringColumn* sc = new StringColumn(&kv);
+    DoubleColumn* dc = new DoubleColumn(&kv);
+    std::vector<Column*> cs = std::vector<Column*>();
+    cs.push_back(ic);
+    cs.push_back(bc);
+    cs.push_back(sc);
+    cs.push_back(dc);
+    DataFrame df(cs, &kv);
+    REQUIRE(df.col_type(0) == 'I');
+    REQUIRE(df.col_type(1) == 'B');
+    REQUIRE(df.col_type(2) == 'S');
+    REQUIRE(df.col_type(3) == 'D');
+}
+
 // test fromArray methods
 TEST_CASE("fromArray for all types", "[dataframe][kdstore]") {
     KVStore kv;

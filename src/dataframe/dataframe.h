@@ -123,7 +123,6 @@ class DataFrame : public Object {
         return df_schema_->width();
     }
 
-    // TODO test col type method
     /** Get the type of a column in a dataframe. */
     char col_type(size_t col_idx) {
         return df_schema_->col_type(col_idx);
@@ -157,6 +156,5 @@ class DataFrame : public Object {
     static DataFrame* fromScalar(Key* k, KDStore* kd, bool val);
     static DataFrame* fromScalar(Key* k, KDStore* kd, String* val);
 
-    // TODO add fromFile method
     static DataFrame* fromFile(Key* k, KDStore* kd, const char* file_name);
 };
