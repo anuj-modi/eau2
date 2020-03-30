@@ -1,6 +1,7 @@
 #pragma once
 #include <unordered_map>
 #include "key.h"
+#include "util/lock.h"
 #include "value.h"
 
 /**
@@ -10,6 +11,7 @@
 class KVStore : public Object {
    public:
     std::unordered_map<Key, Value*> items_;
+    Lock l_;
 
     KVStore() : Object() {
         items_ = std::unordered_map<Key, Value*>();
@@ -17,7 +19,7 @@ class KVStore : public Object {
 
     virtual ~KVStore() {
         for (std::unordered_map<Key, Value*>::iterator it = items_.begin(); it != items_.end();
-        it++) {
+             it++) {
             delete it->second;
         }
     }
@@ -28,7 +30,10 @@ class KVStore : public Object {
      * @return if it exists in the store
      */
     virtual bool in(Key& k) {
-        return items_.find(k) != items_.end();
+        l_.lock();
+        bool result = items_.find(k) != items_.end();
+        l_.unlock();
+        return result;
     }
 
     /**
@@ -38,7 +43,11 @@ class KVStore : public Object {
      * @return the value
      */
     virtual Value* get(Key& k) {
-        return items_[k]->clone();
+        l_.lock();
+        assert(items_.find(k) != items_.end());
+        Value* result = items_.at(k);
+        l_.unlock();
+        return result->clone();
     }
 
     /**
@@ -47,9 +56,13 @@ class KVStore : public Object {
      * @return the value
      */
     virtual Value* waitAndGet(Key& k) {
-        while (!in(k)) {
+        l_.lock();
+        while (items_.find(k) == items_.end()) {
+            l_.wait();
         }
-        return get(k);
+        Value* result = items_.at(k);
+        l_.unlock();
+        return result->clone();
     }
 
     /**
@@ -59,11 +72,14 @@ class KVStore : public Object {
      * @arg v  the value to put in the store
      */
     virtual void put(Key& k, Value* v) {
+        l_.lock();
         if (items_.find(k) != items_.end()) {
             delete items_[k];
             items_[k] = v;
         } else {
             items_[Key(k)] = v;
         }
+        l_.notify_all();
+        l_.unlock();
     }
 };
