@@ -190,3 +190,12 @@ TEST_CASE("fromScalar for all types", "[dataframe][kdstore]") {
     delete strs;
     delete doubles;
 }
+
+// test fromFile method
+TEST_CASE("create data frame from file", "[dataframe][kdstore]") {
+    KVStore kv;
+    KDStore kd(&kv);
+    Key k("data");
+    delete DataFrame::fromFile(&k, &kd, "./data/data4.sor");
+    
+}
