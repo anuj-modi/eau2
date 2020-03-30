@@ -22,6 +22,7 @@ class DataFrame : public Object {
 
     /**
      * Creates a data frame from a given set of columns.
+     * Data frame takes ownership of the given columns.
      */
     DataFrame(std::vector<Column*> columns, KVStore* store) : Object() {
         size_t length = columns[0]->size();
@@ -37,6 +38,10 @@ class DataFrame : public Object {
         }
     }
 
+    /**
+     * Creates a data frame from a column.
+     * Data frame takes ownership of the column.
+     */
     DataFrame(Column* c, KVStore* store) : Object() {
         assert(c != nullptr && store != nullptr);
         store_ = store;
