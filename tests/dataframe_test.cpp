@@ -196,17 +196,29 @@ TEST_CASE("create data frame from file", "[dataframe][kdstore]") {
     KVStore kv;
     KDStore kd(&kv);
     Key k("data");
-    DataFrame* df = DataFrame::fromFile(&k, &kd, "./data/data3.sor");
-    // DataFrame* df_copy = kd.get(k);
+    DataFrame* df = DataFrame::fromFile(&k, &kd, "./data/data4.sor");
+    DataFrame* df_copy = kd.get(k);
 
     REQUIRE(df->ncols() == 4);
-    REQUIRE(df->nrows() == 4);
-    REQUIRE(df->get_bool(0, 1));
-    REQUIRE(df->get_int(1, 2) == -11);
+    REQUIRE(df->nrows() == 672);
+    REQUIRE(df->get_bool(0, 486));
+    REQUIRE(df->get_int(1, 654) == -11);
     REQUIRE(double_equal(df->get_double(2, 83), -17.5));
+    REQUIRE(df_copy->ncols() == 4);
+    REQUIRE(df_copy->nrows() == 672);
+    REQUIRE(df_copy->get_bool(0, 486));
+    REQUIRE(df_copy->get_int(1, 654) == -11);
+    REQUIRE(double_equal(df_copy->get_double(2, 83), -17.5));
+
     String* s = new String("0.4");
     String* s2 = df->get_string(3, 294);
+    String* s3 = df_copy->get_string(3, 294);
     REQUIRE(s2->equals(s));
+    REQUIRE(s3->equals(s));
+
+    delete s;
     delete s2;
+    delete s3;
     delete df;
+    delete df_copy;
 }

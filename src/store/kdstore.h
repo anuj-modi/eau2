@@ -154,9 +154,7 @@ inline DataFrame* DataFrame::fromFile(Key* k, KDStore* kd, const char* file_name
     parser.parseFile();
     ColumnSet* cols = parser.getColumnSet();
     DataFrame* df = new DataFrame(cols->getColumns(), kd->get_kvstore());
-    printf("%d\n", df->get_int(1, 2));
     kd->put(*k, df);
     fclose(file);
-    // delete cols;
     return df;
 }
