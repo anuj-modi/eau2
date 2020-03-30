@@ -149,14 +149,12 @@ inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, String* val) {
 
 inline DataFrame* DataFrame::fromFile(Key* k, KDStore* kd, const char* file_name) {
     FILE* file = fopen(file_name, "r");
-    KVStore kv;
-    SorParser parser(file, &kv);
+    SorParser parser(file, kd->get_kvstore());
     parser.guessSchema();
     parser.parseFile();
     ColumnSet* cols = parser.getColumnSet();
-    DataFrame* df = new DataFrame(cols->getColumns(), &kv);
+    DataFrame* df = new DataFrame(cols->getColumns(), kd->get_kvstore());
     kd->put(*k, df);
     fclose(file);
-    // delete cols;
     return df;
 }
