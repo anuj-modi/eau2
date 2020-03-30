@@ -196,6 +196,7 @@ TEST_CASE("create data frame from file", "[dataframe][kdstore]") {
     KVStore kv;
     KDStore kd(&kv);
     Key k("data");
+<<<<<<< HEAD
     DataFrame* df = DataFrame::fromFile(&k, &kd, "./data/data4.sor");
     DataFrame* df_copy = kd.get(k);
 
@@ -219,4 +220,8 @@ TEST_CASE("create data frame from file", "[dataframe][kdstore]") {
     delete s;
     delete s2;
     delete s3;
+=======
+    delete DataFrame::fromFile(&k, &kd, "./data/data4.sor");
+    
+>>>>>>> writing test for fromFile
 }
