@@ -84,6 +84,7 @@ int main() {
 
 ## Open questions
 * How would local_map work given that we were told that row, rower, and fielder were not needed?
+* What is a good number of items for one chunk in a column?
 
 ## Status
 Multiple instances of KVStore can work together. Columns and data frames were stripped down to be immutable. Next steps include:
