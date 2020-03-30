@@ -3,6 +3,10 @@
 #include "key.h"
 #include "value.h"
 
+/**
+ * Key value store.
+ * Author: gomes.chri, modi.an
+ */
 class KVStore : public Object {
    public:
     std::unordered_map<Key, Value*> items_;

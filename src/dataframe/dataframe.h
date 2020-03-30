@@ -12,7 +12,8 @@ class KDStore;
  *
  * A DataFrame is table composed of columns of equal length. Each column
  * holds values of the same type (I, S, B, F). A dataframe has a schema that
- * describes it. This is a data frame with only sequential map.
+ * describes it.
+ * Author: gomes.chri, modi.an
  */
 class DataFrame : public Object {
    public:
@@ -149,4 +150,6 @@ class DataFrame : public Object {
     static DataFrame* fromScalar(Key* k, KDStore* kd, int val);
     static DataFrame* fromScalar(Key* k, KDStore* kd, bool val);
     static DataFrame* fromScalar(Key* k, KDStore* kd, String* val);
+
+    // TODO add fromFile method
 };

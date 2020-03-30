@@ -5,6 +5,10 @@
 
 enum class MsgType;
 
+/**
+ * Helper class to serialize objects into char buffers.
+ * Author: gomes.chri, modi.an
+ */
 class Serializer : public Object {
    public:
     char* bytes_;
@@ -138,6 +142,10 @@ class Serializer : public Object {
     }
 };
 
+/**
+ * Helper class to deserialize objects from char buffers.
+ * Author: gomes.chri, modi.an
+ */
 class Deserializer : public Object {
    public:
     char* bytes_;

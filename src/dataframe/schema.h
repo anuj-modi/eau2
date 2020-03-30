@@ -8,9 +8,9 @@
 /*************************************************************************
  * Schema::
  * A schema is a description of the contents of a data frame, the schema
- * knows the number of columns and number of rows, the type of each column,
- * optionally columns and rows can be named by strings.
+ * knows the number of columns, number of rows, and the type of each column.
  * The valid types are represented by the chars 'S', 'B', 'I' and 'D'.
+ * Author: gomes.chri, modi.an
  */
 class Schema : public Object {
     std::vector<char> col_types_;

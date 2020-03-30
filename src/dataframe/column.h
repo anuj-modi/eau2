@@ -25,8 +25,9 @@ static const size_t ALPHA_SIZE = 52;
  * Column ::
  * Represents one column of a data frame which holds values of a single type.
  * This abstract class defines methods overriden in subclasses. There is
- * one subclass per element type. Columns are mutable, equality is pointer
- * equality. */
+ * one subclass per element type.
+ * Author: gomes.chri, modi.an
+ */
 class Column : public Object {
    public:
     std::vector<Key> segments_;
@@ -170,6 +171,7 @@ class Column : public Object {
 /*************************************************************************
  * IntColumn::
  * Holds int values.
+ * Author: gomes.chri, modi.an
  */
 class IntColumn : public Column {
    public:
@@ -247,6 +249,7 @@ class IntColumn : public Column {
 /*************************************************************************
  * BoolColumn::
  * Holds bool values.
+ * Author: gomes.chri, modi.an
  */
 class BoolColumn : public Column {
    public:
@@ -324,6 +327,7 @@ class BoolColumn : public Column {
 /*************************************************************************
  * DoubleColumn::
  * Holds double values.
+ * Author: gomes.chri, modi.an
  */
 class DoubleColumn : public Column {
    public:
@@ -406,8 +410,9 @@ class DoubleColumn : public Column {
 
 /*************************************************************************
  * StringColumn::
- * Holds string pointers. The strings are external.  Nullptr is a valid
+ * Holds string pointers. Strings are copied when added and nullptr is a valid
  * value.
+ * Author: gomes.chri, modi.an
  */
 class StringColumn : public Column {
    public:

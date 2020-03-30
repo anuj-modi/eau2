@@ -4,6 +4,10 @@
 #include "kvstore.h"
 #include "util/serial.h"
 
+/**
+ * Wrapper to hold DataFrames in a KVStore.
+ * Author: gomes.chri, modi.an
+ */
 class KDStore : public Object {
    public:
     KVStore* store_;
