@@ -152,4 +152,5 @@ class DataFrame : public Object {
     static DataFrame* fromScalar(Key* k, KDStore* kd, String* val);
 
     // TODO add fromFile method
+    static DataFrame* fromFile(Key* k, KDStore* kd, const char* file_name);
 };
