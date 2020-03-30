@@ -123,6 +123,12 @@ class DataFrame : public Object {
         return df_schema_->width();
     }
 
+    // TODO test col type method
+    /** Get the type of a column in a dataframe. */
+    char col_type(size_t col_idx) {
+        return df_schema_->col_type(col_idx);
+    }
+
     void serialize(Serializer* s) {
         df_schema_->serialize(s);
         for (size_t i = 0; i < columns_.size(); i++) {

@@ -28,7 +28,7 @@ TEST_CASE("get schema from a dataframe", "[dataframe]") {
     REQUIRE(s.width() == 1);
 }
 
-// getting a value in a dataframe
+// test getting a value in a dataframe
 TEST_CASE("getting values out of dataframe", "[dataframe]") {
     KVStore kv;
     IntColumn* ic = new IntColumn(&kv);
