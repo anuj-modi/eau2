@@ -5,6 +5,10 @@
 
 enum class MsgType;
 
+/**
+ * Helper class to serialize objects into char buffers.
+ * Author: gomes.chri, modi.an
+ */
 class Serializer : public Object {
    public:
     char* bytes_;
@@ -120,6 +124,7 @@ class Serializer : public Object {
     }
 
     void add_buffer(const void* buf, size_t num_bytes) {
+        assert(num_bytes > 0);
         assert(buf != nullptr);
         size_t new_size = size_ + num_bytes;
         if (new_size > capacity_) {
@@ -137,6 +142,10 @@ class Serializer : public Object {
     }
 };
 
+/**
+ * Helper class to deserialize objects from char buffers.
+ * Author: gomes.chri, modi.an
+ */
 class Deserializer : public Object {
    public:
     char* bytes_;
@@ -203,6 +212,7 @@ class Deserializer : public Object {
     }
 
     char* get_buffer(size_t num_bytes) {
+        assert(num_bytes > 0);
         assert(bytes_remaining_ >= num_bytes);
         char* result = new char[num_bytes];
         get_buffer(num_bytes, result);
@@ -210,6 +220,7 @@ class Deserializer : public Object {
     }
 
     void get_buffer(size_t num_bytes, char* buf) {
+        assert(num_bytes > 0);
         assert(bytes_remaining_ >= num_bytes);
         memcpy(buf, current_, num_bytes);
         current_ += num_bytes;

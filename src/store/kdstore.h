@@ -4,6 +4,10 @@
 #include "kvstore.h"
 #include "util/serial.h"
 
+/**
+ * Wrapper to hold DataFrames in a KVStore.
+ * Author: gomes.chri, modi.an
+ */
 class KDStore : public Object {
    public:
     KVStore* store_;
@@ -19,7 +23,7 @@ class KDStore : public Object {
      * @arg k  the key
      * @return if it exists in the store
      */
-    virtual bool in(Key* k) {
+    virtual bool in(Key& k) {
         return store_->in(k);
     }
 
@@ -28,11 +32,20 @@ class KDStore : public Object {
      * @arg k  the key
      * @return the value
      */
-    DataFrame* get(Key* k) {
+    DataFrame* get(Key& k) {
         Value* v = store_->get(k);
-        Deserializer d(v->get_bytes(), v->get_size());
-        DataFrame* df = new DataFrame(&d);
+        Deserializer d(v->get_bytes(), v->size());
+        DataFrame* df = new DataFrame(&d, store_);
+        delete v;
         return df;
+    }
+
+    /**
+     * Gets underlying KVStore.
+     * @return the kvstore
+     */
+    KVStore* get_kvstore() {
+        return store_;
     }
 
     /**
@@ -40,10 +53,11 @@ class KDStore : public Object {
      * @arg k  the key
      * @return the value
      */
-    DataFrame* wait_and_get(Key* k) {
-        Value* v = store_->wait_and_get(k);
-        Deserializer d(v->get_bytes(), v->get_size());
-        DataFrame* df = new DataFrame(&d);
+    DataFrame* waitAndGet(Key& k) {
+        Value* v = store_->waitAndGet(k);
+        Deserializer d(v->get_bytes(), v->size());
+        DataFrame* df = new DataFrame(&d, store_);
+        delete v;
         return df;
     }
 
@@ -52,7 +66,7 @@ class KDStore : public Object {
      * @arg k  the key to put the value at
      * @arg v  the value to put in the store
      */
-    void put(Key* k, DataFrame* df) {
+    void put(Key& k, DataFrame* df) {
         Serializer s;
         df->serialize(&s);
         Value* v = new Value(s.get_bytes(), s.size());
@@ -61,89 +75,73 @@ class KDStore : public Object {
 };
 
 inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, double* vals) {
-    Schema s("D");
-    Row r(s);
-    DataFrame* df = new DataFrame(s);
+    DoubleColumn* dc = new DoubleColumn(kd->get_kvstore());
     for (size_t i = 0; i < size; i++) {
-        r.set(0, vals[i]);
-        df->add_row(r);
+        dc->push_back(vals[i]);
     }
-    kd->put(k, df);
+    DataFrame* df = new DataFrame(dc, kd->get_kvstore());
+    kd->put(*k, df);
     return df;
 }
 
 inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, int* vals) {
-    Schema s("I");
-    Row r(s);
-    DataFrame* df = new DataFrame(s);
+    IntColumn* ic = new IntColumn(kd->get_kvstore());
     for (size_t i = 0; i < size; i++) {
-        r.set(0, vals[i]);
-        df->add_row(r);
+        ic->push_back(vals[i]);
     }
-    kd->put(k, df);
+    DataFrame* df = new DataFrame(ic, kd->get_kvstore());
+    kd->put(*k, df);
     return df;
 }
 
 inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, bool* vals) {
-    Schema s("B");
-    Row r(s);
-    DataFrame* df = new DataFrame(s);
+    BoolColumn* bc = new BoolColumn(kd->get_kvstore());
     for (size_t i = 0; i < size; i++) {
-        r.set(0, vals[i]);
-        df->add_row(r);
+        bc->push_back(vals[i]);
     }
-    kd->put(k, df);
+    DataFrame* df = new DataFrame(bc, kd->get_kvstore());
+    kd->put(*k, df);
     return df;
 }
 
 inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, String** vals) {
-    Schema s("S");
-    Row r(s);
-    DataFrame* df = new DataFrame(s);
+    StringColumn* sc = new StringColumn(kd->get_kvstore());
     for (size_t i = 0; i < size; i++) {
-        r.set(0, vals[i]);
-        df->add_row(r);
+        sc->push_back(vals[i]);
     }
-    kd->put(k, df);
+    DataFrame* df = new DataFrame(sc, kd->get_kvstore());
+    kd->put(*k, df);
     return df;
 }
 
 inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, double val) {
-    Schema s("D");
-    Row r(s);
-    DataFrame* df = new DataFrame(s);
-    r.set(0, val);
-    df->add_row(r);
-    kd->put(k, df);
+    DoubleColumn* dc = new DoubleColumn(kd->get_kvstore());
+    dc->push_back(val);
+    DataFrame* df = new DataFrame(dc, kd->get_kvstore());
+    kd->put(*k, df);
     return df;
 }
 
 inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, int val) {
-    Schema s("I");
-    Row r(s);
-    DataFrame* df = new DataFrame(s);
-    r.set(0, val);
-    df->add_row(r);
-    kd->put(k, df);
+    IntColumn* ic = new IntColumn(kd->get_kvstore());
+    ic->push_back(val);
+    DataFrame* df = new DataFrame(ic, kd->get_kvstore());
+    kd->put(*k, df);
     return df;
 }
 
 inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, bool val) {
-    Schema s("B");
-    Row r(s);
-    DataFrame* df = new DataFrame(s);
-    r.set(0, val);
-    df->add_row(r);
-    kd->put(k, df);
+    BoolColumn* bc = new BoolColumn(kd->get_kvstore());
+    bc->push_back(val);
+    DataFrame* df = new DataFrame(bc, kd->get_kvstore());
+    kd->put(*k, df);
     return df;
 }
 
 inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, String* val) {
-    Schema s("S");
-    Row r(s);
-    DataFrame* df = new DataFrame(s);
-    r.set(0, val);
-    df->add_row(r);
-    kd->put(k, df);
+    StringColumn* sc = new StringColumn(kd->get_kvstore());
+    sc->push_back(val);
+    DataFrame* df = new DataFrame(sc, kd->get_kvstore());
+    kd->put(*k, df);
     return df;
 }

@@ -2,8 +2,8 @@
 #include <float.h>
 #include <limits.h>
 #include "catch.hpp"
-#include "network/message.h"
 #include "util/string.h"
+#include "util/array.h"
 
 /**
  * Determine if these two doubles are equal with respect to eps.
@@ -74,20 +74,6 @@ TEST_CASE("test_serialize_deserialize_uint_32_t", "[serialize][deserialize]") {
     REQUIRE(d.get_size_t() == UINT32_MAX);
 }
 
-TEST_CASE("test_serialize_deserialize_message_type", "[serialize][deserialize][message_type]") {
-    MsgType types[] = {MsgType::ACK,      MsgType::NACK,       MsgType::PUT,    MsgType::REPLY,
-                       MsgType::GET,      MsgType::WAITANDGET, MsgType::STATUS, MsgType::KILL,
-                       MsgType::REGISTER, MsgType::DIRECTORY};
-    Serializer s;
-    for (size_t i = 0; i < 10; i++) {
-        s.add_msg_type(types[i]);
-    }
-    Deserializer d(s.get_bytes(), s.size());
-    for (size_t i = 0; i < 10; i++) {
-        REQUIRE(d.get_msg_type() == types[i]);
-    }
-}
-
 TEST_CASE("test_serialize_deserialize_buffer", "[serialize][deserialize][string]") {
     Serializer s;
     s.add_buffer("TESTING", sizeof("TESTING"));
@@ -129,8 +115,8 @@ TEST_CASE("test_serialize_deserialize_string", "[serialize][deserialize][string]
 }
 
 TEST_CASE("test serialize deserialize string array",
-          "[serialize][deserialize][array][string][bad]") {
-    StringArray* strs = new StringArray();
+          "[serialize][deserialize][array][string]") {
+    StringArray* strs = new StringArray(5);
     String* h1 = new String("hello there");
     String* h2 = new String("why howdy!");
     strs->push_back(h1);
@@ -141,27 +127,27 @@ TEST_CASE("test serialize deserialize string array",
     Deserializer* d = new Deserializer(s->get_bytes(), s->size());
     StringArray* strs_copy = new StringArray(d);
 
-    REQUIRE(strs->equals(strs_copy));
+    REQUIRE(strs_copy->get_string(0)->equals(h1));
+    REQUIRE(strs_copy->get_string(1)->equals(h2));
 
-    delete h1;
-    delete h2;
     delete strs;
-    delete strs_copy->get(0);
-    delete strs_copy->get(1);
     delete strs_copy;
     delete s;
     delete d;
 }
 
 TEST_CASE("test serialize deserialize double array", "[serialize][deserialize][array]") {
-    DoubleArray* doubles = new DoubleArray();
+    DoubleArray* doubles = new DoubleArray(5);
     doubles->push_back(1.2);
     doubles->push_back(-4.5);
     Serializer* s = new Serializer();
     doubles->serialize(s);
     Deserializer* d = new Deserializer(s->get_bytes(), s->size());
     DoubleArray* doubles_copy = new DoubleArray(d);
-    REQUIRE(doubles->equals(doubles_copy));
+
+    REQUIRE(double_equal(doubles_copy->get_double(0), doubles->get_double(0)));
+    REQUIRE(double_equal(doubles_copy->get_double(1), doubles->get_double(1)));
+
     delete doubles;
     delete doubles_copy;
     delete s;

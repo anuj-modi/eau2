@@ -1,5 +1,6 @@
 #pragma once
 #include <stdio.h>
+#include <vector>
 #include "util/array.h"
 #include "util/serial.h"
 #include "util/string.h"
@@ -7,24 +8,24 @@
 /*************************************************************************
  * Schema::
  * A schema is a description of the contents of a data frame, the schema
- * knows the number of columns and number of rows, the type of each column,
- * optionally columns and rows can be named by strings.
+ * knows the number of columns, number of rows, and the type of each column.
  * The valid types are represented by the chars 'S', 'B', 'I' and 'D'.
+ * Author: gomes.chri, modi.an
  */
 class Schema : public Object {
-    IntArray* col_types_;
+    std::vector<char> col_types_;
     size_t num_rows_;
 
    public:
     /** Copying constructor */
     Schema(Schema& from) : Object() {
-        col_types_ = from.col_types_->clone();
+        col_types_ = std::vector<char>(from.col_types_);
         num_rows_ = from.num_rows_;
     }
 
     /** Create an empty schema **/
     Schema() : Object() {
-        col_types_ = new IntArray();
+        col_types_ = std::vector<char>();
         num_rows_ = 0;
     }
 
@@ -36,21 +37,23 @@ class Schema : public Object {
         assert(types != nullptr);
         int num_types = strlen(types);
         for (int i = 0; i < num_types; i++) {
-            col_types_->push_back(type_to_int_(types[i]));
+            col_types_.push_back(types[i]);
         }
     }
 
     Schema(Deserializer* d) : Object() {
-        col_types_ = new IntArray(d);
+        col_types_ = std::vector<char>();
+        size_t num_cols = d->get_size_t();
+        for(size_t i = 0; i < num_cols; i++) {
+            col_types_.push_back(d->get_int());
+        }
         num_rows_ = d->get_size_t();
     }
 
-    virtual ~Schema() {
-        delete col_types_;
-    }
+    virtual ~Schema() {}
 
     void add_column(char type) {
-        col_types_->push_back(type_to_int_(type));
+        col_types_.push_back(type);
     }
 
     /** Add a row to the schema. */
@@ -68,13 +71,13 @@ class Schema : public Object {
 
     /** Return type of column at idx. An idx >= width is undefined. */
     char col_type(size_t idx) {
-        assert(idx < col_types_->size());
-        return type_to_char_(col_types_->get(idx));
+        assert(idx < col_types_.size());
+        return col_types_[idx];
     }
 
     /** The number of columns */
     size_t width() {
-        return col_types_->size();
+        return col_types_.size();
     }
 
     /** The number of rows */
@@ -82,40 +85,11 @@ class Schema : public Object {
         return num_rows_;
     }
 
-    int type_to_int_(char c) {
-        switch (c) {
-            case 'S':
-                return 1;
-            case 'B':
-                return 2;
-            case 'I':
-                return 3;
-            case 'D':
-                return 4;
-            default:
-                fprintf(stderr, "Invalid column type given\n");
-                assert(false);
-        }
-    }
-
-    char type_to_char_(int i) {
-        switch (i) {
-            case 1:
-                return 'S';
-            case 2:
-                return 'B';
-            case 3:
-                return 'I';
-            case 4:
-                return 'D';
-            default:
-                fprintf(stderr, "Invalid column type given: %d\n", i);
-                assert(false);
-        }
-    }
-
     void serialize(Serializer* s) {
-        col_types_->serialize(s);
+        s->add_size_t(width());
+        for(size_t i = 0; i < width(); i++) {
+            s->add_int(col_types_[i]);
+        }
         s->add_size_t(num_rows_);
     }
 };

@@ -31,3 +31,13 @@ TEST_CASE("hash a value", "[value]") {
     delete same;
     delete different;
 }
+
+// test clone method
+TEST_CASE("clone a value", "[value]") {
+    String s("serialized data");
+    Value v(s.c_str(), s.size());
+    Value* v_clone = v.clone();
+    REQUIRE(v.equals(v_clone));
+
+    delete v_clone;
+}

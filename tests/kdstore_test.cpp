@@ -1,34 +1,33 @@
 #include "store/kdstore.h"
+#include <vector>
 #include "catch.hpp"
 
 // test in method
 TEST_CASE("key in kdstore", "[kdstore]") {
-    Key* k_1 = new Key("one");
-    Key* k_2 = new Key("two");
-    Schema s("I");
-    DataFrame df(s);
-    Row r(s);
-    r.set(0, 5);
-    df.add_row(r);
+    Key k_1 = Key("one");
+    Key k_2 = Key("two");
+    String blah("Blah");
     KVStore kv;
+    StringColumn* sc = new StringColumn(&kv);
+    sc->push_back(&blah);
+    DataFrame df(sc, &kv);
+
     KDStore kd(&kv);
     kd.put(k_1, &df);
 
     REQUIRE(kd.in(k_1));
     REQUIRE_FALSE(kd.in(k_2));
-
-    delete k_2;
 }
 
 // test get and put methods
 TEST_CASE("put and get a value in kdstore", "[kdstore]") {
-    Key* k_1 = new Key("one");
+    Key k_1 = Key("one");
     Schema s("I");
-    DataFrame df(s);
-    Row r(s);
-    r.set(0, 5);
-    df.add_row(r);
     KVStore kv;
+    IntColumn* ic = new IntColumn(&kv);
+    ic->push_back(5);
+    DataFrame df(ic, &kv);
+    
     KDStore kd(&kv);
     kd.put(k_1, &df);
     DataFrame* copy_df = kd.get(k_1);
@@ -40,4 +39,4 @@ TEST_CASE("put and get a value in kdstore", "[kdstore]") {
     delete copy_df;
 }
 
-// TODO test kdstore wait_and_get
+// TODO test kdstore waitAndGet
