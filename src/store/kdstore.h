@@ -154,10 +154,6 @@ inline DataFrame* DataFrame::fromFile(Key* k, KDStore* kd, const char* file_name
     parser.parseFile();
     ColumnSet* cols = parser.getColumnSet();
     DataFrame* df = new DataFrame(cols->getColumns(), kd->get_kvstore());
-<<<<<<< HEAD
-=======
-    printf("%d\n", df->get_int(1, 2));
->>>>>>> fixed bug in fromFile
     kd->put(*k, df);
     fclose(file);
     return df;
