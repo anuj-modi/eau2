@@ -5,18 +5,19 @@ eau2 is a distributed system used to run machine learning algorithms and other o
 
 ## Architecture
 The main parts of the system include:
-* Store - stores data across multiple devices using keys and values (data frames for KDStore)
+* Stores - store data across multiple devices using keys and values (data frames for KDStore)
 * Dataframe - holds data in tabular format and works as an easy interface
 * Sorer - allows the system to read in ".sor" files 
 
 ## Implementation
-Classes included:
+Classes:
 * DataFrame - structure to hold data in a tabular format and works as an interface that the user can work with
 * Schema - defines the structure of a data frame
-* Row - represents a row in a data frame (used to easily add data to a data frame)
 * Column - structure that holds a list of the same data type (int, double, bool, or String) and stores its data in a distributed manner on a KVStore
 * KVStore - data structure containing keys and associated values that runs on multiple nodes and acts as one unified store
 * KDStore - wrapper around a KVStore to easily put and get DataFrame objects from the store
+* Key - represents a key in a store
+* Value - holds the data at the key in a KVStore
 * SorParser - reads in the ".sor" file and converts it into a DataFrame
 
 ## Use cases
@@ -82,10 +83,9 @@ int main() {
 
 
 ## Open questions
-* How are the different tiers supposed to interact? The description implies that the tiers will be built on top of each other, but the given code seems to contradict this.
+* How would local_map work given that we were told that row, rower, and fielder were not needed?
 
 ## Status
-The KDStore and KVStore have been created and all of the classes that support it to work locally. Next steps include:
-- Making the KVStore distributed (having columns distribute their data over multiple KVStores)
-- Allow the KVStores to work over a network
-- Need to figure out errors caused by fixing circular dependencies in DataFrame and stores (kept us from doing final tests)
+Multiple instances of KVStore can work together. Columns and data frames were stripped down to be immutable. Next steps include:
+- have KVStore function with its instances over a network
+- implement local_map
