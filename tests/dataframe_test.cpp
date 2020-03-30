@@ -209,27 +209,14 @@ TEST_CASE("create data frame from file", "[dataframe][kdstore]") {
     REQUIRE(df_copy->get_bool(0, 486));
     REQUIRE(df_copy->get_int(1, 654) == -11);
     REQUIRE(double_equal(df_copy->get_double(2, 83), -17.5));
-<<<<<<< HEAD
-=======
-
->>>>>>> f8a3686e1d13b69e9dc7a078d2e134a01f52d71d
     String* s = new String("0.4");
     String* s2 = df->get_string(3, 294);
     String* s3 = df_copy->get_string(3, 294);
     REQUIRE(s2->equals(s));
     REQUIRE(s3->equals(s));
-<<<<<<< HEAD
     delete df;
     delete df_copy;
     delete s;
     delete s2;
     delete s3;
-=======
-
-    delete s;
-    delete s2;
-    delete s3;
-    delete df;
-    delete df_copy;
->>>>>>> f8a3686e1d13b69e9dc7a078d2e134a01f52d71d
 }
