@@ -210,12 +210,12 @@ TEST_CASE("fromScalar for all types", "[dataframe][kdstore]") {
     delete doubles;
 }
 
-// test fromFile method
+// test fromSorFile method
 TEST_CASE("create data frame from file", "[dataframe][kdstore]") {
     KVStore kv;
     KDStore kd(&kv);
     Key k("data");
-    DataFrame* df = DataFrame::fromFile(&k, &kd, "./data/data4.sor");
+    DataFrame* df = DataFrame::fromSorFile(&k, &kd, "./data/data4.sor");
     DataFrame* df_copy = kd.get(k);
 
     REQUIRE(df->ncols() == 4);

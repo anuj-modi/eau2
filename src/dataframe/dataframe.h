@@ -156,5 +156,5 @@ class DataFrame : public Object {
     static DataFrame* fromScalar(Key* k, KDStore* kd, bool val);
     static DataFrame* fromScalar(Key* k, KDStore* kd, String* val);
 
-    static DataFrame* fromFile(Key* k, KDStore* kd, const char* file_name);
+    static DataFrame* fromSorFile(Key* k, KDStore* kd, const char* file_name);
 };
