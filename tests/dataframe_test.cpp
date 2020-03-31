@@ -211,7 +211,7 @@ TEST_CASE("fromScalar for all types", "[dataframe][kdstore]") {
 }
 
 // test fromSorFile method
-TEST_CASE("create data frame from file", "[dataframe][kdstore]") {
+TEST_CASE("create data frame from sor file", "[dataframe][kdstore]") {
     KVStore kv;
     KDStore kd(&kv);
     Key k("data");
