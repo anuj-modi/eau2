@@ -158,3 +158,7 @@ inline DataFrame* DataFrame::fromSorFile(Key* k, KDStore* kd, const char* file_n
     fclose(file);
     return df;
 }
+
+inline DataFrame* DataFrame::fromVisitor(Key* k, KDStore* kd, const char* types, Visitor* v) {
+
+}
