@@ -1,3 +1,5 @@
+#pragma once
+
 union Payload {
     int i;
     double d;

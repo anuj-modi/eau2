@@ -2,8 +2,8 @@
 #include "dataframe/dataframe.h"
 #include "key.h"
 #include "kvstore.h"
-#include "util/serial.h"
 #include "sorer/parser.h"
+#include "util/serial.h"
 
 /**
  * Wrapper to hold DataFrames in a KVStore.
@@ -159,6 +159,31 @@ inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, String* val) {
 //     return df;
 // }
 
-// inline DataFrame* DataFrame::fromVisitor(Key* k, KDStore* kd, const char* types, Visitor* v) {
-//     // TODO finish fromVisitor
-// }
+inline DataFrame* DataFrame::fromVisitor(Key* k, KDStore* kd, const char* types, Writer v) {
+    Schema s(types);
+    std::vector<Column*> cols = std::vector<Column*>();
+    for (size_t i = 0; i < s.width(); i++) {
+        switch (s.col_type(i)) {
+            case 'S':
+                cols.push_back(new StringColumn(kd->get_kvstore()));
+                break;
+            case 'I':
+                cols.push_back(new IntColumn(kd->get_kvstore()));
+                break;
+            case 'B':
+                cols.push_back(new BoolColumn(kd->get_kvstore()));
+                break;
+            case 'D':
+                cols.push_back(new DoubleColumn(kd->get_kvstore()));
+                break;
+            default:
+                assert(false);
+        }
+    }
+
+    Row r(s);
+    while (!v.done()) {
+        v.visit(r);
+        r.add_to_columns(cols);
+    }
+}

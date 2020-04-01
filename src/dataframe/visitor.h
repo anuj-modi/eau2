@@ -3,32 +3,38 @@
 
 class Row;
 
+// /**
+//  * Visitor that visits rows in a data frame.
+//  * Author: gomes.chri, modi.an
+//  */
+// class Visitor : public Object {
+//    public:
+//     Visitor() {}
+
+//     virtual ~Visitor() {}
+
+//     /**
+//      * Visits the given row.
+//      * @arg r  the row
+//      */
+//     virtual void visit(Row &r) {}
+// };
+
 /**
- * Visitor that visits rows in a data frame.
+ * Visitor that writes to the rows of a data frame.
  * Author: gomes.chri, modi.an
  */
-class Visitor : public Object {
+class Writer : public Object {
    public:
-    Visitor() {}
+    Writer() : Object() {}
 
-    virtual ~Visitor() {}
+    virtual ~Writer() {}
 
     /**
      * Visits the given row.
      * @arg r  the row
      */
     virtual void visit(Row &r) {}
-};
-
-/**
- * Visitor that writes to the rows of a data frame.
- * Author: gomes.chri, modi.an
- */
-class Writer : public Visitor {
-   public:
-    Writer() : Visitor() {}
-
-    virtual ~Writer() {}
 
     /**
      * Marks when the writer is done visiting the data frame.
@@ -37,18 +43,21 @@ class Writer : public Visitor {
     virtual bool done() {
         return true;
     }
-
-    // TODO find out what this does
-    void next() {}
 };
 
 /**
  * Visitor that reads the rows in a data frame.
  * Author: gomes.chri, modi.an
  */
-class Reader : public Visitor {
+class Reader : public Object {
    public:
-    Reader() : Visitor() {}
+    Reader() : Object() {}
 
     virtual ~Reader() {}
+
+    /**
+     * Visits the given row.
+     * @arg r  the row
+     */
+    virtual void visit(Row &r) {}
 };

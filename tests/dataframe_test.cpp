@@ -88,6 +88,36 @@ TEST_CASE("get the type of column in data frame", "[dataframe]") {
     REQUIRE(df.col_type(3) == 'D');
 }
 
+// // test fill_row method
+// TEST_CASE("fill row with data frame data", "[dataframe]") {
+//     KVStore kv;
+//     IntColumn* ic = new IntColumn(&kv);
+//     BoolColumn* bc = new BoolColumn(&kv);
+//     StringColumn* sc = new StringColumn(&kv);
+//     DoubleColumn* dc = new DoubleColumn(&kv);
+//     String* str = new String("Test");
+//     for (int i = 0; i < 10; i++) {
+//         ic->push_back(i);
+//         bc->push_back(true);
+//         sc->push_back(str);
+//         dc->push_back(i);
+//     }
+//     std::vector<Column*> cs = std::vector<Column*>();
+//     cs.push_back(ic);
+//     cs.push_back(bc);
+//     cs.push_back(sc);
+//     cs.push_back(dc);
+//     DataFrame df(cs, &kv);
+//     Row r(df.get_schema());
+//     df.fill_row(8, r);
+//     REQUIRE(r.get_int(0) == 8);
+//     REQUIRE(r.get_bool(1));
+//     REQUIRE(r.get_string(2)->equals(str));
+//     REQUIRE(double_equal(r.get_double(3), 8.0));
+
+//     delete r.get_string(2)
+// }
+
 // test fromArray methods
 TEST_CASE("fromArray for all types", "[dataframe][kdstore]") {
     KVStore kv;
