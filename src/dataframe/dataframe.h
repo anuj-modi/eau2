@@ -40,7 +40,7 @@ class DataFrame : public Object {
             add_column_(columns[i]);
         }
     }
-    
+
     /**
      * Creates a data frame from a column.
      * Data frame takes ownership of the column.
@@ -189,6 +189,8 @@ class DataFrame : public Object {
     static DataFrame* fromScalar(Key* k, KDStore* kd, int val);
     static DataFrame* fromScalar(Key* k, KDStore* kd, bool val);
     static DataFrame* fromScalar(Key* k, KDStore* kd, String* val);
+
+    static DataFrame* fromSorFile(Key* k, KDStore* kd, const char* file_name);
 
     static DataFrame* fromVisitor(Key* k, KDStore* kd, const char* types, Writer v);
 };
