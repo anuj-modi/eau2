@@ -1,6 +1,7 @@
 #pragma once
+#include <vector>
+
 #include "network.h"
-#include "util/array.h"
 #include "util/object.h"
 #include "util/serial.h"
 
@@ -35,21 +36,21 @@ class Message : public Object {
      * Creates an instance of message.
      * @arg kind  the type of message
      */
-    Message(MsgType kind) {
+    Message(MsgType kind) : Object() {
         kind_ = kind;
         sender_ = 0;
         target_ = 0;
         id_ = 0;
     }
 
-    Message(Deserializer* d) {
+    Message(Deserializer* d) : Object() {
         kind_ = d->get_msg_type();
         sender_ = d->get_size_t();
         target_ = d->get_size_t();
         id_ = d->get_size_t();
     }
 
-    Message(MsgType t, Deserializer* d) {
+    Message(MsgType t, Deserializer* d) : Object() {
         kind_ = t;
         sender_ = d->get_size_t();
         target_ = d->get_size_t();
@@ -148,40 +149,33 @@ class Register : public Message {
  */
 class Directory : public Message {
    public:
-    Array* client_addrs_;
+    std::vector<Address*> client_addrs_;
 
     /**
      * Creates instance of a directory message.
      * @arg addrs  the addresss of the clients that are registered
      */
-    Directory(Array* addrs) : Message(MsgType::DIRECTORY) {
-        assert(addrs != nullptr);
-        client_addrs_ = addrs;
-    }
+    Directory(std::vector<Address*> addrs) : Message(MsgType::DIRECTORY), client_addrs_(addrs) {}
 
-    Directory(Deserializer* d) : Message(MsgType::DIRECTORY, d) {
-        client_addrs_ = new Array();
+    Directory(Deserializer* d) : Message(MsgType::DIRECTORY, d), client_addrs_() {
         size_t num_addrs = d->get_size_t();
         for (size_t i = 0; i < num_addrs; i++) {
-            client_addrs_->push_back(new Address(d->get_uint32_t()));
+            client_addrs_.push_back(new Address(d->get_uint32_t()));
         }
     }
 
     /**
      * Deconstructs an instance of a register message.
      */
-    virtual ~Directory() {
-        // delete client_addrs_;
-    }
+    virtual ~Directory() {}
 
     /**
      * Serializes the object into a string of chars.
      */
     virtual void serialize(Serializer* s) {
         Message::serialize(s);
-        s->add_size_t(client_addrs_->size());
-        for (size_t i = 0; i < client_addrs_->size(); i++) {
-            Address* addr = static_cast<Address*>(client_addrs_->get(i));
+        s->add_size_t(client_addrs_.size());
+        for (Address* addr : client_addrs_) {
             s->add_uint32_t(addr->as_bytes());
         }
     }
@@ -198,7 +192,7 @@ class Directory : public Message {
             return false;
         }
         if (kind_ == o->kind_ && sender_ == o->sender_ && target_ == o->target_ && id_ == o->id_ &&
-            client_addrs_->equals(o->client_addrs_)) {
+            client_addrs_ == o->client_addrs_) {
             return true;
         }
         return false;
