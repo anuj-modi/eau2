@@ -40,7 +40,7 @@ class DataFrame : public Object {
             add_column_(columns[i]);
         }
     }
-
+    
     /**
      * Creates a data frame from a column.
      * Data frame takes ownership of the column.

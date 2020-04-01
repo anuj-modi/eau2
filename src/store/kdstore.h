@@ -186,4 +186,6 @@ inline DataFrame* DataFrame::fromVisitor(Key* k, KDStore* kd, const char* types,
         v.visit(r);
         r.add_to_columns(cols);
     }
+
+    return new DataFrame(cols, kd->get_kvstore());
 }
