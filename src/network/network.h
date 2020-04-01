@@ -96,23 +96,23 @@ class Address : public Object {
 /**
  * Wraps the system networking API and provides a CwC interface to sockets.
  */
-class Socket : public Object {
+class BaseSocket : public Object {
    public:
     int sock_fd_;
     bool is_closed_;
 
-    Socket() : Object() {
+    BaseSocket() : Object() {
         sock_fd_ = socket(AF_INET, SOCK_STREAM, 0);
         assert(sock_fd_ != -1);
         is_closed_ = false;
     }
 
-    Socket(int socket_fd) : Object() {
+    BaseSocket(int socket_fd) : Object() {
         sock_fd_ = socket_fd;
         is_closed_ = false;
     }
 
-    virtual ~Socket() {
+    virtual ~BaseSocket() {
         close_socket();
     }
 
@@ -137,7 +137,7 @@ class Socket : public Object {
 
     /**
      * Accept a new connection for this socket. Blocks if there are no waiting connections.
-     * @returns a new Socket object specific to the new connection
+     * @returns a new ConnectionSocket object specific to the new connection
      */
     ConnectionSocket *accept_connection() {
         assert(false);
@@ -203,8 +203,10 @@ class Socket : public Object {
     }
 };
 
-class ListenSocket : public Socket {
+class ListenSocket : public BaseSocket {
    public:
+    ListenSocket() : BaseSocket() {}
+
     /**
      * Binds this socket to an address and port and begins listening for new connections.
      *
@@ -227,7 +229,7 @@ class ListenSocket : public Socket {
 
     /**
      * Accept a new connection for this socket. Blocks if there are no waiting connections.
-     * @returns a new Socket object specific to the new connection
+     * @returns a new ConnectionSocket object specific to the new connection
      */
     ConnectionSocket *accept_connection() {
         struct sockaddr_in addr;
@@ -246,11 +248,13 @@ class ListenSocket : public Socket {
     }
 };
 
-class ConnectionSocket : public Socket {
+class ConnectionSocket : public BaseSocket {
    public:
     Address *peer_addr_;
 
-    ConnectionSocket(int socket_fd, Address *peer_address) : Socket(socket_fd) {
+    ConnectionSocket() : BaseSocket() {}
+
+    ConnectionSocket(int socket_fd, Address *peer_address) : BaseSocket(socket_fd) {
         peer_addr_ = peer_address;
     }
 
