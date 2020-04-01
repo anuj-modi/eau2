@@ -1,7 +1,8 @@
 #pragma once
+#include <vector>
+
 #include "message.h"
 #include "network.h"
-#include "util/array.h"
 #include "util/object.h"
 #include "util/serial.h"
 #include "util/string.h"
@@ -12,11 +13,11 @@
  */
 class Client : public Object {
    public:
-    Socket* listen_sock_;
+    ListenSocket* listen_sock_;
     uint16_t listen_port_;
-    Socket* server_connection_;
-    Array* peer_sockets_;
-    Array* peer_addresses_;
+    ConnectionSocket* server_connection_;
+    std::vector<ConnectionSocket*> peer_sockets_;
+    std::vector<Address*> peer_addresses_;
     Address* my_addr_;
 
     /**
@@ -26,14 +27,12 @@ class Client : public Object {
      * @arg server_ip  the server ip to bind on
      * @arg server_port  the server port to bind on
      */
-    Client(const char* ip, uint16_t port, const char* server_ip, uint16_t server_port) {
-        peer_sockets_ = new Array();
-        peer_addresses_ = new Array();
-        listen_sock_ = new Socket();
+    Client(const char* ip, uint16_t port, const char* server_ip, uint16_t server_port)
+        : Object(), listen_port_(port), peer_sockets_(), peer_addresses_() {
+        listen_sock_ = new ListenSocket();
         listen_sock_->bind_and_listen(ip, port);
-        listen_port_ = port;
         my_addr_ = new Address(ip);
-        server_connection_ = new Socket();
+        server_connection_ = new ConnectionSocket();
         server_connection_->connect_to_other(server_ip, server_port);
         Register* reg = new Register(new Address(my_addr_->as_bytes()));
         Serializer* s = new Serializer();
@@ -47,13 +46,8 @@ class Client : public Object {
      * Deconstructs an instance of client.
      */
     virtual ~Client() {
-        for (size_t i = 0; i < peer_sockets_->size(); i++) {
-            delete peer_sockets_->get(i);
-        }
-        delete peer_sockets_;
-
-        if (peer_addresses_ != nullptr) {
-            delete peer_addresses_;
+        for (size_t i = 0; i < peer_sockets_.size(); i++) {
+            delete peer_sockets_[i];
         }
         delete my_addr_;
         delete listen_sock_;
@@ -65,15 +59,15 @@ class Client : public Object {
      */
     void handle_directory_message(Deserializer* d) {
         // clear my held addresses
-        peer_addresses_->clear();
+        peer_addresses_.clear();
 
         // create Address array
         Directory* dir = new Directory(d);
         Address* a;
         for (size_t i = 0; i < dir->client_addrs_->size(); i++) {
-            a = static_cast<Address*>(dir->client_addrs_->get(i));
+            a = dir->client_addrs_->get(i);
             if (!my_addr_->equals(a)) {
-                peer_addresses_->push_back(new Address(a->as_bytes()));
+                peer_addresses_.push_back(new Address(a->as_bytes()));
             }
             delete a;
         }
@@ -85,7 +79,7 @@ class Client : public Object {
      * Creates a connection specific socket from the listening socket.
      */
     void handle_new_connections() {
-        peer_sockets_->push_back(listen_sock_->accept_connection());
+        peer_sockets_.push_back(listen_sock_->accept_connection());
     }
 
     /**
@@ -100,7 +94,7 @@ class Client : public Object {
     /**
      * Sends a message to a peer at a given socket.
      */
-    void send_status_message_(const char* msg, Socket* peer) {
+    void send_status_message_(const char* msg, ConnectionSocket* peer) {
         Status* stat = new Status(msg);
         Serializer* s = new Serializer();
         stat->serialize(s);
@@ -142,8 +136,8 @@ class Client : public Object {
                 handle_new_connections();
             }
 
-            for (size_t i = 0; i < peer_sockets_->size(); i++) {
-                Socket* peer = static_cast<Socket*>(peer_sockets_->get(i));
+            for (size_t i = 0; i < peer_sockets_.size(); i++) {
+                ConnectionSocket* peer = peer_sockets_[i];
                 if (peer->has_new_bytes()) {
                     char buf[1024];
                     size_t num_bytes = peer->recv_bytes(buf, sizeof(buf));
@@ -164,13 +158,13 @@ class Client : public Object {
                 }
             }
 
-            if (!sender && num_server_messages == 2 && peer_addresses_->size() == 1) {
+            if (!sender && num_server_messages == 2 && peer_addresses_.size() == 1) {
                 sender = true;
                 // connect to the other client
-                Address* peer = static_cast<Address*>(peer_addresses_->get(0));
-                Socket* peer_sock = new Socket();
+                Address* peer = peer_addresses_[0];
+                ConnectionSocket* peer_sock = new ConnectionSocket();
                 peer_sock->connect_to_other(peer->as_str()->c_str(), listen_port_);
-                peer_sockets_->push_back(peer_sock);
+                peer_sockets_.push_back(peer_sock);
 
                 // send a message to the other client
                 send_status_message_("hello", peer_sock);
