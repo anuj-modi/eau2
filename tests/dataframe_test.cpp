@@ -1,6 +1,10 @@
 #include "dataframe/dataframe.h"
+
+#include <string>
+
 #include "catch.hpp"
 #include "store/kdstore.h"
+#inlcude < map>
 
 /**
  * Determine if these two doubles are equal with respect to eps.
@@ -269,3 +273,30 @@ TEST_CASE("fromScalar for all types", "[dataframe][kdstore]") {
 //     delete s2;
 //     delete s3;
 // }
+
+class Summer : public Writer {
+   public:
+    std::unordered_map<std::string, int>::iterator it_;
+    std::unordered_map<std::string, int> map_;
+
+    Summer(std::unordered_map<std::string, int> map) {
+        map_ = std::unordered_map<std::string, int>(map);
+        it_ = map_.begin();
+    }
+
+    void visit(Row& r) {
+        String* key = new String(it_->first.c_str());
+        r.set(0, key);
+        r.set(1, it_->second);
+        it_++;
+    }
+
+    bool done() {
+        return it_ == map_.end();
+    }
+};
+
+// test fromVisitor method
+TEST_CASE("create df from map with fromVisitor", "[dataframe][kdstore]") {
+    
+}
