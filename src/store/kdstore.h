@@ -147,18 +147,18 @@ inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, String* val) {
     return df;
 }
 
-inline DataFrame* DataFrame::fromSorFile(Key* k, KDStore* kd, const char* file_name) {
-    FILE* file = fopen(file_name, "r");
-    SorParser parser(file, kd->get_kvstore());
-    parser.guessSchema();
-    parser.parseFile();
-    ColumnSet* cols = parser.getColumnSet();
-    DataFrame* df = new DataFrame(cols->getColumns(), kd->get_kvstore());
-    kd->put(*k, df);
-    fclose(file);
-    return df;
-}
+// inline DataFrame* DataFrame::fromSorFile(Key* k, KDStore* kd, const char* file_name) {
+//     FILE* file = fopen(file_name, "r");
+//     SorParser parser(file, kd->get_kvstore());
+//     parser.guessSchema();
+//     parser.parseFile();
+//     ColumnSet* cols = parser.getColumnSet();
+//     DataFrame* df = new DataFrame(cols->getColumns(), kd->get_kvstore());
+//     kd->put(*k, df);
+//     fclose(file);
+//     return df;
+// }
 
-inline DataFrame* DataFrame::fromVisitor(Key* k, KDStore* kd, const char* types, Visitor* v) {
-
-}
+// inline DataFrame* DataFrame::fromVisitor(Key* k, KDStore* kd, const char* types, Visitor* v) {
+//     // TODO finish fromVisitor
+// }

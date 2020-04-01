@@ -1,11 +1,14 @@
 #pragma once
 #include "util/object.h"
 
+class Row;
+
 /**
  * Visitor that visits rows in a data frame.
  * Author: gomes.chri, modi.an
  */
 class Visitor : public Object {
+   public:
     Visitor() {}
 
     virtual ~Visitor() {}
@@ -22,6 +25,10 @@ class Visitor : public Object {
  * Author: gomes.chri, modi.an
  */
 class Writer : public Visitor {
+   public:
+    Writer() : Visitor() {}
+
+    virtual ~Writer() {}
 
     /**
      * Marks when the writer is done visiting the data frame.
@@ -31,6 +38,7 @@ class Writer : public Visitor {
         return true;
     }
 
+    // TODO find out what this does
     void next() {}
 };
 
@@ -38,4 +46,9 @@ class Writer : public Visitor {
  * Visitor that reads the rows in a data frame.
  * Author: gomes.chri, modi.an
  */
-class Reader : public Visitor {};
+class Reader : public Visitor {
+   public:
+    Reader() : Visitor() {}
+
+    virtual ~Reader() {}
+};

@@ -5,6 +5,7 @@
 #include "schema.h"
 #include "store/key.h"
 #include "visitor.h"
+#include "row.h"
 
 class KDStore;
 
@@ -118,6 +119,9 @@ class DataFrame : public Object {
      * Fill the row given with the provided column.
      * @arg r  the row
      */
+    void fill_row(Row& r) {
+
+    }
 
     /** The number of rows in the dataframe. */
     size_t nrows() {
@@ -162,5 +166,5 @@ class DataFrame : public Object {
     static DataFrame* fromScalar(Key* k, KDStore* kd, bool val);
     static DataFrame* fromScalar(Key* k, KDStore* kd, String* val);
 
-    static DataFrame* fromVisitor(Key* k, KDStore* kd, const char* types, Visitor* v)
+    static DataFrame* fromVisitor(Key* k, KDStore* kd, const char* types, Visitor* v);
 };
