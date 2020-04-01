@@ -4,6 +4,7 @@
 #include "column.h"
 #include "schema.h"
 #include "store/key.h"
+#include "visitor.h"
 
 class KDStore;
 
@@ -113,6 +114,11 @@ class DataFrame : public Object {
         return columns_[col]->as_string()->get(row);
     }
 
+    /**
+     * Fill the row given with the provided column.
+     * @arg r  the row
+     */
+
     /** The number of rows in the dataframe. */
     size_t nrows() {
         return df_schema_->length();
@@ -156,5 +162,5 @@ class DataFrame : public Object {
     static DataFrame* fromScalar(Key* k, KDStore* kd, bool val);
     static DataFrame* fromScalar(Key* k, KDStore* kd, String* val);
 
-    static DataFrame* fromSorFile(Key* k, KDStore* kd, const char* file_name);
+    static DataFrame* fromVisitor(Key* k, KDStore* kd, const char* types, Visitor* v)
 };

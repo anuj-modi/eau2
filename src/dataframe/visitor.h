@@ -21,7 +21,7 @@ class Visitor : public Object {
  * Visitor that writes to the rows of a data frame.
  * Author: gomes.chri, modi.an
  */
-class Writer : public Object {
+class Writer : public Visitor {
 
     /**
      * Marks when the writer is done visiting the data frame.
@@ -38,4 +38,4 @@ class Writer : public Object {
  * Visitor that reads the rows in a data frame.
  * Author: gomes.chri, modi.an
  */
-class Reader : public Object {};
+class Reader : public Visitor {};

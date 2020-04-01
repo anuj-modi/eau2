@@ -5,6 +5,7 @@
 #include "util/array.h"
 #include "util/object.h"
 #include "util/string.h"
+#include "visitor.h"
 
 /*************************************************************************
  * Row::
@@ -16,32 +17,13 @@
  */
 class Row : public Object {
    public:
-    int index_ = -1;
     std::vector<Data> values_;
-    std::vector<char> types_;
+    Schema s_;
 
     /** Build a row following a schema. */
     Row(Schema& scm) : Object() {
-        values_ = std::vector<Object*>();
-        types_ = std::vector<char>();
-        for (size_t i = 0; i < scm.width(); i++) {
-            switch (scm.col_type(i)) {
-                case 'S':
-                    types_.push_back('S');
-                    break;
-                case 'B':
-                    types_.push_back('B');
-                    break;
-                case 'I':
-                    types_.push_back('I');
-                    break;
-                case 'D':
-                    types_.push_back('D');
-                    break;
-                default:
-                    assert(false);
-            }
-        }
+        values_ = std::vector<Data>();
+        s_ = Schema(scm);
     }
 
     virtual ~Row() {}
@@ -50,23 +32,49 @@ class Row : public Object {
      * of the requested type, the result is undefined. */
     int get_int(size_t col) {
         assert(col < values_.size());
-        assert(types_[col] == 'I');
+        assert(s_.col_type(col) == 'I');
         return values_[col].payload.i;
     }
 
     bool get_bool(size_t col) {
         assert(col < values_.size());
-        assert(types_[col] == 'B');
+        assert(s_.col_type(col) == 'B');
         return values_[col].payload.b;
     }
 
     double get_double(size_t col) {
         assert(col < values_.size());
-        assert(types_[col] == 'D');
+        assert(s_.col_type(col) == 'D');
         return values_[col].payload.d;
     }
 
     String* get_string(size_t col) {
+        assert(col < values_.size());
+        assert(s_.col_type(col) == 'S');
+        return values_[col].payload.s;
+    }
+
+    /** Setters: set the value at the given column. If the column is not
+     * of the requested type, the result is undefined. */
+    void set(size_t col, int i) {
+        assert(col < values_.size());
+        assert(types_[col] == 'I');
+        values_[col].payload.i = 
+    }
+
+    void get_bool(size_t col, bool b) {
+        assert(col < values_.size());
+        assert(types_[col] == 'B');
+        return values_[col].payload.b;
+    }
+
+    void get_double(size_t col) {
+        assert(col < values_.size());
+        assert(types_[col] == 'D');
+        return values_[col].payload.d;
+    }
+
+    void get_string(size_t col) {
         assert(col < values_.size());
         assert(types_[col] == 'S');
         return values_[col].payload.s;
@@ -81,28 +89,5 @@ class Row : public Object {
     char col_type(size_t idx) {
         assert(idx < types_.size());
         return types_[idx];
-    }
-
-    /** Given a Fielder, visit every field of this row. The first argument is
-     * index of the row in the dataframe.
-     * Calling this method before the row's fields have been set is undefined. */
-    void visit(size_t idx, Visitor& v) {
-        assert(idx < values_.size());
-        switch (col_type(idx)) {
-            case 'S':
-                f.accept(get_string(idx));
-                break;
-            case 'I':
-                f.accept(get_int(idx));
-                break;
-            case 'D':
-                f.accept(get_double(idx));
-                break;
-            case 'B':
-                f.accept(get_bool(idx));
-                break;
-            default:
-                assert(false);
-        }
     }
 };
