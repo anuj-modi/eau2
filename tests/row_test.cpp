@@ -42,6 +42,35 @@ TEST_CASE("set and get from a row", "[row]") {
     REQUIRE(r.width() == 4);
 }
 
+// test width method
+TEST_CASE("get row width", "[row]") {
+    Schema s("ISDB");
+    Row r(s);
+    String* str = new String("Test");
+    r.set(0, -1);
+    r.set(1, str);
+    r.set(2, -1.3f);
+    r.set(3, true);
+
+    REQUIRE(r.width() == 4);
+}
+
+// test col_type method
+TEST_CASE("get column types in row", "[row]") {
+    Schema s("ISDB");
+    Row r(s);
+    String* str = new String("Test");
+    r.set(0, -1);
+    r.set(1, str);
+    r.set(2, -1.3f);
+    r.set(3, true);
+
+    REQUIRE(r.col_type(0) == 'I');
+    REQUIRE(r.col_type(1) == 'S');
+    REQUIRE(r.col_type(2) == 'D');
+    REQUIRE(r.col_type(3) == 'B');
+}
+
 // test add_to_columns method
 TEST_CASE("add from row to columns", "[row]") {
     Schema s("ISDB");
