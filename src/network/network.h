@@ -6,7 +6,6 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <unistd.h>
-
 #include "util/object.h"
 #include "util/string.h"
 
@@ -53,6 +52,12 @@ class Address : public Object {
      * @arg addr  byte representation of an ip address w/ POSIX
      */
     Address(struct sockaddr_in addr) : Address(addr.sin_addr.s_addr, addr.sin_port) {}
+
+    Address(Address *other) : Object() {
+        ip_str_ = new String(other->as_str());
+        ip_bytes_ = other->ip_bytes();
+        port_ = other->port();
+    }
 
     /**
      * Deconstructs an address.
@@ -161,12 +166,12 @@ class ConnectionSocket : public BaseSocket {
      * @param ip the remote IP address to connect to
      * @param port the port of the remote server to connect to
      */
-    void connect_to_other(const char *ip, uint16_t port) {
-        peer_addr_ = new Address(ip, port);
+    void connect_to_other(Address *peer) {
+        peer_addr_ = new Address(peer);
         struct sockaddr_in adr;
         adr.sin_family = AF_INET;
         adr.sin_addr.s_addr = peer_addr_->ip_bytes();
-        adr.sin_port = htons(port);
+        adr.sin_port = htons(peer_addr_->port());
         assert(connect(sock_fd_, (struct sockaddr *)&adr, sizeof(adr)) == 0);
     }
 
@@ -213,15 +218,15 @@ class ListenSocket : public BaseSocket {
      * @param ip A string IP address to listen on
      * @param port a port number to bind to
      */
-    void bind_and_listen(const char *ip, uint16_t port) {
+    void bind_and_listen(Address *local) {
         int opt = 1;
         // Forcefully attaching socket to the port 8080
         assert(setsockopt(sock_fd_, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) ==
                0);
         struct sockaddr_in adr;
         adr.sin_family = AF_INET;
-        inet_pton(AF_INET, ip, &adr.sin_addr);
-        adr.sin_port = htons(port);
+        adr.sin_addr.s_addr = local->ip_bytes();
+        adr.sin_port = htons(local->port());
         // Attaching socket to the port
         assert(bind(sock_fd_, (struct sockaddr *)&adr, sizeof(adr)) == 0);
         assert(listen(sock_fd_, 3) >= 0);
