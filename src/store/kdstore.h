@@ -159,7 +159,7 @@ inline DataFrame* DataFrame::fromSorFile(Key* k, KDStore* kd, const char* file_n
     return df;
 }
 
-inline DataFrame* DataFrame::fromVisitor(Key* k, KDStore* kd, const char* types, Writer v) {
+inline DataFrame* DataFrame::fromVisitor(Key* k, KDStore* kd, const char* types, Writer& v) {
     Schema s(types);
     std::vector<Column*> cols = std::vector<Column*>();
     for (size_t i = 0; i < s.width(); i++) {

@@ -192,5 +192,5 @@ class DataFrame : public Object {
 
     static DataFrame* fromSorFile(Key* k, KDStore* kd, const char* file_name);
 
-    static DataFrame* fromVisitor(Key* k, KDStore* kd, const char* types, Writer v);
+    static DataFrame* fromVisitor(Key* k, KDStore* kd, const char* types, Writer& v);
 };

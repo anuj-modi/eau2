@@ -282,18 +282,16 @@ class Summer : public Writer {
 
     Summer(std::unordered_map<std::string, int> map) : Writer() {
         map_ = std::unordered_map<std::string, int>(map);
-        printf("map size: %zu\n", map_.size());
         it_ = map_.begin();
     }
 
     virtual ~Summer() {}
 
-     /**
+    /**
      * Visits the given row.
      * @arg r  the row
      */
-    virtual void visit(Row &r) {
-        printf("%s, %d\n", it_->first.c_str(), it_->second);
+    virtual void visit(Row& r) {
         String* key = new String(it_->first.c_str());
         r.set(0, key);
         r.set(1, it_->second);
@@ -310,44 +308,37 @@ class Summer : public Writer {
 };
 
 // test fromVisitor method
-// TEST_CASE("create df from map with fromVisitor", "[dataframe][kdstore]") {
-//     std::unordered_map<std::string, int> map = std::unordered_map<std::string, int>();
-//     KVStore kv;
-//     KDStore kd(&kv);
-//     map["catch"] = 10;
-//     map["super"] = 24;
-//     map["monkey"] = 7;
-//     Summer s(map);
-//     Key cnts("counts");
-//     DataFrame* df = DataFrame::fromVisitor(&cnts, &kd, "SI", s);
-//     DataFrame* df_copy = kd.get(cnts);
-//     printf("cols: %zu, rows: %zu\n", df->ncols(), df->nrows());
-//     // String* s1 = df->get_string(0, 0);
-//     // String* s2 = df->get_string(0, 1);
-//     // String* s3 = df->get_string(0, 2);
-//     // String* s1_copy = df_copy->get_string(0, 0);
-//     // String* s2_copy = df_copy->get_string(0, 1);
-//     // String* s3_copy = df_copy->get_string(0, 2);
-//     // String* s1_check = new String("catch");
-//     // String* s2_check = new String("super");
-//     // String* s3_check = new String("monkey");
+TEST_CASE("create df from map with fromVisitor", "[dataframe][kdstore]") {
+    std::unordered_map<std::string, int> map = std::unordered_map<std::string, int>();
+    KVStore kv;
+    KDStore kd(&kv);
+    map["catch"] = 10;
+    map["super"] = 24;
+    map["monkey"] = 7;
+    Summer s(map);
+    Key cnts("counts");
+    DataFrame* df = DataFrame::fromVisitor(&cnts, &kd, "SI", s);
+    DataFrame* df_copy = kd.get(cnts);
+    String* s1 = df->get_string(0, 0);
+    String* s2 = df->get_string(0, 1);
+    String* s3 = df->get_string(0, 2);
+    String* s1_copy = df_copy->get_string(0, 0);
+    String* s2_copy = df_copy->get_string(0, 1);
+    String* s3_copy = df_copy->get_string(0, 2);
 
-//     // REQUIRE((s1->equals(s1_copy) && s1->equals(s1_check)));
-//     // REQUIRE((s2->equals(s2_copy) && s2->equals(s2_check)));
-//     // REQUIRE((s3->equals(s3_copy) && s1->equals(s3_check)));
-//     // REQUIRE((df->get_int(1, 0) == df_copy->get_int(1, 0) && df->get_int(1, 0) == 10));
-//     // REQUIRE((df->get_int(1, 1) == df_copy->get_int(1, 1) && df->get_int(1, 1) == 10));
-//     // REQUIRE((df->get_int(1, 2) == df_copy->get_int(1, 2) && df->get_int(1, 2) == 10));
+    REQUIRE(s1->equals(s1_copy));
+    REQUIRE(s2->equals(s2_copy));
+    REQUIRE(s3->equals(s3_copy));
+    REQUIRE(df->get_int(1, 0) == df_copy->get_int(1, 0));
+    REQUIRE(df->get_int(1, 1) == df_copy->get_int(1, 1));
+    REQUIRE(df->get_int(1, 2) == df_copy->get_int(1, 2));
 
-//     delete df;
-//     delete df_copy;
-//     // delete s1;
-//     // delete s2;
-//     // delete s3;
-//     // delete s1_copy;
-//     // delete s2_copy;
-//     // delete s3_copy;
-//     // delete s1_check;
-//     // delete s2_check;
-//     // delete s3_check;
-// }
+    delete df;
+    delete df_copy;
+    delete s1;
+    delete s2;
+    delete s3;
+    delete s1_copy;
+    delete s2_copy;
+    delete s3_copy;
+}
