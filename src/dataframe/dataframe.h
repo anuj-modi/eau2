@@ -120,32 +120,32 @@ class DataFrame : public Object {
      * @arg idx  the row index in the data frame
      * @arg r  the row
      */
-    // void fill_row(size_t idx, Row& row) {
-    //     assert(idx < df_schema_->length());
-    //     assert(row.width() == df_schema_->width());
-    //     for (size_t i = 0; i < row.width(); i++) {
-    //         assert(df_schema_->col_type(i) == row.col_type(i));
-    //     }
-    //     for (size_t j = 0; j < row.width(); j++) {
-    //         char c_type = row.col_type(j);
-    //         switch (c_type) {
-    //             case 'S':
-    //                 row.set(j, get_string(j, idx));
-    //                 break;
-    //             case 'B':
-    //                 row.set(j, get_bool(j, idx));
-    //                 break;
-    //             case 'I':
-    //                 row.set(j, get_int(j, idx));
-    //                 break;
-    //             case 'D':
-    //                 row.set(j, get_double(j, idx));
-    //                 break;
-    //             default:
-    //                 assert(false);
-    //         }
-    //     }
-    // }
+    void fill_row(size_t idx, Row& row) {
+        assert(idx < df_schema_->length());
+        assert(row.width() == df_schema_->width());
+        for (size_t i = 0; i < row.width(); i++) {
+            assert(df_schema_->col_type(i) == row.col_type(i));
+        }
+        for (size_t j = 0; j < row.width(); j++) {
+            char c_type = row.col_type(j);
+            switch (c_type) {
+                case 'S':
+                    row.set(j, get_string(j, idx));
+                    break;
+                case 'B':
+                    row.set(j, get_bool(j, idx));
+                    break;
+                case 'I':
+                    row.set(j, get_int(j, idx));
+                    break;
+                case 'D':
+                    row.set(j, get_double(j, idx));
+                    break;
+                default:
+                    assert(false);
+            }
+        }
+    }
 
     /** The number of rows in the dataframe. */
     size_t nrows() {

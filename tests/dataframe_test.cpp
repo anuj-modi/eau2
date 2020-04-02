@@ -4,6 +4,7 @@
 #include <string>
 
 #include "catch.hpp"
+#include "dataframe/visitor.h"
 #include "store/kdstore.h"
 
 /**
@@ -92,35 +93,35 @@ TEST_CASE("get the type of column in data frame", "[dataframe]") {
     REQUIRE(df.col_type(3) == 'D');
 }
 
-// // test fill_row method
-// TEST_CASE("fill row with data frame data", "[dataframe]") {
-//     KVStore kv;
-//     IntColumn* ic = new IntColumn(&kv);
-//     BoolColumn* bc = new BoolColumn(&kv);
-//     StringColumn* sc = new StringColumn(&kv);
-//     DoubleColumn* dc = new DoubleColumn(&kv);
-//     String* str = new String("Test");
-//     for (int i = 0; i < 10; i++) {
-//         ic->push_back(i);
-//         bc->push_back(true);
-//         sc->push_back(str);
-//         dc->push_back(i);
-//     }
-//     std::vector<Column*> cs = std::vector<Column*>();
-//     cs.push_back(ic);
-//     cs.push_back(bc);
-//     cs.push_back(sc);
-//     cs.push_back(dc);
-//     DataFrame df(cs, &kv);
-//     Row r(df.get_schema());
-//     df.fill_row(8, r);
-//     REQUIRE(r.get_int(0) == 8);
-//     REQUIRE(r.get_bool(1));
-//     REQUIRE(r.get_string(2)->equals(str));
-//     REQUIRE(double_equal(r.get_double(3), 8.0));
+// test fill_row method
+TEST_CASE("fill row with data frame data", "[dataframe]") {
+    KVStore kv;
+    IntColumn* ic = new IntColumn(&kv);
+    BoolColumn* bc = new BoolColumn(&kv);
+    StringColumn* sc = new StringColumn(&kv);
+    DoubleColumn* dc = new DoubleColumn(&kv);
+    String* str = new String("Test");
+    for (int i = 0; i < 10; i++) {
+        ic->push_back(i);
+        bc->push_back(true);
+        sc->push_back(str);
+        dc->push_back(i);
+    }
+    std::vector<Column*> cs = std::vector<Column*>();
+    cs.push_back(ic);
+    cs.push_back(bc);
+    cs.push_back(sc);
+    cs.push_back(dc);
+    DataFrame df(cs, &kv);
+    Row r(df.get_schema());
+    df.fill_row(8, r);
+    REQUIRE(r.get_int(0) == 8);
+    REQUIRE(r.get_bool(1));
+    REQUIRE(r.get_string(2)->equals(str));
+    REQUIRE(double_equal(r.get_double(3), 8.0));
 
-//     delete r.get_string(2)
-// }
+    delete str;
+}
 
 // test fromArray methods
 TEST_CASE("fromArray for all types", "[dataframe][kdstore]") {
@@ -279,22 +280,74 @@ class Summer : public Writer {
     std::unordered_map<std::string, int>::iterator it_;
     std::unordered_map<std::string, int> map_;
 
-    Summer(std::unordered_map<std::string, int> map) {
+    Summer(std::unordered_map<std::string, int> map) : Writer() {
         map_ = std::unordered_map<std::string, int>(map);
+        printf("map size: %zu\n", map_.size());
         it_ = map_.begin();
     }
 
-    void visit(Row& r) {
+    virtual ~Summer() {}
+
+     /**
+     * Visits the given row.
+     * @arg r  the row
+     */
+    virtual void visit(Row &r) {
+        printf("%s, %d\n", it_->first.c_str(), it_->second);
         String* key = new String(it_->first.c_str());
         r.set(0, key);
         r.set(1, it_->second);
         it_++;
     }
 
-    bool done() {
+    /**
+     * Marks when the writer is done visiting the data frame.
+     * @return true if done
+     */
+    virtual bool done() {
         return it_ == map_.end();
     }
 };
 
 // test fromVisitor method
-TEST_CASE("create df from map with fromVisitor", "[dataframe][kdstore]") {}
+// TEST_CASE("create df from map with fromVisitor", "[dataframe][kdstore]") {
+//     std::unordered_map<std::string, int> map = std::unordered_map<std::string, int>();
+//     KVStore kv;
+//     KDStore kd(&kv);
+//     map["catch"] = 10;
+//     map["super"] = 24;
+//     map["monkey"] = 7;
+//     Summer s(map);
+//     Key cnts("counts");
+//     DataFrame* df = DataFrame::fromVisitor(&cnts, &kd, "SI", s);
+//     DataFrame* df_copy = kd.get(cnts);
+//     printf("cols: %zu, rows: %zu\n", df->ncols(), df->nrows());
+//     // String* s1 = df->get_string(0, 0);
+//     // String* s2 = df->get_string(0, 1);
+//     // String* s3 = df->get_string(0, 2);
+//     // String* s1_copy = df_copy->get_string(0, 0);
+//     // String* s2_copy = df_copy->get_string(0, 1);
+//     // String* s3_copy = df_copy->get_string(0, 2);
+//     // String* s1_check = new String("catch");
+//     // String* s2_check = new String("super");
+//     // String* s3_check = new String("monkey");
+
+//     // REQUIRE((s1->equals(s1_copy) && s1->equals(s1_check)));
+//     // REQUIRE((s2->equals(s2_copy) && s2->equals(s2_check)));
+//     // REQUIRE((s3->equals(s3_copy) && s1->equals(s3_check)));
+//     // REQUIRE((df->get_int(1, 0) == df_copy->get_int(1, 0) && df->get_int(1, 0) == 10));
+//     // REQUIRE((df->get_int(1, 1) == df_copy->get_int(1, 1) && df->get_int(1, 1) == 10));
+//     // REQUIRE((df->get_int(1, 2) == df_copy->get_int(1, 2) && df->get_int(1, 2) == 10));
+
+//     delete df;
+//     delete df_copy;
+//     // delete s1;
+//     // delete s2;
+//     // delete s3;
+//     // delete s1_copy;
+//     // delete s2_copy;
+//     // delete s3_copy;
+//     // delete s1_check;
+//     // delete s2_check;
+//     // delete s3_check;
+// }

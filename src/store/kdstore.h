@@ -180,12 +180,12 @@ inline DataFrame* DataFrame::fromVisitor(Key* k, KDStore* kd, const char* types,
                 assert(false);
         }
     }
-
     Row r(s);
     while (!v.done()) {
         v.visit(r);
         r.add_to_columns(cols);
     }
-
-    return new DataFrame(cols, kd->get_kvstore());
+    DataFrame* df = new DataFrame(cols, kd->get_kvstore());
+    kd->put(*k, df);
+    return df;
 }
