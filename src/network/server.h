@@ -61,7 +61,7 @@ class Server : public Object {
     void handle_register_message_(ConnectionSocket* client, Deserializer* d) {
         Register* reg = new Register(d);
         printf("Registered: %s\n", reg->client_addr_->as_str()->c_str());
-        addresses_.push_back(new Address(reg->client_addr_->as_bytes()));
+        addresses_.push_back(new Address(reg->client_addr_->ip_bytes()));
         clients_.push_back(client);
         Directory* dir = new Directory(addresses_);
         broadcast_(dir);

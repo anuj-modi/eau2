@@ -34,7 +34,7 @@ class Client : public Object {
         my_addr_ = new Address(ip);
         server_connection_ = new ConnectionSocket();
         server_connection_->connect_to_other(server_ip, server_port);
-        Register* reg = new Register(new Address(my_addr_->as_bytes()));
+        Register* reg = new Register(new Address(my_addr_->ip_bytes()));
         Serializer* s = new Serializer();
         reg->serialize(s);
         assert(server_connection_->send_bytes(s->get_bytes(), s->size()) > 0);
@@ -67,7 +67,7 @@ class Client : public Object {
         for (size_t i = 0; i < dir->client_addrs_->size(); i++) {
             a = dir->client_addrs_->get(i);
             if (!my_addr_->equals(a)) {
-                peer_addresses_.push_back(new Address(a->as_bytes()));
+                peer_addresses_.push_back(new Address(a->ip_bytes()));
             }
             delete a;
         }

@@ -122,7 +122,7 @@ class Register : public Message {
      */
     virtual void serialize(Serializer* s) {
         Message::serialize(s);
-        s->add_uint32_t(client_addr_->as_bytes());
+        s->add_uint32_t(client_addr_->ip_bytes());
     }
 
     /**
@@ -137,7 +137,7 @@ class Register : public Message {
             return false;
         }
         if (kind_ == o->kind_ && sender_ == o->sender_ && target_ == o->target_ && id_ == o->id_ &&
-            client_addr_->as_bytes() == o->client_addr_->as_bytes()) {
+            client_addr_->ip_bytes() == o->client_addr_->ip_bytes()) {
             return true;
         }
         return false;
@@ -176,7 +176,7 @@ class Directory : public Message {
         Message::serialize(s);
         s->add_size_t(client_addrs_.size());
         for (Address* addr : client_addrs_) {
-            s->add_uint32_t(addr->as_bytes());
+            s->add_uint32_t(addr->ip_bytes());
         }
     }
 

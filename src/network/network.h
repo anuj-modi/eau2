@@ -16,31 +16,33 @@
 class Address : public Object {
    public:
     String *ip_str_;
-    uint32_t bytes_;
+    uint32_t ip_bytes_;
+    uint16_t port_;
 
     /**
      * Creates an instance of address.
      * @arg ip  string literal representation of an ip
      */
-    Address(const char *ip) : Object() {
+    Address(const char *ip, uint16_t port) : Object() {
         ip_str_ = new String(ip);
         struct sockaddr_in addr;
         assert(inet_pton(AF_INET, ip, &addr.sin_addr) == 1);
-        bytes_ = addr.sin_addr.s_addr;
+        ip_bytes_ = addr.sin_addr.s_addr;
+        port_ = port;
     }
 
     /**
      * Creates an instance of address.
      * @arg ip  string class representation of an ip
      */
-    Address(String *ip) : Address(ip->c_str()) {}
+    Address(String *ip, uint16_t port) : Address(ip->c_str(), port) {}
 
     /**
      * Creates an instance of address.
      * @arg addr  byte form of an ip address
      */
-    Address(uint32_t addr) : Object() {
-        bytes_ = addr;
+    Address(uint32_t addr, uint16_t port) : Object() {
+        ip_bytes_ = addr;
         char buf[INET_ADDRSTRLEN];
         assert(inet_ntop(AF_INET, &addr, buf, sizeof(buf)) != nullptr);
         ip_str_ = new String(buf);
@@ -50,7 +52,7 @@ class Address : public Object {
      * Creates an instance of address.
      * @arg addr  byte representation of an ip address w/ POSIX
      */
-    Address(struct sockaddr_in addr) : Address(addr.sin_addr.s_addr) {}
+    Address(struct sockaddr_in addr) : Address(addr.sin_addr.s_addr, addr.sin_port) {}
 
     /**
      * Deconstructs an address.
@@ -63,8 +65,8 @@ class Address : public Object {
      * Gets ip address in bytes.
      * @return byte version of ip address
      */
-    uint32_t as_bytes() {
-        return bytes_;
+    uint32_t ip_bytes() {
+        return ip_bytes_;
     }
 
     /**
@@ -73,6 +75,14 @@ class Address : public Object {
      */
     String *as_str() {
         return ip_str_;
+    }
+
+    /**
+     * Gets port number.
+     * @return port number of address
+     */
+    uint16_t port() {
+        return port_;
     }
 
     /**
@@ -86,10 +96,7 @@ class Address : public Object {
         if (o == nullptr) {
             return false;
         }
-        if (ip_str_->equals(o->ip_str_) && bytes_ == o->bytes_) {
-            return true;
-        }
-        return false;
+        return ip_str_->equals(o->ip_str_) && ip_bytes_ == o->ip_bytes_ && port_ == o->port_;
     }
 };
 
@@ -155,10 +162,10 @@ class ConnectionSocket : public BaseSocket {
      * @param port the port of the remote server to connect to
      */
     void connect_to_other(const char *ip, uint16_t port) {
-        peer_addr_ = new Address(ip);
+        peer_addr_ = new Address(ip, port);
         struct sockaddr_in adr;
         adr.sin_family = AF_INET;
-        adr.sin_addr.s_addr = peer_addr_->as_bytes();
+        adr.sin_addr.s_addr = peer_addr_->ip_bytes();
         adr.sin_port = htons(port);
         assert(connect(sock_fd_, (struct sockaddr *)&adr, sizeof(adr)) == 0);
     }
