@@ -4,6 +4,8 @@
 #include "column.h"
 #include "schema.h"
 #include "store/key.h"
+#include "visitor.h"
+#include "row.h"
 
 class KDStore;
 
@@ -113,6 +115,38 @@ class DataFrame : public Object {
         return columns_[col]->as_string()->get(row);
     }
 
+    /**
+     * Fill the row given with data in the data frame.
+     * @arg idx  the row index in the data frame
+     * @arg r  the row
+     */
+    void fill_row(size_t idx, Row& row) {
+        assert(idx < df_schema_->length());
+        assert(row.width() == df_schema_->width());
+        for (size_t i = 0; i < row.width(); i++) {
+            assert(df_schema_->col_type(i) == row.col_type(i));
+        }
+        for (size_t j = 0; j < row.width(); j++) {
+            char c_type = row.col_type(j);
+            switch (c_type) {
+                case 'S':
+                    row.set(j, get_string(j, idx));
+                    break;
+                case 'B':
+                    row.set(j, get_bool(j, idx));
+                    break;
+                case 'I':
+                    row.set(j, get_int(j, idx));
+                    break;
+                case 'D':
+                    row.set(j, get_double(j, idx));
+                    break;
+                default:
+                    assert(false);
+            }
+        }
+    }
+
     /** The number of rows in the dataframe. */
     size_t nrows() {
         return df_schema_->length();
@@ -121,6 +155,11 @@ class DataFrame : public Object {
     /** The number of columns in the dataframe.*/
     size_t ncols() {
         return df_schema_->width();
+    }
+
+    /** Get the type of a column in a dataframe. */
+    char col_type(size_t col_idx) {
+        return df_schema_->col_type(col_idx);
     }
 
     void serialize(Serializer* s) {
@@ -151,5 +190,7 @@ class DataFrame : public Object {
     static DataFrame* fromScalar(Key* k, KDStore* kd, bool val);
     static DataFrame* fromScalar(Key* k, KDStore* kd, String* val);
 
-    // TODO add fromFile method
+    static DataFrame* fromSorFile(Key* k, KDStore* kd, const char* file_name);
+
+    static DataFrame* fromVisitor(Key* k, KDStore* kd, const char* types, Writer& v);
 };

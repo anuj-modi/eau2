@@ -1,5 +1,10 @@
 #include "dataframe/dataframe.h"
+
+#include <map>
+#include <string>
+
 #include "catch.hpp"
+#include "dataframe/visitor.h"
 #include "store/kdstore.h"
 
 /**
@@ -28,7 +33,7 @@ TEST_CASE("get schema from a dataframe", "[dataframe]") {
     REQUIRE(s.width() == 1);
 }
 
-// getting a value in a dataframe
+// test getting a value in a dataframe
 TEST_CASE("getting values out of dataframe", "[dataframe]") {
     KVStore kv;
     IntColumn* ic = new IntColumn(&kv);
@@ -62,10 +67,59 @@ TEST_CASE("getting values out of dataframe", "[dataframe]") {
     String* result = df.get_string(2, 94);
     REQUIRE(result->equals(str));
 
-     // test get_double and set
+    // test get_double and set
     REQUIRE(double_equal(df.get_double(3, 88), 88.0));
 
     delete result;
+    delete str;
+}
+
+// test col_type method
+TEST_CASE("get the type of column in data frame", "[dataframe]") {
+    KVStore kv;
+    IntColumn* ic = new IntColumn(&kv);
+    BoolColumn* bc = new BoolColumn(&kv);
+    StringColumn* sc = new StringColumn(&kv);
+    DoubleColumn* dc = new DoubleColumn(&kv);
+    std::vector<Column*> cs = std::vector<Column*>();
+    cs.push_back(ic);
+    cs.push_back(bc);
+    cs.push_back(sc);
+    cs.push_back(dc);
+    DataFrame df(cs, &kv);
+    REQUIRE(df.col_type(0) == 'I');
+    REQUIRE(df.col_type(1) == 'B');
+    REQUIRE(df.col_type(2) == 'S');
+    REQUIRE(df.col_type(3) == 'D');
+}
+
+// test fill_row method
+TEST_CASE("fill row with data frame data", "[dataframe]") {
+    KVStore kv;
+    IntColumn* ic = new IntColumn(&kv);
+    BoolColumn* bc = new BoolColumn(&kv);
+    StringColumn* sc = new StringColumn(&kv);
+    DoubleColumn* dc = new DoubleColumn(&kv);
+    String* str = new String("Test");
+    for (int i = 0; i < 10; i++) {
+        ic->push_back(i);
+        bc->push_back(true);
+        sc->push_back(str);
+        dc->push_back(i);
+    }
+    std::vector<Column*> cs = std::vector<Column*>();
+    cs.push_back(ic);
+    cs.push_back(bc);
+    cs.push_back(sc);
+    cs.push_back(dc);
+    DataFrame df(cs, &kv);
+    Row r(df.get_schema());
+    df.fill_row(8, r);
+    REQUIRE(r.get_int(0) == 8);
+    REQUIRE(r.get_bool(1));
+    REQUIRE(r.get_string(2)->equals(str));
+    REQUIRE(double_equal(r.get_double(3), 8.0));
+
     delete str;
 }
 
@@ -189,4 +243,102 @@ TEST_CASE("fromScalar for all types", "[dataframe][kdstore]") {
     delete bools;
     delete strs;
     delete doubles;
+}
+
+// test fromSorFile method
+TEST_CASE("create data frame from sor file", "[dataframe][kdstore]") {
+    KVStore kv;
+    KDStore kd(&kv);
+    Key k("data");
+    DataFrame* df = DataFrame::fromSorFile(&k, &kd, "./data/data4.sor");
+    DataFrame* df_copy = kd.get(k);
+
+    REQUIRE(df->ncols() == 4);
+    REQUIRE(df->nrows() == 672);
+    REQUIRE(df->get_bool(0, 486));
+    REQUIRE(df->get_int(1, 654) == -11);
+    REQUIRE(double_equal(df->get_double(2, 83), -17.5));
+    REQUIRE(df_copy->ncols() == 4);
+    REQUIRE(df_copy->nrows() == 672);
+    REQUIRE(df_copy->get_bool(0, 486));
+    REQUIRE(df_copy->get_int(1, 654) == -11);
+    REQUIRE(double_equal(df_copy->get_double(2, 83), -17.5));
+    String* s = new String("0.4");
+    String* s2 = df->get_string(3, 294);
+    String* s3 = df_copy->get_string(3, 294);
+    REQUIRE(s2->equals(s));
+    REQUIRE(s3->equals(s));
+    delete df;
+    delete df_copy;
+    delete s;
+    delete s2;
+    delete s3;
+}
+
+class Summer : public Writer {
+   public:
+    std::unordered_map<std::string, int>::iterator it_;
+    std::unordered_map<std::string, int> map_;
+
+    Summer(std::unordered_map<std::string, int> map) : Writer() {
+        map_ = std::unordered_map<std::string, int>(map);
+        it_ = map_.begin();
+    }
+
+    virtual ~Summer() {}
+
+    /**
+     * Visits the given row.
+     * @arg r  the row
+     */
+    virtual void visit(Row& r) {
+        String* key = new String(it_->first.c_str());
+        r.set(0, key);
+        r.set(1, it_->second);
+        it_++;
+    }
+
+    /**
+     * Marks when the writer is done visiting the data frame.
+     * @return true if done
+     */
+    virtual bool done() {
+        return it_ == map_.end();
+    }
+};
+
+// test fromVisitor method
+TEST_CASE("create df from map with fromVisitor", "[dataframe][kdstore]") {
+    std::unordered_map<std::string, int> map = std::unordered_map<std::string, int>();
+    KVStore kv;
+    KDStore kd(&kv);
+    map["catch"] = 10;
+    map["super"] = 24;
+    map["monkey"] = 7;
+    Summer s(map);
+    Key cnts("counts");
+    DataFrame* df = DataFrame::fromVisitor(&cnts, &kd, "SI", s);
+    DataFrame* df_copy = kd.get(cnts);
+    String* s1 = df->get_string(0, 0);
+    String* s2 = df->get_string(0, 1);
+    String* s3 = df->get_string(0, 2);
+    String* s1_copy = df_copy->get_string(0, 0);
+    String* s2_copy = df_copy->get_string(0, 1);
+    String* s3_copy = df_copy->get_string(0, 2);
+
+    REQUIRE(s1->equals(s1_copy));
+    REQUIRE(s2->equals(s2_copy));
+    REQUIRE(s3->equals(s3_copy));
+    REQUIRE(df->get_int(1, 0) == df_copy->get_int(1, 0));
+    REQUIRE(df->get_int(1, 1) == df_copy->get_int(1, 1));
+    REQUIRE(df->get_int(1, 2) == df_copy->get_int(1, 2));
+
+    delete df;
+    delete df_copy;
+    delete s1;
+    delete s2;
+    delete s3;
+    delete s1_copy;
+    delete s2_copy;
+    delete s3_copy;
 }

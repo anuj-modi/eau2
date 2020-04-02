@@ -2,6 +2,7 @@
 #include "dataframe/dataframe.h"
 #include "key.h"
 #include "kvstore.h"
+#include "sorer/parser.h"
 #include "util/serial.h"
 
 /**
@@ -62,9 +63,9 @@ class KDStore : public Object {
     }
 
     /**
-     * Puts the value at the given key.
+     * Puts the data frame at the given key.
      * @arg k  the key to put the value at
-     * @arg v  the value to put in the store
+     * @arg df  the data frame
      */
     void put(Key& k, DataFrame* df) {
         Serializer s;
@@ -142,6 +143,49 @@ inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, String* val) {
     StringColumn* sc = new StringColumn(kd->get_kvstore());
     sc->push_back(val);
     DataFrame* df = new DataFrame(sc, kd->get_kvstore());
+    kd->put(*k, df);
+    return df;
+}
+
+inline DataFrame* DataFrame::fromSorFile(Key* k, KDStore* kd, const char* file_name) {
+    FILE* file = fopen(file_name, "r");
+    SorParser parser(file, kd->get_kvstore());
+    parser.guessSchema();
+    parser.parseFile();
+    ColumnSet* cols = parser.getColumnSet();
+    DataFrame* df = new DataFrame(cols->getColumns(), kd->get_kvstore());
+    kd->put(*k, df);
+    fclose(file);
+    return df;
+}
+
+inline DataFrame* DataFrame::fromVisitor(Key* k, KDStore* kd, const char* types, Writer& v) {
+    Schema s(types);
+    std::vector<Column*> cols = std::vector<Column*>();
+    for (size_t i = 0; i < s.width(); i++) {
+        switch (s.col_type(i)) {
+            case 'S':
+                cols.push_back(new StringColumn(kd->get_kvstore()));
+                break;
+            case 'I':
+                cols.push_back(new IntColumn(kd->get_kvstore()));
+                break;
+            case 'B':
+                cols.push_back(new BoolColumn(kd->get_kvstore()));
+                break;
+            case 'D':
+                cols.push_back(new DoubleColumn(kd->get_kvstore()));
+                break;
+            default:
+                assert(false);
+        }
+    }
+    Row r(s);
+    while (!v.done()) {
+        v.visit(r);
+        r.add_to_columns(cols);
+    }
+    DataFrame* df = new DataFrame(cols, kd->get_kvstore());
     kd->put(*k, df);
     return df;
 }

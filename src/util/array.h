@@ -7,19 +7,7 @@
 #include "object.h"
 #include "serial.h"
 #include "string.h"
-
-union Payload {
-    int i;
-    double d;
-    bool b;
-    String* s;
-};
-
-class Data {
-   public:
-    bool missing;
-    Payload payload;
-};
+#include "data.h"
 
 /**
  * Array: Represents a array.
