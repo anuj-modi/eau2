@@ -1,6 +1,6 @@
 #pragma once
+#include <assert.h>
 #include <vector>
-
 #include "message.h"
 #include "network.h"
 #include "util/object.h"
@@ -14,7 +14,6 @@
 class Client : public Object {
    public:
     ListenSocket* listen_sock_;
-    uint16_t listen_port_;
     ConnectionSocket* server_connection_;
     std::vector<ConnectionSocket*> peer_sockets_;
     std::vector<Address*> peer_addresses_;
@@ -28,18 +27,17 @@ class Client : public Object {
      * @arg server_port  the server port to bind on
      */
     Client(const char* ip, uint16_t port, const char* server_ip, uint16_t server_port)
-        : Object(), listen_port_(port), peer_sockets_(), peer_addresses_() {
+        : Object(), peer_sockets_(), peer_addresses_() {
+        my_addr_ = new Address(ip, port);
         listen_sock_ = new ListenSocket();
-        listen_sock_->bind_and_listen(ip, port);
-        my_addr_ = new Address(ip);
+        listen_sock_->bind_and_listen(my_addr_);
         server_connection_ = new ConnectionSocket();
-        server_connection_->connect_to_other(server_ip, server_port);
-        Register* reg = new Register(new Address(my_addr_->ip_bytes()));
-        Serializer* s = new Serializer();
-        reg->serialize(s);
-        assert(server_connection_->send_bytes(s->get_bytes(), s->size()) > 0);
-        delete s;
-        delete reg;
+        Address server(server_ip, server_port);
+        server_connection_->connect_to_other(&server);
+        Register reg(new Address(my_addr_));
+        Serializer s;
+        reg.serialize(&s);
+        assert(server_connection_->send_bytes(s.get_bytes(), s.size()) > 0);
     }
 
     /**
@@ -63,15 +61,13 @@ class Client : public Object {
 
         // create Address array
         Directory* dir = new Directory(d);
-        Address* a;
-        for (size_t i = 0; i < dir->client_addrs_->size(); i++) {
-            a = dir->client_addrs_->get(i);
+        for (Address* a : dir->client_addrs_) {
             if (!my_addr_->equals(a)) {
-                peer_addresses_.push_back(new Address(a->ip_bytes()));
+                peer_addresses_.push_back(new Address(a));
             }
             delete a;
         }
-        delete dir->client_addrs_;
+        // delete dir->client_addrs_;
         delete dir;
     }
 
@@ -163,7 +159,7 @@ class Client : public Object {
                 // connect to the other client
                 Address* peer = peer_addresses_[0];
                 ConnectionSocket* peer_sock = new ConnectionSocket();
-                peer_sock->connect_to_other(peer->as_str()->c_str(), listen_port_);
+                peer_sock->connect_to_other(peer);
                 peer_sockets_.push_back(peer_sock);
 
                 // send a message to the other client

@@ -107,7 +107,7 @@ class Register : public Message {
     }
 
     Register(Deserializer* d) : Message(MsgType::REGISTER, d) {
-        client_addr_ = new Address(d->get_uint32_t());
+        client_addr_ = new Address(d);
     }
 
     /**
@@ -122,7 +122,7 @@ class Register : public Message {
      */
     virtual void serialize(Serializer* s) {
         Message::serialize(s);
-        s->add_uint32_t(client_addr_->ip_bytes());
+        client_addr_->serialize(s);
     }
 
     /**
@@ -160,7 +160,7 @@ class Directory : public Message {
     Directory(Deserializer* d) : Message(MsgType::DIRECTORY, d), client_addrs_() {
         size_t num_addrs = d->get_size_t();
         for (size_t i = 0; i < num_addrs; i++) {
-            client_addrs_.push_back(new Address(d->get_uint32_t()));
+            client_addrs_.push_back(new Address(d));
         }
     }
 
@@ -176,7 +176,7 @@ class Directory : public Message {
         Message::serialize(s);
         s->add_size_t(client_addrs_.size());
         for (Address* addr : client_addrs_) {
-            s->add_uint32_t(addr->ip_bytes());
+            addr->serialize(s);
         }
     }
 
