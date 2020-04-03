@@ -123,3 +123,18 @@ TEST_CASE("test string column", "[column]") {
     delete s;
     delete sc;
 }
+
+// test local_indices method
+TEST_CASE("get indices on this node", "[column]") {
+    KVStore kv;
+    IntColumn sc(&kv);
+    for (size_t i = 0; i < 130; i++) {
+        sc.push_back(i);
+    }
+
+    Key diff_key("outlier", 1);
+    sc.segments_[1] = diff_key; 
+    std::vector<size_t> indices = sc.local_indices();
+
+    REQUIRE(indices.size() == 128);
+}
