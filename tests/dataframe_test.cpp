@@ -342,3 +342,52 @@ TEST_CASE("create df from map with fromVisitor", "[dataframe][kdstore]") {
     delete s2_copy;
     delete s3_copy;
 }
+
+class Adder : public Reader {
+   public:
+    std::unordered_map<std::string, int> map_;  // String to Num map;  Num holds an int
+
+    Adder(std::unordered_map<std::string, int> map) : Reader() {
+        map_ = std::unordered_map<std::string, int>(map);
+    }
+
+    void visit(Row& r) override {
+        String* word = r.get_string(0);
+        assert(word != nullptr);
+        std::string w = std::string(word->c_str());
+        delete word;
+        if (map_.find(w) == map_.end()) {
+            map_[w] = 1;
+        } else {
+            map_[w] += 1;
+        }
+    }
+};
+
+// test local_map method
+// TEST_CASE("adder with local_map on data frame", "[dataframe][kdstore]") {
+//     String* hello = new String("hello");
+//     String* world = new String("world");
+//     String* potato = new String("potato");
+//     KVStore kv;
+//     KDStore kd(&kv);
+//     StringColumn* sc = new StringColumn(&kv);
+//     for (size_t i = 0; i < 138; i++) {
+//         sc->push_back(hello);
+//     }
+//     sc->push_back(world);
+//     for (size_t i = 0; i < 2; i++) {
+//         sc->push_back(potato);
+//     }
+//     sc->push_back(hello);
+//     Key not_included("not included", 1);
+//     sc->segments_[0] = not_included;
+//     DataFrame df(sc, &kv);
+//     std::unordered_map<std::string, int> occurances = std::unordered_map<std::string, int>();
+//     Adder add(occurances);
+//     df.local_map(add);
+    
+//     REQUIRE(occurances[std::string("hello")] == 11);
+//     REQUIRE(occurances[std::string("world")] == 1);
+//     REQUIRE(occurances[std::string("potato")] ==  2);
+// }

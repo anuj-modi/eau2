@@ -130,11 +130,18 @@ class Column : public Object {
      * @return list of indices
      */
     std::vector<size_t> local_indices() {
+        assert(finalized_);
         std::vector<size_t> indices = std::vector<size_t>();
         for (size_t i = 0; i < segments_.size(); i++) {
-            if(segments_[i].get_node() == store_->this_node()) {
+            if (segments_[i].get_node() == store_->this_node()) {
                 size_t start = i * SEGMENT_CAPACITY;
-                for (size_t j = start; j < start + SEGMENT_CAPACITY; j++) {
+                size_t end;
+                if (i < segments_.size() - 1) {
+                    end = start + SEGMENT_CAPACITY;
+                } else {
+                    end = (size_ % SEGMENT_CAPACITY) + start;
+                }
+                for (size_t j = start; j < end; j++) {
                     indices.push_back(j);
                 }
             }
