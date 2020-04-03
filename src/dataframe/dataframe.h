@@ -121,9 +121,6 @@ class DataFrame : public Object {
      * @arg r  the row
      */
     void fill_row(size_t idx, Row& row) {
-        if (idx >= df_schema_->length()) {
-            printf("%zu\n", idx);
-        }
         assert(idx < df_schema_->length());
         assert(row.width() == df_schema_->width());
         for (size_t i = 0; i < row.width(); i++) {

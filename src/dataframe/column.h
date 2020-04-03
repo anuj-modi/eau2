@@ -186,7 +186,7 @@ class Column : public Object {
     virtual void expand_() {
         char buffer[15];
         snprintf(buffer, 15, "%s_%zu", col_id_->c_str(), segments_.size());
-        Key new_k = Key(buffer, curr_node_);
+        Key new_k(buffer, curr_node_);
         segments_.push_back(new_k);
         curr_node_ = (curr_node_ + 1) % store_->num_nodes();
     }
