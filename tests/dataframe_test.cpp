@@ -285,8 +285,8 @@ class Summer : public Writer {
     std::unordered_map<std::string, int>::iterator it_;
     std::unordered_map<std::string, int> map_;
 
-    Summer(std::unordered_map<std::string, int> map) : Writer() {
-        map_ = std::unordered_map<std::string, int>(map);
+    Summer(std::unordered_map<std::string, int>& map) : Writer() {
+        map_ = map;
         it_ = map_.begin();
     }
 
@@ -352,8 +352,8 @@ class Adder : public Reader {
    public:
     std::unordered_map<std::string, int> map_;  // String to Num map;  Num holds an int
 
-    Adder() : Reader() {
-        map_ = std::unordered_map<std::string, int>();
+    Adder(std::unordered_map<std::string, int>& map) : Reader() {
+        map_ = map;
     }
 
     void visit(Row& r) override {
@@ -385,7 +385,8 @@ TEST_CASE("adder with local_map on data frame", "[dataframe][kdstore]") {
     Key not_included("not included", 1);
     sc->segments_[0] = not_included;
     DataFrame df(sc, &kv);
-    Adder add;
+    std::unordered_map<std::string, int> map = std::unordered_map<std::string, int>();
+    Adder add(map);
     df.local_map(add);
      
     REQUIRE(add.map_[std::string("hello")] == 11);
