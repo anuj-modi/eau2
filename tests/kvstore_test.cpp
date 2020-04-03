@@ -29,3 +29,7 @@ TEST_CASE("put and get a value in kvstore", "[kvstore]") {
 }
 
 // TODO test kvstore waitAndGet
+
+// TODO test kvstore this_node
+
+// TODO test kvstore num_nodes

@@ -3,7 +3,6 @@
 #include <stdarg.h>
 
 #include <array>
-#include <unordered_set>
 #include <vector>
 
 #include "store/kvstore.h"
@@ -130,11 +129,10 @@ class Column : public Object {
      * @arg node  index of local node
      * @return list of indices
      */
-    std::vector<size_t> local_indices(size_t node) {
-        std::unordered_set<Key> local_keys = store_->node_keys(node);
+    std::vector<size_t> local_indices() {
         std::vector<size_t> indices = std::vector<size_t>();
         for (size_t i = 0; i < segments_.size(); i++) {
-            if(local_keys.find(segments_[i]) != local_keys.end()) {
+            if(segments_[i].get_node() == store_->this_node()) {
                 size_t start = i * SEGMENT_CAPACITY;
                 for (size_t j = start; j < start + SEGMENT_CAPACITY; j++) {
                     indices.push_back(j);

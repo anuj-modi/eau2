@@ -59,6 +59,14 @@ class KVStore : public Object {
     }
 
     /**
+     * Get number of node that this instance is running on.
+     * @return the node number
+     */
+    virtual size_t this_node() {
+        return 0;
+    }
+
+    /**
      * Waits until there is a value at the given key and then gets it.
      * @arg k  the key
      * @return the value

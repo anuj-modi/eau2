@@ -174,10 +174,11 @@ class DataFrame : public Object {
      * @arg v  the reader to use
      * @arg node  the node index
      */
-    void local_map(Reader& v, size_t node) {
+    void local_map(Reader& v) {
         Row r(*df_schema_);
-        for (size_t i = 0; i < nrows(); i++) {
-            fill_row(i, r);
+        std::vector<size_t> indices = columns_[0]->local_indices();
+        for (size_t i = 0; i < indices.size(); i++) {
+            fill_row(indices[i], r);
             v.visit(r);
         }
     }
