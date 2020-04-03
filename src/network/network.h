@@ -54,10 +54,12 @@ class Address : public Object {
     Address(struct sockaddr_in addr) : Address(addr.sin_addr.s_addr, addr.sin_port) {}
 
     Address(Address *other) : Object() {
-        ip_str_ = new String(other->as_str());
+        ip_str_ = new String(other->as_str()->c_str());
         ip_bytes_ = other->ip_bytes();
         port_ = other->port();
     }
+
+    Address(Deserializer *d) : Address(d->get_uint32_t(), d->get_uint16_t()) {}
 
     /**
      * Deconstructs an address.
@@ -88,6 +90,11 @@ class Address : public Object {
      */
     uint16_t port() {
         return port_;
+    }
+
+    void serialize(Serializer *s) {
+        s->add_uint32_t(ip_bytes_);
+        s->add_uint16_t(port_);
     }
 
     /**
