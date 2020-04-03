@@ -1,4 +1,6 @@
 #pragma once
+#include <queue>
+
 #include "message.h"
 #include "network.h"
 #include "store/key.h"
@@ -12,14 +14,15 @@ class Connection : public Thread {
     ConnectionSocket* s_;
     KVStore* local_store_;
     bool keep_processing_;
+    std::queue<Reply*> replies;
 
-    Connection(ConnectionSocket* s, KVStore* kv) : Thread() {
+    Connection(ConnectionSocket* s, KVStore* kv) : Thread(), replies() {
         s_ = s;
         local_store_ = kv;
         keep_processing_ = true;
     }
 
-    void send_message_(Message* m) {
+    void send_message(Message* m) {
         Serializer s;
         m->serialize(&s);
         size_t num_bytes = s.size();
@@ -46,7 +49,7 @@ class Connection : public Thread {
     void handle_get_message_(Deserializer& d) {
         Get g(&d);
         Reply r(local_store_->get(g.k_));
-        send_message_(&r);
+        send_message(&r);
     }
 
     void handle_put_message_(Deserializer& d) {
@@ -57,7 +60,12 @@ class Connection : public Thread {
     void handle_wait_and_get_message_(Deserializer& d) {
         WaitAndGet g(&d);
         Reply r(local_store_->waitAndGet(g.k_));
-        send_message_(&r);
+        send_message(&r);
+    }
+
+    void handle_reply_message_(Deserializer& d) {
+        Reply* r = new Reply(&d);
+        replies.push(r);
     }
 
     void handle_message_(Deserializer& d) {
@@ -70,6 +78,8 @@ class Connection : public Thread {
             handle_put_message_(d);
         } else if (m == MsgType::WAITANDGET) {
             handle_wait_and_get_message_(d);
+        } else if (m == MsgType::REPLY) {
+            handle_reply_message_(d);
         } else {
             assert(false);
         }
