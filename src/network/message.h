@@ -2,6 +2,8 @@
 #include <vector>
 
 #include "network.h"
+#include "store/key.h"
+#include "store/value.h"
 #include "util/object.h"
 #include "util/serial.h"
 
@@ -9,18 +11,7 @@
  * Represents a message type to pass over a network.
  */
 // enum class MsgType : int { REGISTER, KILL, DIRECTORY, STATUS };
-enum class MsgType : int {
-    ACK,
-    NACK,
-    PUT,
-    REPLY,
-    GET,
-    WAITANDGET,
-    STATUS,
-    KILL,
-    REGISTER,
-    DIRECTORY
-};
+enum class MsgType : int { PUT, GET, WAITANDGET, REPLY, KILL, REGISTER, DIRECTORY, STATUS };
 
 /**
  * Represents a message to send over a network.
@@ -87,6 +78,114 @@ class Message : public Object {
             return true;
         }
         return false;
+    }
+};
+
+class Put : public Message {
+   public:
+    Key k_;
+    Value* v_;
+
+    Put(Key& k, Value* v) : Message(MsgType::PUT) {
+        k_ = Key(k);
+        v_ = v;
+    }
+
+    Put(Deserializer* d) : Message(MsgType::PUT, d) {
+        k_ = Key(d);
+        v_ = new Value(d);
+    }
+
+    /**
+     * Deconstructs an instance of a put message.
+     */
+    virtual ~Put() {
+        delete v_;
+    }
+
+    /**
+     * Serializes the object into a string of chars.
+     */
+    virtual void serialize(Serializer* s) {
+        Message::serialize(s);
+        k_.serialize(s);
+        v_->serialize(s);
+    }
+};
+
+class Get : public Message {
+   public:
+    Key k_;
+
+    Get(Key& k) : Message(MsgType::GET), k_(k) {}
+
+    Get(Deserializer* d) : Message(MsgType::GET, d) {
+        k_ = Key(d);
+    }
+
+    /**
+     * Deconstructs an instance of a get message.
+     */
+    virtual ~Get() {}
+
+    /**
+     * Serializes the object into a string of chars.
+     */
+    virtual void serialize(Serializer* s) {
+        Message::serialize(s);
+        k_.serialize(s);
+    }
+};
+
+class WaitAndGet : public Message {
+   public:
+    Key k_;
+
+    WaitAndGet(Key& k) : Message(MsgType::WAITANDGET), k_(k) {}
+
+    WaitAndGet(Deserializer* d) : Message(MsgType::WAITANDGET, d) {
+        k_ = Key(d);
+    }
+
+    /**
+     * Deconstructs an instance of a get message.
+     */
+    virtual ~WaitAndGet() {}
+
+    /**
+     * Serializes the object into a string of chars.
+     */
+    virtual void serialize(Serializer* s) {
+        Message::serialize(s);
+        k_.serialize(s);
+    }
+};
+
+class Reply : public Message {
+   public:
+    Value* v_;
+
+    Reply(Value* v) : Message(MsgType::REPLY) {
+        v_ = v;
+    }
+
+    Reply(Deserializer* d) : Message(MsgType::REPLY, d) {
+        v_ = new Value(d);
+    }
+
+    /**
+     * Deconstructs an instance of a Reply message.
+     */
+    virtual ~Reply() {
+        delete v_;
+    }
+
+    /**
+     * Serializes the object into a string of chars.
+     */
+    virtual void serialize(Serializer* s) {
+        Message::serialize(s);
+        v_->serialize(s);
     }
 };
 
@@ -250,17 +349,5 @@ class Status : public Message {
             return true;
         }
         return false;
-    }
-};
-
-class Ack : public Message {
-   public:
-    Ack() : Message(MsgType::ACK) {}
-    Ack(Deserializer* d) : Message(MsgType::ACK, d) {}
-
-    virtual ~Ack() {}
-
-    virtual void serialize(Serializer* s) {
-        Message::serialize(s);
     }
 };
