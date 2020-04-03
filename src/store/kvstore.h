@@ -51,6 +51,14 @@ class KVStore : public Object {
     }
 
     /**
+     * Gets the number of nodes that the store is operating over.
+     * @return number of nodes
+     */
+    virtual size_t num_nodes() {
+        return 1;
+    }
+
+    /**
      * Waits until there is a value at the given key and then gets it.
      * @arg k  the key
      * @return the value
