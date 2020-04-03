@@ -46,6 +46,14 @@ class Key : public Object {
     }
 
     /**
+     * Gets the node number in the k.
+     * @return the node number
+     */
+    size_t get_node() {
+        return node_;
+    }
+
+    /**
      * Checks if this key is equal to another object.
      * Keys are equal if their String values are the same
      * but they have different node numbers.

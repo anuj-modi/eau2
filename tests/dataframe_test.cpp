@@ -119,6 +119,11 @@ TEST_CASE("fill row with data frame data", "[dataframe]") {
     REQUIRE(r.get_bool(1));
     REQUIRE(r.get_string(2)->equals(str));
     REQUIRE(double_equal(r.get_double(3), 8.0));
+    df.fill_row(9, r);
+    REQUIRE(r.get_int(0) == 9);
+    REQUIRE(r.get_bool(1));
+    REQUIRE(r.get_string(2)->equals(str));
+    REQUIRE(double_equal(r.get_double(3), 9.0));
 
     delete str;
 }
@@ -341,4 +346,53 @@ TEST_CASE("create df from map with fromVisitor", "[dataframe][kdstore]") {
     delete s1_copy;
     delete s2_copy;
     delete s3_copy;
+}
+
+class Adder : public Reader {
+   public:
+    std::unordered_map<std::string, int> map_;  // String to Num map;  Num holds an int
+
+    Adder() : Reader() {
+        map_ = std::unordered_map<std::string, int>();
+    }
+
+    void visit(Row& r) override {
+        std::string w = std::string(r.get_string(0)->c_str());
+        if (map_.find(w) == map_.end()) {
+            map_[w] = 1;
+        } else {
+            map_[w] += 1;
+        }
+    }
+};
+
+// test local_map method
+TEST_CASE("adder with local_map on data frame", "[dataframe][kdstore]") {
+    String* hello = new String("hello");
+    String* world = new String("world");
+    String* potato = new String("potato");
+    KVStore kv;
+    KDStore kd(&kv);
+    StringColumn* sc = new StringColumn(&kv);
+    for (size_t i = 0; i < 138; i++) {
+        sc->push_back(hello);
+    }
+    sc->push_back(world);
+    for (size_t i = 0; i < 2; i++) {
+        sc->push_back(potato);
+    }
+    sc->push_back(hello);
+    Key not_included("not included", 1);
+    sc->segments_[0] = not_included;
+    DataFrame df(sc, &kv);
+    Adder add;
+    df.local_map(add);
+     
+    REQUIRE(add.map_[std::string("hello")] == 11);
+    REQUIRE(add.map_[std::string("world")] == 1);
+    REQUIRE(add.map_[std::string("potato")] ==  2);
+
+    delete hello;
+    delete world;
+    delete potato;
 }

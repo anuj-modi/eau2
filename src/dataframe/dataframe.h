@@ -168,6 +168,20 @@ class DataFrame : public Object {
             columns_[i]->serialize(s);
         }
     }
+
+    /**
+     * Maps over the rows of the data frame on the given node.
+     * @arg v  the reader to use
+     * @arg node  the node index
+     */
+    void local_map(Reader& v) {
+        Row r(*df_schema_);
+        std::vector<size_t> indices = columns_[0]->local_indices();
+        for (size_t i = 0; i < indices.size(); i++) {
+            fill_row(indices[i], r);
+            v.visit(r);
+        }
+    }
     
     /** Adds a column this dataframe, updates the schema, the new column
      * is external, and appears as the last column of the dataframe.

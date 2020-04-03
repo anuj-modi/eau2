@@ -1,8 +1,10 @@
 #pragma once
 #include <assert.h>
 #include <stdarg.h>
+
 #include <array>
 #include <vector>
+
 #include "store/kvstore.h"
 #include "util/array.h"
 #include "util/serial.h"
@@ -37,6 +39,7 @@ class Column : public Object {
     String* col_id_;
     Array* cache_;
     Key cache_key_;
+    size_t curr_node_;
 
     Column(KVStore* store) : Object() {
         size_ = 0;
@@ -51,6 +54,7 @@ class Column : public Object {
             buff.c(c);
         }
         col_id_ = buff.get();
+        curr_node_ = 0;
         expand_();
     }
 
@@ -65,6 +69,7 @@ class Column : public Object {
         col_id_ = d->get_string();
         size_t num_segments = d->get_size_t();
         segments_ = std::vector<Key>();
+        curr_node_ = 0;
         for (size_t i = 0; i < num_segments; i++) {
             segments_.push_back(Key(d));
         }
@@ -120,6 +125,31 @@ class Column : public Object {
     }
 
     /**
+     * Gets list of indices on local node.
+     * @arg node  index of local node
+     * @return list of indices
+     */
+    std::vector<size_t> local_indices() {
+        assert(finalized_);
+        std::vector<size_t> indices = std::vector<size_t>();
+        for (size_t i = 0; i < segments_.size(); i++) {
+            if (segments_[i].get_node() == store_->this_node()) {
+                size_t start = i * SEGMENT_CAPACITY;
+                size_t end;
+                if (i < segments_.size() - 1) {
+                    end = start + SEGMENT_CAPACITY;
+                } else {
+                    end = (size_ % SEGMENT_CAPACITY) + start;
+                }
+                for (size_t j = start; j < end; j++) {
+                    indices.push_back(j);
+                }
+            }
+        }
+        return indices;
+    }
+
+    /**
      * Marks the column as final and doesn't allow for any more additions.
      * Column cannot already be finalized.
      */
@@ -156,8 +186,9 @@ class Column : public Object {
     virtual void expand_() {
         char buffer[15];
         snprintf(buffer, 15, "%s_%zu", col_id_->c_str(), segments_.size());
-        Key new_k = Key(buffer);
+        Key new_k(buffer, curr_node_);
         segments_.push_back(new_k);
+        curr_node_ = (curr_node_ + 1) % store_->num_nodes();
     }
 
     virtual void put_in_store_() {
