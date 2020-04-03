@@ -182,6 +182,20 @@ class DataFrame : public Object {
             v.visit(r);
         }
     }
+
+    // TODO test DataFrame map
+    /**
+     * Maps over the rows of the data frame on the given node.
+     * @arg v  the reader to use
+     * @arg node  the node index
+     */
+    void map(Reader& v) {
+        Row r(*df_schema_);
+        for (size_t i = 0; i < df_schema_->length(); i++) {
+            fill_row(i, r);
+            v.visit(r);
+        }
+    }
     
     /** Adds a column this dataframe, updates the schema, the new column
      * is external, and appears as the last column of the dataframe.
