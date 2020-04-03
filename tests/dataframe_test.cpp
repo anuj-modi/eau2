@@ -385,14 +385,12 @@ TEST_CASE("adder with local_map on data frame", "[dataframe][kdstore]") {
     Key not_included("not included", 1);
     sc->segments_[0] = not_included;
     DataFrame df(sc, &kv);
-    std::unordered_map<std::string, int> occurances = std::unordered_map<std::string, int>();
     Adder add;
     df.local_map(add);
-    std::unordered_map<std::string, int> occurs = add.map_;
-    
-    REQUIRE(occurs[std::string("hello")] == 11);
-    REQUIRE(occurs[std::string("world")] == 1);
-    REQUIRE(occurs[std::string("potato")] ==  2);
+     
+    REQUIRE(add.map_[std::string("hello")] == 11);
+    REQUIRE(add.map_[std::string("world")] == 1);
+    REQUIRE(add.map_[std::string("potato")] ==  2);
 
     delete hello;
     delete world;
