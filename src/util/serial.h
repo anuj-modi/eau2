@@ -90,6 +90,17 @@ class Serializer : public Object {
         size_ = new_size;
     }
 
+    void add_uint16_t(uint16_t val) {
+        size_t new_size = size_ + sizeof(val);
+        if (new_size > capacity_) {
+            expand_(new_size);
+        }
+
+        uint16_t* ptr = (uint16_t*)(bytes_ + size_);
+        *ptr = val;
+        size_ = new_size;
+    }
+
     void add_uint32_t(uint32_t val) {
         size_t new_size = size_ + sizeof(val);
         if (new_size > capacity_) {
@@ -184,6 +195,14 @@ class Deserializer : public Object {
         bool result = *((bool*)current_);
         current_ += sizeof(bool);
         bytes_remaining_ -= sizeof(bool);
+        return result;
+    }
+
+    uint16_t get_uint16_t() {
+        assert(bytes_remaining_ >= sizeof(uint16_t));
+        uint16_t result = *((uint16_t*)current_);
+        current_ += sizeof(uint16_t);
+        bytes_remaining_ -= sizeof(uint16_t);
         return result;
     }
 
