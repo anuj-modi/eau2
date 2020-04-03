@@ -397,3 +397,5 @@ TEST_CASE("adder with local_map on data frame", "[dataframe][kdstore]") {
     delete world;
     delete potato;
 }
+
+// TODO test map method

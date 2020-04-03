@@ -1,6 +1,7 @@
 #include <assert.h>
 
 #include "application/application.h"
+#include "catch.hpp"
 #include "dataframe/row.h"
 #include "dataframe/visitor.h"
 #include "util/string.h"
@@ -226,3 +227,8 @@ class WordCount : public Application {
         delete df;
     }
 };
+
+// check output of word count
+TEST_CASE("run word count app") {
+    // TODO word count test
+}
