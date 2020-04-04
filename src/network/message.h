@@ -1,4 +1,5 @@
 #pragma once
+#include <unordered_map>
 #include <vector>
 
 #include "network.h"
@@ -10,7 +11,6 @@
 /**
  * Represents a message type to pass over a network.
  */
-// enum class MsgType : int { REGISTER, KILL, DIRECTORY, STATUS };
 enum class MsgType : int { PUT, GET, WAITANDGET, REPLY, KILL, REGISTER, DIRECTORY, STATUS };
 
 /**
@@ -194,18 +194,21 @@ class Reply : public Message {
  */
 class Register : public Message {
    public:
+    size_t node_num_;
     Address* client_addr_;
 
     /**
      * Creates instance of a register message.
      * @arg addr  the address of the client that wants to register.
      */
-    Register(Address* addr) : Message(MsgType::REGISTER) {
+    Register(Address* addr, size_t node_num) : Message(MsgType::REGISTER) {
         assert(addr != nullptr);
+        node_num_ = node_num;
         client_addr_ = addr;
     }
 
     Register(Deserializer* d) : Message(MsgType::REGISTER, d) {
+        node_num_ = d->get_size_t();
         client_addr_ = new Address(d);
     }
 
@@ -221,6 +224,7 @@ class Register : public Message {
      */
     virtual void serialize(Serializer* s) {
         Message::serialize(s);
+        s->add_size_t(node_num_);
         client_addr_->serialize(s);
     }
 
@@ -228,18 +232,20 @@ class Register : public Message {
      * Checks if this is equal to object provided.
      */
     virtual bool equals(Object* other) {
-        if (other == this) {
-            return true;
-        }
-        Register* o = dynamic_cast<Register*>(other);
-        if (o == nullptr) {
-            return false;
-        }
-        if (kind_ == o->kind_ && sender_ == o->sender_ && target_ == o->target_ && id_ == o->id_ &&
-            client_addr_->ip_bytes() == o->client_addr_->ip_bytes()) {
-            return true;
-        }
-        return false;
+        assert(false);
+        // if (other == this) {
+        //     return true;
+        // }
+        // Register* o = dynamic_cast<Register*>(other);
+        // if (o == nullptr) {
+        //     return false;
+        // }
+        // if (kind_ == o->kind_ && sender_ == o->sender_ && target_ == o->target_ && id_ == o->id_
+        // &&
+        //     client_addr_->ip_bytes() == o->client_addr_->ip_bytes()) {
+        //     return true;
+        // }
+        // return false;
     }
 };
 
@@ -254,7 +260,12 @@ class Directory : public Message {
      * Creates instance of a directory message.
      * @arg addrs  the addresss of the clients that are registered
      */
-    Directory(std::vector<Address*> addrs) : Message(MsgType::DIRECTORY), client_addrs_(addrs) {}
+    Directory(std::unordered_map<size_t, Address*>& addrs)
+        : Message(MsgType::DIRECTORY), client_addrs_() {
+        for (size_t i = 0; i < addrs.size(); i++) {
+            client_addrs_.push_back(addrs[i]);
+        }
+    }
 
     Directory(Deserializer* d) : Message(MsgType::DIRECTORY, d), client_addrs_() {
         size_t num_addrs = d->get_size_t();
