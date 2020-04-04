@@ -6,7 +6,9 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
 #include "util/object.h"
+#include "util/serial.h"
 #include "util/string.h"
 
 /**
@@ -45,6 +47,7 @@ class Address : public Object {
         char buf[INET_ADDRSTRLEN];
         assert(inet_ntop(AF_INET, &addr, buf, sizeof(buf)) != nullptr);
         ip_str_ = new String(buf);
+        port_ = port;
     }
 
     /**
@@ -59,7 +62,13 @@ class Address : public Object {
         port_ = other->port();
     }
 
-    Address(Deserializer *d) : Address(d->get_uint32_t(), d->get_uint16_t()) {}
+    Address(Deserializer *d) : Object() {
+        ip_bytes_ = d->get_uint32_t();
+        char buf[INET_ADDRSTRLEN];
+        assert(inet_ntop(AF_INET, &ip_bytes_, buf, sizeof(buf)) != nullptr);
+        ip_str_ = new String(buf);
+        port_ = d->get_uint16_t();
+    }
 
     /**
      * Deconstructs an address.
