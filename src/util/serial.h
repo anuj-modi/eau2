@@ -1,5 +1,6 @@
 #pragma once
 #include <stdio.h>
+
 #include "object.h"
 #include "string.h"
 
@@ -166,6 +167,17 @@ class Deserializer : public Object {
     Deserializer(const char* buf, size_t num_bytes) : Object() {
         bytes_ = new char[num_bytes];
         memcpy(bytes_, buf, num_bytes);
+        current_ = bytes_;
+        bytes_remaining_ = num_bytes;
+    }
+
+    Deserializer(bool steal, char* buf, size_t num_bytes) : Object() {
+        if (steal) {
+            bytes_ = buf;
+        } else {
+            bytes_ = new char[num_bytes];
+            memcpy(bytes_, buf, num_bytes);
+        }
         current_ = bytes_;
         bytes_remaining_ = num_bytes;
     }
