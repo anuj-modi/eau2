@@ -53,6 +53,10 @@ class NetworkIfc : public Thread {
         } else {
             register_with_controller_();
         }
+
+        assert(peer_addresses_.size() == total_nodes_);
+        pln("finished registration");
+
         while (keep_processing_) {
             if (listen_sock_->has_new_connections()) {
                 ConnectionSocket* cs = listen_sock_->accept_connection();
@@ -64,14 +68,15 @@ class NetworkIfc : public Thread {
                 connections_[node] = c;
             }
         }
-        pln("finished executing");
+
+        for (std::pair<size_t, Connection*> p : connections_) {
+            p.second->stop();
+            p.second->join();
+        }
     }
 
     // The "server" handing registration messages from "clients"
     void process_client_registrations_() {
-        // Place myself as node 0 in peer_addresses
-        peer_addresses_[0] = new Address(&my_addr_);
-
         // wait for registrations from everyone
         while (peer_addresses_.size() != total_nodes_) {
             ConnectionSocket* cs = listen_sock_->accept_connection();
@@ -147,23 +152,20 @@ class NetworkIfc : public Thread {
         assert(m == MsgType::DIRECTORY);
         // create Address array
         Directory dir(&d);
-        for (size_t i = 0; i < dir.client_addrs_.size(); i++) {
+        assert(dir.client_addrs_.size() == total_nodes_);
+        delete dir.client_addrs_[0];
+        for (size_t i = 1; i < dir.client_addrs_.size(); i++) {
             Address* a = dir.client_addrs_[i];
-            // TODO: this seems like a memory leak
             peer_addresses_[i] = a;
-            // peer_addresses_[i] = new Address(a);
-            // delete a;
         }
-        // delete dir->client_addrs_;
     }
 
     void stop() {
+        // for (std::pair<size_t, Connection*> p : connections_) {
+        //     p.second->stop();
+        //     p.second->join();
+        // }
         keep_processing_ = false;
-        for (std::unordered_map<size_t, Connection*>::iterator it = connections_.begin();
-             it != connections_.end(); it++) {
-            it->second->stop();
-            it->second->join();
-        }
     }
 
     void connect_to_node_(size_t node) {

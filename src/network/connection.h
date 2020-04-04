@@ -22,9 +22,12 @@ class Connection : public Thread {
         keep_processing_ = true;
     }
 
-    virtual ~Connection() {}
+    virtual ~Connection() {
+        delete s_;
+    }
 
     void stop() {
+        // pln("trying to stop CONN");
         keep_processing_ = false;
     }
 
@@ -93,12 +96,13 @@ class Connection : public Thread {
 
     // handles messages from other nodes coming in
     void run() override {
+        // pln("started executing CONN");
         while (keep_processing_) {
             if (s_->has_new_bytes()) {
                 Deserializer d = recv_message_();
                 handle_message_(d);
             }
         }
-        pln("finished executing");
+        // pln("finished executing CONN");
     }
 };
