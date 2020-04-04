@@ -36,15 +36,22 @@ class NetworkIfc : public Thread {
     NetworkIfc(Address* address, size_t total_nodes, KVStore* kv)
         : NetworkIfc(address, address, 0, total_nodes, kv) {}
 
+    virtual ~NetworkIfc() {
+        for (std::pair<size_t, Connection*> p : connections_) {
+            delete p.second;
+        }
+        for (std::pair<size_t, Address*> p : peer_addresses_) {
+            delete p.second;
+        }
+        delete listen_sock_;
+    }
+
     void run() override {
         listen_sock_->bind_and_listen(&my_addr_);
         if (node_num_ == 0) {
             process_client_registrations_();
         } else {
             register_with_controller_();
-        }
-        for (std::pair<size_t, Address*> p : peer_addresses_) {
-            pln(p.second->as_str()->c_str());
         }
         while (keep_processing_) {
             if (listen_sock_->has_new_connections()) {
@@ -57,6 +64,7 @@ class NetworkIfc : public Thread {
                 connections_[node] = c;
             }
         }
+        pln("finished executing");
     }
 
     // The "server" handing registration messages from "clients"

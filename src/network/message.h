@@ -2,7 +2,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "network.h"
+#include "address.h"
 #include "store/key.h"
 #include "store/value.h"
 #include "util/object.h"

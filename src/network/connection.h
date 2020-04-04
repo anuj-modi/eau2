@@ -22,6 +22,8 @@ class Connection : public Thread {
         keep_processing_ = true;
     }
 
+    virtual ~Connection() {}
+
     void stop() {
         keep_processing_ = false;
     }
@@ -97,5 +99,6 @@ class Connection : public Thread {
                 handle_message_(d);
             }
         }
+        pln("finished executing");
     }
 };

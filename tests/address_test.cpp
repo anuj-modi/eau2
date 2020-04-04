@@ -1,7 +1,8 @@
+#include "network/address.h"
+
 #include <arpa/inet.h>
 
 #include "catch.hpp"
-#include "network/network.h"
 #include "util/serial.h"
 
 TEST_CASE("make address from string") {

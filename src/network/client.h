@@ -1,6 +1,7 @@
 #pragma once
-#include <assert.h>
+#include <cassert>
 #include <vector>
+
 #include "message.h"
 #include "network.h"
 #include "util/object.h"
@@ -132,8 +133,7 @@ class Client : public Object {
                 handle_new_connections();
             }
 
-            for (size_t i = 0; i < peer_sockets_.size(); i++) {
-                ConnectionSocket* peer = peer_sockets_[i];
+            for (ConnectionSocket* peer : peer_sockets_) {
                 if (peer->has_new_bytes()) {
                     char buf[1024];
                     size_t num_bytes = peer->recv_bytes(buf, sizeof(buf));
