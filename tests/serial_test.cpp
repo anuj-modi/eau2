@@ -1,6 +1,8 @@
 #include "util/serial.h"
+
 #include <float.h>
 #include <limits.h>
+
 #include "catch.hpp"
 #include "network/message.h"
 #include "util/array.h"
@@ -155,15 +157,16 @@ TEST_CASE("test serialize deserialize double array", "[serialize][deserialize][a
 }
 
 TEST_CASE("test_serialize_deserialize_message_type", "[serialize][deserialize][message_type]") {
-    MsgType types[] = {MsgType::ACK,      MsgType::NACK,       MsgType::PUT,    MsgType::REPLY,
-                       MsgType::GET,      MsgType::WAITANDGET, MsgType::STATUS, MsgType::KILL,
-                       MsgType::REGISTER, MsgType::DIRECTORY};
+    MsgType types[] = {MsgType::PUT,    MsgType::REPLY, MsgType::GET,      MsgType::WAITANDGET,
+                       MsgType::STATUS, MsgType::KILL,  MsgType::REGISTER, MsgType::DIRECTORY};
+    size_t num_types = 8;
     Serializer s;
-    for (size_t i = 0; i < 10; i++) {
+
+    for (size_t i = 0; i < num_types; i++) {
         s.add_msg_type(types[i]);
     }
     Deserializer d(s.get_bytes(), s.size());
-    for (size_t i = 0; i < 10; i++) {
+    for (size_t i = 0; i < num_types; i++) {
         REQUIRE(d.get_msg_type() == types[i]);
     }
 }
