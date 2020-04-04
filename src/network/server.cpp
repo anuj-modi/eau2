@@ -1,17 +1,9 @@
-#include "server.h"
-#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 
-char* ip;
-Server* s;
-
-void shutdown_server(int signum) {
-    s->shutdown();
-    printf("\nShutting down...\n");
-    delete s;
-    exit(0);
-}
+#include "network.h"
+#include "network_ifc.h"
+#include "store/kvstore.h"
 
 int main(int argc, char** argv) {
     if (argc != 3 || strcmp(argv[1], "-ip") != 0) {
@@ -19,10 +11,15 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    signal(SIGINT, shutdown_server);
+    char* ip = argv[2];
+    // const char* server_ip = "127.0.0.1";
 
-    ip = argv[2];
-    s = new Server(ip, 4444);
-    s->run();
+    Address me(ip, 5555);
+    KVStore kv;
+    NetworkIfc ifc(&me, 2, &kv);
+
+    ifc.start();
+
+    ifc.join();
     return 0;
 }

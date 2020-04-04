@@ -33,13 +33,19 @@ class NetworkIfc : public Thread {
         listen_sock_ = new ListenSocket();
     }
 
+    NetworkIfc(Address* address, size_t total_nodes, KVStore* kv)
+        : NetworkIfc(address, address, 0, total_nodes, kv) {}
+
     void run() override {
+        listen_sock_->bind_and_listen(&my_addr_);
         if (node_num_ == 0) {
             process_client_registrations_();
         } else {
             register_with_controller_();
         }
-        listen_sock_->bind_and_listen(&my_addr_);
+        for (std::pair<size_t, Address*> p : peer_addresses_) {
+            pln(p.second->as_str()->c_str());
+        }
         while (keep_processing_) {
             if (listen_sock_->has_new_connections()) {
                 ConnectionSocket* cs = listen_sock_->accept_connection();
@@ -61,9 +67,7 @@ class NetworkIfc : public Thread {
         // wait for registrations from everyone
         while (peer_addresses_.size() != total_nodes_) {
             ConnectionSocket* cs = listen_sock_->accept_connection();
-
             char buf[1024];
-
             size_t num_bytes = cs->recv_bytes(buf, sizeof(buf));
             assert(num_bytes > 0);
             Deserializer d(buf, num_bytes);
