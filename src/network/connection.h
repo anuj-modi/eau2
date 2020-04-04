@@ -22,6 +22,10 @@ class Connection : public Thread {
         keep_processing_ = true;
     }
 
+    void stop() {
+        keep_processing_ = false;
+    }
+
     void send_message(Message* m) {
         Serializer s;
         m->serialize(&s);
@@ -35,7 +39,7 @@ class Connection : public Thread {
         assert(s_->recv_bytes((char*)&num_bytes, sizeof(size_t)) > 0 && num_bytes > 0);
         char* buf = new char[num_bytes];
         assert(s_->recv_bytes(buf, num_bytes) > 0);
-        return Deserializer(buf, num_bytes);
+        return Deserializer(true, buf, num_bytes);
     }
 
     /**

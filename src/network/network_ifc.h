@@ -11,17 +11,147 @@
 
 class NetworkIfc : public Thread {
    public:
+    bool keep_processing_;
     size_t node_num_;
     size_t total_nodes_;
     std::unordered_map<size_t, Connection*> connections_;
     std::unordered_map<size_t, Address*> peer_addresses_;
     ListenSocket* listen_sock_;
+    Address my_addr_;
     KVStore* local_kv_;
 
-    NetworkIfc(size_t node_num, size_t total_nodes, KVStore* kv)
-        : Thread(), node_num_(node_num), total_nodes_(total_nodes), connections_() {
+    NetworkIfc(Address* address, Address* controller, size_t node_num, size_t total_nodes,
+               KVStore* kv)
+        : Thread(),
+          node_num_(node_num),
+          total_nodes_(total_nodes),
+          connections_(),
+          my_addr_(address) {
+        peer_addresses_[0] = new Address(controller);
         local_kv_ = kv;
+        keep_processing_ = true;
         listen_sock_ = new ListenSocket();
+    }
+
+    void run() override {
+        if (node_num_ == 0) {
+            process_client_registrations_();
+        } else {
+            register_with_controller_();
+        }
+        listen_sock_->bind_and_listen(&my_addr_);
+        while (keep_processing_) {
+            if (listen_sock_->has_new_connections()) {
+                ConnectionSocket* cs = listen_sock_->accept_connection();
+                Connection* c = new Connection(cs, local_kv_);
+                size_t node = total_nodes_;
+                assert(cs->recv_bytes((char*)&node, sizeof(size_t)) > 0);
+                assert(node != total_nodes_);
+                c->start();
+                connections_[node] = c;
+            }
+        }
+    }
+
+    // The "server" handing registration messages from "clients"
+    void process_client_registrations_() {
+        // Place myself as node 0 in peer_addresses
+        peer_addresses_[0] = new Address(&my_addr_);
+
+        // wait for registrations from everyone
+        while (peer_addresses_.size() != total_nodes_) {
+            ConnectionSocket* cs = listen_sock_->accept_connection();
+
+            char buf[1024];
+
+            size_t num_bytes = cs->recv_bytes(buf, sizeof(buf));
+            assert(num_bytes > 0);
+            Deserializer d(buf, num_bytes);
+
+            handle_register_message_(cs, d);
+        }
+
+        // Send directory message out to everyone
+        Directory dir(peer_addresses_);
+        broadcast_(&dir);
+    }
+
+    /**
+     * Process a REGISTER message.
+     */
+    void handle_register_message_(ConnectionSocket* client, Deserializer& d) {
+        MsgType m = d.get_msg_type();
+        assert(m == MsgType::REGISTER);
+        Register reg(&d);
+
+        // Store peer address in address map
+        peer_addresses_[reg.node_num_] = new Address(reg.client_addr_);
+
+        // store peer connection in connections map
+        Connection* c = new Connection(client, local_kv_);
+        connections_[reg.node_num_] = c;
+        c->start();
+    }
+
+    /**
+     * Sends message to all nodes.
+     */
+    void broadcast_(Message* message) {
+        for (std::pair<size_t, Connection*> p : connections_) {
+            // send all client addresses over server
+            p.second->send_message(message);
+        }
+    }
+
+    // The "clients" registering with the "server"
+    void register_with_controller_() {
+        // Connect to server
+        ConnectionSocket* server_connection = new ConnectionSocket();
+        server_connection->connect_to_other(peer_addresses_[0]);
+
+        // Send Server Register
+        Register reg(new Address(&my_addr_), node_num_);
+        Serializer s;
+        reg.serialize(&s);
+        assert(server_connection->send_bytes(s.get_bytes(), s.size()) > 0);
+
+        // receive directory from server
+        size_t num_bytes = 0;
+        assert(server_connection->recv_bytes((char*)&num_bytes, sizeof(size_t)) > 0);
+        char* buf = new char[num_bytes];
+        assert(server_connection->recv_bytes(buf, num_bytes) > 0);
+        Deserializer d(true, buf, num_bytes);
+        handle_directory_message_(d);
+        Connection* c = new Connection(server_connection, local_kv_);
+        c->start();
+        connections_[0] = c;
+    }
+
+    /**
+     * Stores the addresses given by the server.
+     */
+    void handle_directory_message_(Deserializer& d) {
+        MsgType m = d.get_msg_type();
+        assert(m == MsgType::DIRECTORY);
+        // create Address array
+        Directory dir(&d);
+        for (size_t i = 0; i < dir.client_addrs_.size(); i++) {
+            Address* a = dir.client_addrs_[i];
+            // TODO: this seems like a memory leak
+            peer_addresses_[i] = a;
+            // peer_addresses_[i] = new Address(a);
+            // delete a;
+        }
+        // delete dir->client_addrs_;
+    }
+
+    void stop() {
+        keep_processing_ = false;
+        for (std::unordered_map<size_t, Connection*>::iterator it = connections_.begin();
+             it != connections_.end(); it++) {
+            it->second->stop();
+            it->second->join();
+        }
     }
 
     void connect_to_node_(size_t node) {
@@ -29,6 +159,7 @@ class NetworkIfc : public Thread {
             assert(peer_addresses_.size() == total_nodes_);
             ConnectionSocket* cs = new ConnectionSocket();
             cs->connect_to_other(peer_addresses_.at(node));
+            cs->send_bytes((char*)&node_num_, sizeof(size_t));
             Connection* c = new Connection(cs, local_kv_);
             c->start();
             connections_[node] = c;
