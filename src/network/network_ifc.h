@@ -29,7 +29,7 @@ class NetworkIfc : public Thread {
           my_addr_(address) {
         peer_addresses_[0] = new Address(controller);
         local_kv_ = kv;
-        keep_processing_ = true;
+        keep_processing_ = false;
         listen_sock_ = new ListenSocket();
     }
 
@@ -46,8 +46,16 @@ class NetworkIfc : public Thread {
         delete listen_sock_;
     }
 
+    void start() override {
+        Thread::start();
+        while (!keep_processing_) {
+            // Wait until socket ready
+        }
+    }
+
     void run() override {
         listen_sock_->bind_and_listen(&my_addr_);
+        keep_processing_ = true;
         if (node_num_ == 0) {
             process_client_registrations_();
         } else {
@@ -163,6 +171,12 @@ class NetworkIfc : public Thread {
         keep_processing_ = false;
     }
 
+    void wait_for_registration_() {
+        while (peer_addresses_.size() < total_nodes_) {
+            // wait for registration phase to finish
+        }
+    }
+
     void connect_to_node_(size_t node) {
         if (connections_.find(node) == connections_.end()) {
             assert(peer_addresses_.size() == total_nodes_);
@@ -176,6 +190,7 @@ class NetworkIfc : public Thread {
     }
 
     void put_at_node(size_t node, Key& k, Value* v) {
+        wait_for_registration_();
         assert(node_num_ != node);
         Put p(k, v);
         connect_to_node_(node);
@@ -200,6 +215,7 @@ class NetworkIfc : public Thread {
     }
 
     Value* get_from_node(size_t node, Key& k) {
+        wait_for_registration_();
         assert(node_num_ != node);
         Get g(k);
 
@@ -212,6 +228,7 @@ class NetworkIfc : public Thread {
     }
 
     Value* wait_and_get_from_node(size_t node, Key& k) {
+        wait_for_registration_();
         assert(node_num_ != node);
         WaitAndGet g(k);
 
