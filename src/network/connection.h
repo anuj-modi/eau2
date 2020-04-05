@@ -6,17 +6,19 @@
 #include "store/key.h"
 #include "store/kvstore.h"
 #include "store/value.h"
+#include "util/lock.h"
 #include "util/serial.h"
 #include "util/thread.h"
 
 class Connection : public Thread {
    public:
+    Lock l_;
     ConnectionSocket* s_;
     KVStore* local_store_;
     bool keep_processing_;
     std::queue<Reply*> replies;
 
-    Connection(ConnectionSocket* s, KVStore* kv) : Thread(), replies() {
+    Connection(ConnectionSocket* s, KVStore* kv) : Thread(), l_(), replies() {
         s_ = s;
         local_store_ = kv;
         keep_processing_ = true;
@@ -31,19 +33,30 @@ class Connection : public Thread {
         keep_processing_ = false;
     }
 
+    bool socket_ready_() {
+        l_.lock();
+        bool result = s_->has_new_bytes();
+        l_.unlock();
+        return result;
+    }
+
     void send_message(Message* m) {
         Serializer s;
         m->serialize(&s);
         size_t num_bytes = s.size();
+        l_.lock();
         assert(s_->send_bytes((char*)&num_bytes, sizeof(size_t)) > 0);
         assert(s_->send_bytes(s.get_bytes(), num_bytes) > 0);
+        l_.unlock();
     }
 
     Deserializer recv_message_() {
         size_t num_bytes = 0;
+        l_.lock();
         assert(s_->recv_bytes((char*)&num_bytes, sizeof(size_t)) > 0 && num_bytes > 0);
         char* buf = new char[num_bytes];
         assert(s_->recv_bytes(buf, num_bytes) > 0);
+        l_.unlock();
         return Deserializer(true, buf, num_bytes);
     }
 
