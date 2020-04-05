@@ -55,7 +55,6 @@ class NetworkIfc : public Thread {
         }
 
         assert(peer_addresses_.size() == total_nodes_);
-        pln("finished registration");
 
         while (keep_processing_) {
             if (listen_sock_->has_new_connections()) {
