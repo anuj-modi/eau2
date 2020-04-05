@@ -13,9 +13,9 @@ class Application : public Thread {
    public:
     size_t node_num_;
     KVStore* kv_;
-    KDStore kd;
+    KDStore kd_;
 
-    Application(size_t node_num, KVStore* kv) : Thread(), node_num_(node_num), kv_(kv), kd(kv_) {}
+    Application(size_t node_num, KVStore* kv) : Thread(), node_num_(node_num), kv_(kv), kd_(kv_) {}
 
     virtual ~Application() {}
 

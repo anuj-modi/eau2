@@ -30,22 +30,22 @@ class Demo : public Application {
         double* vals = new double[SZ];
         double sum = 0;
         for (size_t i = 0; i < SZ; ++i) sum += vals[i] = i;
-        delete DataFrame::fromArray(&main, &kd, SZ, vals);
-        delete DataFrame::fromScalar(&check, &kd, sum);
+        delete DataFrame::fromArray(&main, &kd_, SZ, vals);
+        delete DataFrame::fromScalar(&check, &kd_, sum);
         delete[] vals;
     }
 
     void counter() {
-        DataFrame* v = kd.waitAndGet(main);
+        DataFrame* v = kd_.waitAndGet(main);
         double sum = 0;
         for (size_t i = 0; i < 100 * 1000; ++i) sum += v->get_double(0, i);
-        delete DataFrame::fromScalar(&verify, &kd, sum);
+        delete DataFrame::fromScalar(&verify, &kd_, sum);
         delete v;
     }
 
     void summarizer() {
-        DataFrame* result = kd.waitAndGet(verify);
-        DataFrame* expected = kd.waitAndGet(check);
+        DataFrame* result = kd_.waitAndGet(verify);
+        DataFrame* expected = kd_.waitAndGet(check);
         assert(expected->get_double(0, 0) == result->get_double(0, 0));
         delete result;
         delete expected;
