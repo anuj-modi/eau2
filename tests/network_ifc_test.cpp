@@ -96,3 +96,34 @@ TEST_CASE("test getting data", "[network_ifc]") {
     controller.join();
     client.join();
 }
+
+TEST_CASE("test wait and get data", "[network_ifc]") {
+    KVStore kv;
+    Key k("asdf");
+    String s("data");
+    Value* v = new Value(s.c_str(), s.size());
+
+    Address controller_addr("127.0.0.1", 5555);
+    NetworkIfc controller(&controller_addr, 2, &kv);
+
+    Address client_addr("127.0.0.1", 5556);
+    NetworkIfc client(&client_addr, &controller_addr, 1, 2, &kv);
+
+    controller.start();
+    client.start();
+
+    // TODO: remove this by adding locks in the right places
+    sleep(1);
+
+    client.put_at_node(0, k, v);
+    Value* result = client.wait_and_get_from_node(0, k);
+    String s2(result->get_bytes(), result->size());
+    delete result;
+    REQUIRE(s2.equals(&s));
+
+    controller.stop();
+    client.stop();
+
+    controller.join();
+    client.join();
+}

@@ -160,10 +160,6 @@ class NetworkIfc : public Thread {
     }
 
     void stop() {
-        // for (std::pair<size_t, Connection*> p : connections_) {
-        //     p.second->stop();
-        //     p.second->join();
-        // }
         keep_processing_ = false;
     }
 
