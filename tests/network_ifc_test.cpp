@@ -37,8 +37,9 @@ TEST_CASE("test registration phase", "[network_ifc]") {
 TEST_CASE("test putting data", "[network_ifc]") {
     KVStore kv;
     Key k("asdf");
-    String s("data");
-    Value* v = new Value(s.c_str(), s.size());
+    char str[] = "data";
+    String s(str);
+    Value* v = new Value(str, strlen(str) + 1);
 
     Address controller_addr("127.0.0.1", 5555);
     NetworkIfc controller(&controller_addr, 2, &kv);
@@ -49,13 +50,10 @@ TEST_CASE("test putting data", "[network_ifc]") {
     controller.start();
     client.start();
 
-    // TODO: remove this by adding locks in the right places
-    sleep(1);
-
     client.put_at_node(0, k, v);
 
     Value* result = kv.waitAndGet(k);
-    String s2(result->get_bytes(), result->size());
+    String s2(result->get_bytes(), result->size() - 1);
     delete result;
     REQUIRE(s2.equals(&s));
 
@@ -69,8 +67,9 @@ TEST_CASE("test putting data", "[network_ifc]") {
 TEST_CASE("test getting data", "[network_ifc]") {
     KVStore kv;
     Key k("asdf");
-    String s("data");
-    Value* v = new Value(s.c_str(), s.size());
+    char str[] = "data";
+    String s(str);
+    Value* v = new Value(str, strlen(str) + 1);
     kv.put(k, v);
 
     Address controller_addr("127.0.0.1", 5555);
@@ -82,11 +81,8 @@ TEST_CASE("test getting data", "[network_ifc]") {
     controller.start();
     client.start();
 
-    // TODO: remove this by adding locks in the right places
-    sleep(1);
-
     Value* result = client.get_from_node(0, k);
-    String s2(result->get_bytes(), result->size());
+    String s2(result->get_bytes(), result->size() - 1);
     delete result;
     REQUIRE(s2.equals(&s));
 
@@ -100,8 +96,9 @@ TEST_CASE("test getting data", "[network_ifc]") {
 TEST_CASE("test wait and get data", "[network_ifc]") {
     KVStore kv;
     Key k("asdf");
-    String s("data");
-    Value* v = new Value(s.c_str(), s.size());
+    char str[] = "data";
+    String s(str);
+    Value* v = new Value(str, strlen(str) + 1);
 
     Address controller_addr("127.0.0.1", 5555);
     NetworkIfc controller(&controller_addr, 2, &kv);
@@ -112,12 +109,9 @@ TEST_CASE("test wait and get data", "[network_ifc]") {
     controller.start();
     client.start();
 
-    // TODO: remove this by adding locks in the right places
-    sleep(1);
-
     client.put_at_node(0, k, v);
     Value* result = client.wait_and_get_from_node(0, k);
-    String s2(result->get_bytes(), result->size());
+    String s2(result->get_bytes(), result->size() - 1);
     delete result;
     REQUIRE(s2.equals(&s));
 
