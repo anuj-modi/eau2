@@ -54,7 +54,7 @@ class Demo : public Application {
     }
 };
 
-TEST_CASE("their m1", "[application]") {
+TEST_CASE("their m1", "[m1]") {
     Address a0("127.0.0.1", 10000);
     Address a1("127.0.0.1", 10001);
     Address a2("127.0.0.1", 10002);
@@ -75,38 +75,3 @@ TEST_CASE("their m1", "[application]") {
     d1.join();
     d0.join();
 }
-
-// TEST_CASE("validate their m1", "[application]") {
-//     KVStore kv0;
-//     KVStore kv1;
-//     KVStore kv2;
-
-//     Address a0("127.0.0.1", 10000);
-//     Address a1("127.0.0.1", 10001);
-//     Address a2("127.0.0.1", 10002);
-
-//     NetworkIfc net0(&a0, 3, &kv0);
-//     NetworkIfc net1(&a1, &a0, 1, 3, &kv1);
-//     NetworkIfc net2(&a2, &a0, 2, 3, &kv2);
-
-//     Demo d0(net0);
-//     Demo d1(net1);
-//     Demo d2(net2);
-
-//     Key verify = Key("verif", 0);
-//     Key check = Key("ck", 0);
-
-//     d0.start();
-//     d1.start();
-
-//     DataFrame* result = kd.waitAndGet(verify);
-//     DataFrame* expected = kd.waitAndGet(check);
-
-//     REQUIRE(expected->get_double(0, 0) == result->get_double(0, 0));
-
-//     d0.join();
-//     d1.join();
-
-//     delete result;
-//     delete expected;
-// }
