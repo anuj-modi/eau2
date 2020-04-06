@@ -12,7 +12,7 @@ TEST_CASE("put and get a value in kvstore", "[kvstore]") {
 
     Value* result = kv.get(k_1);
     REQUIRE(result->equals(v));
-
+    
     delete result;
 }
 
