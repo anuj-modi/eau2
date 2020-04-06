@@ -55,7 +55,7 @@ class Column : public Object {
             buff.c(c);
         }
         col_id_ = buff.get();
-        curr_node_ = store->this_node();
+        curr_node_ = 0;
         expand_();
     }
 
@@ -70,7 +70,7 @@ class Column : public Object {
         col_id_ = d->get_string();
         size_t num_segments = d->get_size_t();
         segments_ = std::vector<Key>();
-        curr_node_ = store->this_node();
+        curr_node_ = 0;
         for (size_t i = 0; i < num_segments; i++) {
             segments_.push_back(Key(d));
         }

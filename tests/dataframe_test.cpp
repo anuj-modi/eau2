@@ -366,36 +366,36 @@ class Adder : public Reader {
     }
 };
 
-// // test local_map method
-// TEST_CASE("adder with local_map on data frame", "[dataframe][kdstore]") {
-//     String* hello = new String("hello");
-//     String* world = new String("world");
-//     String* potato = new String("potato");
-//     KVStore kv;
-//     KDStore kd(&kv);
-//     StringColumn* sc = new StringColumn(&kv);
-//     for (size_t i = 0; i < 138; i++) {
-//         sc->push_back(hello);
-//     }
-//     sc->push_back(world);
-//     for (size_t i = 0; i < 2; i++) {
-//         sc->push_back(potato);
-//     }
-//     sc->push_back(hello);
-//     Key not_included("not included", 1);
-//     sc->segments_[0] = not_included;
-//     DataFrame df(sc, &kv);
-//     std::unordered_map<std::string, int> map = std::unordered_map<std::string, int>();
-//     Adder add(map);
-//     df.local_map(add);
+test local_map method
+TEST_CASE("adder with local_map on data frame", "[dataframe][kdstore]") {
+    String* hello = new String("hello");
+    String* world = new String("world");
+    String* potato = new String("potato");
+    KVStore kv;
+    KDStore kd(&kv);
+    StringColumn* sc = new StringColumn(&kv);
+    for (size_t i = 0; i < 138; i++) {
+        sc->push_back(hello);
+    }
+    sc->push_back(world);
+    for (size_t i = 0; i < 2; i++) {
+        sc->push_back(potato);
+    }
+    sc->push_back(hello);
+    Key not_included("not included", 1);
+    sc->segments_[0] = not_included;
+    DataFrame df(sc, &kv);
+    std::unordered_map<std::string, int> map = std::unordered_map<std::string, int>();
+    Adder add(map);
+    df.local_map(add);
 
-//     REQUIRE(add.map_[std::string("hello")] == 11);
-//     REQUIRE(add.map_[std::string("world")] == 1);
-//     REQUIRE(add.map_[std::string("potato")] ==  2);
+    REQUIRE(add.map_[std::string("hello")] == 11);
+    REQUIRE(add.map_[std::string("world")] == 1);
+    REQUIRE(add.map_[std::string("potato")] ==  2);
 
-//     delete hello;
-//     delete world;
-//     delete potato;
-// }
+    delete hello;
+    delete world;
+    delete potato;
+}
 
 // // TODO test map method
