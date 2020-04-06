@@ -8,11 +8,12 @@ TEST_CASE("put and get a value in kvstore", "[kvstore]") {
     Key k_1 = Key("one");
     Value* v = new Value(s.c_str(), s.size());
     KVStore kv;
-    kv.put(k_1, v);
+    kv.put(k_1, v->clone());
 
     Value* result = kv.get(k_1);
     REQUIRE(result->equals(v));
     
+    delete v;
     delete result;
 }
 
@@ -33,7 +34,7 @@ TEST_CASE("put and get a value in kvstore remote node", "[kvstore]") {
     net0.start();
     net1.start();
 
-    kv0.put(one, v);
+    kv0.put(one, v->clone());
 
     Value* result = kv0.get(one);
     REQUIRE(result->equals(v));
@@ -43,6 +44,7 @@ TEST_CASE("put and get a value in kvstore remote node", "[kvstore]") {
     net0.join();
     net1.join();
 
+    delete v;
     delete result;
 }
 
@@ -66,13 +68,14 @@ TEST_CASE("waitAndGet a value in kvstore remote node", "[kvstore]") {
     kv1.put(one, v);
     Value* result = kv0.waitAndGet(one);
 
-    REQUIRE(result->equals(v));
+    REQUIRE(result->equals(v->clone()));
 
     net0.stop();
     net1.stop();
     net0.join();
     net1.join();
 
+    delete v;
     delete result;
 }
 
