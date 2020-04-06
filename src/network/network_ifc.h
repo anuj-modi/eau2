@@ -83,6 +83,11 @@ class NetworkIfc : public Thread {
             }
         }
 
+        if (node_num_ == 0) {
+            Message kill_msg(MsgType::KILL);
+            broadcast_(&kill_msg);
+        }
+
         for (std::pair<size_t, Connection*> p : connections_) {
             p.second->stop();
             p.second->join();
@@ -148,7 +153,6 @@ class NetworkIfc : public Thread {
         // TODO: change to use send_message in connection
         Connection* c = new Connection(server_connection, local_kv_);
         assert(server_connection->send_bytes(s.get_bytes(), s.size()) > 0);
-        printf("sending register message from node %zu\n", node_num_);
 
         // receive directory from server
         size_t num_bytes = 0;

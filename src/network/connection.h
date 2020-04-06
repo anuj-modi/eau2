@@ -50,14 +50,19 @@ class Connection : public Thread {
         l_.unlock();
     }
 
-    Deserializer recv_message_() {
+    Deserializer* recv_message_() {
         size_t num_bytes = 0;
         l_.lock();
-        assert(s_->recv_bytes((char*)&num_bytes, sizeof(size_t)) > 0 && num_bytes > 0);
+        size_t num_bytes_received = s_->recv_bytes((char*)&num_bytes, sizeof(size_t));
+        if (num_bytes_received == 0) {
+            l_.unlock();
+            return nullptr;
+        }
+        assert(num_bytes_received > 0 && num_bytes > 0);
         char* buf = new char[num_bytes];
         assert(s_->recv_bytes(buf, num_bytes) > 0);
         l_.unlock();
-        return Deserializer(true, buf, num_bytes);
+        return new Deserializer(true, buf, num_bytes);
     }
 
     /**
@@ -91,6 +96,8 @@ class Connection : public Thread {
             handle_wait_and_get_message_(d);
         } else if (m == MsgType::REPLY) {
             handle_reply_message_(d);
+        } else if (m == MsgType::KILL) {
+            keep_processing_ = false;
         } else {
             assert(false);
         }
@@ -100,8 +107,12 @@ class Connection : public Thread {
     void run() override {
         while (keep_processing_) {
             if (s_->has_new_bytes()) {
-                Deserializer d = recv_message_();
-                handle_message_(d);
+                Deserializer* d = recv_message_();
+                if (d == nullptr) {
+                    return;
+                }
+                handle_message_(*d);
+                delete d;
             }
         }
     }
