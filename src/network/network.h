@@ -13,6 +13,7 @@
 
 /**
  * Wraps the system networking API and provides a CwC interface to sockets.
+ * Authors: gomes.chri@husky.neu.edu and modi.an@husky.neu.edu
  */
 class BaseSocket : public Object {
    public:
@@ -53,6 +54,10 @@ class BaseSocket : public Object {
     }
 };
 
+/**
+ * A Socket object specifically for communicating with a peer over the network. Can send and receive
+ * data. Authors: gomes.chri@husky.neu.edu and modi.an@husky.neu.edu
+ */
 class ConnectionSocket : public BaseSocket {
    public:
     Address *peer_addr_;
@@ -114,6 +119,11 @@ class ConnectionSocket : public BaseSocket {
     }
 };
 
+/**
+ * A Socket object specifically for listening for new connections from other hosts. When a
+ * connection is received, a new ConnectionSocket object is created for that connection.
+ * Authors: gomes.chri@husky.neu.edu and modi.an@husky.neu.edu
+ */
 class ListenSocket : public BaseSocket {
    public:
     ListenSocket() : BaseSocket() {}
