@@ -152,6 +152,7 @@ class NetworkIfc : public Thread {
         reg.serialize(&s);
         // TODO: change to use send_message in connection
         Connection* c = new Connection(server_connection, local_kv_);
+        connections_[0] = c;
         assert(server_connection->send_bytes(s.get_bytes(), s.size()) > 0);
 
         // receive directory from server
@@ -163,7 +164,6 @@ class NetworkIfc : public Thread {
         handle_directory_message_(d);
 
         c->start();
-        connections_[0] = c;
     }
 
     /**
@@ -187,7 +187,7 @@ class NetworkIfc : public Thread {
     }
 
     void wait_for_registration_() {
-        while (peer_addresses_.size() < total_nodes_) {
+        while (peer_addresses_.size() < total_nodes_ || connections_.size() == 0) {
             // wait for registration phase to finish
         }
     }
