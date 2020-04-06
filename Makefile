@@ -41,13 +41,19 @@ test: $(ODIR) $(TEST_OUT)
 
 .PHONY: valgrind
 valgrind: $(TEST_OUT)
+	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT) "~[application]"
+
+.PHONY: valgrind-all
+valgrind-all: $(TEST_OUT)
 	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT)
 
-$(ODIR)/server: ./src/network/server.cpp $(DEPS)
-	$(CC) $(CFLAGS) -Isrc/ -o $@ $<
+.PHONY: m1
+m1: $(TEST_OUT)
+	$(TEST_OUT) "[m1]"
 
-$(ODIR)/client: ./src/network/client.cpp $(DEPS)
-	$(CC) $(CFLAGS) -Isrc/ -o $@ $<
+.PHONY: m4
+m4: $(TEST_OUT)
+	$(TEST_OUT) "[m4]"
 
 .PHONY: clean
 clean:

@@ -95,3 +95,10 @@ Multiple instances of KVStore can work together while running on different nodes
 - running with different types of applications
 - analyze performance and see if any speedup is needed
 - tune the segment size further to reduce remote get and put operations when using larger data sets.
+
+## Running
+* `make test` runs all our tests
+* `make valgrind` runs most of our tests in `valgrind`. The tests which run the example applications are excluded because they take so long.
+* `make valgrind-all` runs all of our tests in `valgrind`. The tests which run the example applications are included which makes this take much longer.
+* `make m1` runs the example provided in the M1 assignment.
+* `make m4` runs the `WordCount` app on 2 different files.

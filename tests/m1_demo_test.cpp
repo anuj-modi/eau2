@@ -11,7 +11,7 @@ class Demo : public Application {
     Key main = Key("main", 0);
     Key verify = Key("verif", 0);
     Key check = Key("ck", 0);
-    size_t SZ = 1000;
+    size_t SZ = 100 * 1000;
 
     Demo(NetworkIfc& net) : Application(net) {}
 
@@ -41,6 +41,7 @@ class Demo : public Application {
         DataFrame* v = kd_.waitAndGet(main);
         double sum = 0;
         for (size_t i = 0; i < SZ; ++i) sum += v->get_double(0, i);
+        printf("The sum is %f\n", sum);
         delete DataFrame::fromScalar(&verify, &kd_, sum);
         delete v;
     }
@@ -49,12 +50,14 @@ class Demo : public Application {
         DataFrame* result = kd_.waitAndGet(verify);
         DataFrame* expected = kd_.waitAndGet(check);
         assert(expected->get_double(0, 0) == result->get_double(0, 0));
+        pln("SUCCESS");
         delete result;
         delete expected;
     }
 };
 
-TEST_CASE("their m1", "[m1]") {
+TEST_CASE("their m1", "[m1][application]") {
+    printf("RUNNING M1 EXAMPLE\n");
     Address a0("127.0.0.1", 10000);
     Address a1("127.0.0.1", 10001);
     Address a2("127.0.0.1", 10002);
@@ -74,4 +77,5 @@ TEST_CASE("their m1", "[m1]") {
     d2.join();
     d1.join();
     d0.join();
+    printf("FINISHED M1 EXAMPLE\n");
 }
