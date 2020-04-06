@@ -65,10 +65,10 @@ TEST_CASE("waitAndGet a value in kvstore remote node", "[kvstore]") {
     net0.start();
     net1.start();
 
-    kv1.put(one, v);
+    kv1.put(one, v->clone());
     Value* result = kv0.waitAndGet(one);
 
-    REQUIRE(result->equals(v->clone()));
+    REQUIRE(result->equals(v));
 
     net0.stop();
     net1.stop();
