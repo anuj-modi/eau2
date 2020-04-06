@@ -71,7 +71,7 @@ class NetworkIfc : public Thread {
 
         // ensure registration was successful
         assert(peer_addresses_.size() == total_nodes_);
-        registration_done = true;
+        registration_done_ = true;
 
         // process new connections from other clients
         while (keep_processing_) {
