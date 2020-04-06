@@ -149,7 +149,6 @@ TEST_CASE("get indices on node 0 for column", "[column]") {
 
     net0.stop();
     net1.stop();
-
     net0.join();
     net1.join();
 }

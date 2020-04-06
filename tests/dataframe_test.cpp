@@ -366,15 +366,25 @@ class Adder : public Reader {
     }
 };
 
-test local_map method
+// test local_map method
 TEST_CASE("adder with local_map on data frame", "[dataframe][kdstore]") {
     String* hello = new String("hello");
     String* world = new String("world");
     String* potato = new String("potato");
-    KVStore kv;
-    KDStore kd(&kv);
-    StringColumn* sc = new StringColumn(&kv);
-    for (size_t i = 0; i < 138; i++) {
+    Address a0("127.0.0.1", 10000);
+    Address a1("127.0.0.1", 10001);
+    NetworkIfc net0(&a0, 2);
+    KVStore kv0(&net0);
+    net0.set_kv(&kv0);
+    NetworkIfc net1(&a1, &a0, 1, 2);
+    KVStore kv1(&net1);
+    net1.set_kv(&kv1);
+
+    net0.start();
+    net1.start();
+
+    StringColumn* sc = new StringColumn(&kv0);
+    for (size_t i = 0; i < 8195; i++) {
         sc->push_back(hello);
     }
     sc->push_back(world);
@@ -382,20 +392,64 @@ TEST_CASE("adder with local_map on data frame", "[dataframe][kdstore]") {
         sc->push_back(potato);
     }
     sc->push_back(hello);
-    Key not_included("not included", 1);
-    sc->segments_[0] = not_included;
-    DataFrame df(sc, &kv);
+    DataFrame df(sc, &kv0);
     std::unordered_map<std::string, int> map = std::unordered_map<std::string, int>();
     Adder add(map);
     df.local_map(add);
 
-    REQUIRE(add.map_[std::string("hello")] == 11);
-    REQUIRE(add.map_[std::string("world")] == 1);
-    REQUIRE(add.map_[std::string("potato")] ==  2);
+    REQUIRE(add.map_[std::string("hello")] == 8192);
+
+    net0.stop();
+    net1.stop();
+    net0.join();
+    net1.join();
 
     delete hello;
     delete world;
     delete potato;
 }
 
-// // TODO test map method
+// test map method
+TEST_CASE("adder with map on data frame", "[dataframe][kdstore]") {
+    String* hello = new String("hello");
+    String* world = new String("world");
+    String* potato = new String("potato");
+    Address a0("127.0.0.1", 10000);
+    Address a1("127.0.0.1", 10001);
+    NetworkIfc net0(&a0, 2);
+    KVStore kv0(&net0);
+    net0.set_kv(&kv0);
+    NetworkIfc net1(&a1, &a0, 1, 2);
+    KVStore kv1(&net1);
+    net1.set_kv(&kv1);
+
+    net0.start();
+    net1.start();
+
+    StringColumn* sc = new StringColumn(&kv0);
+    for (size_t i = 0; i < 8195; i++) {
+        sc->push_back(hello);
+    }
+    sc->push_back(world);
+    for (size_t i = 0; i < 2; i++) {
+        sc->push_back(potato);
+    }
+    sc->push_back(hello);
+    DataFrame df(sc, &kv0);
+    std::unordered_map<std::string, int> map = std::unordered_map<std::string, int>();
+    Adder add(map);
+    df.map(add);
+
+    REQUIRE(add.map_[std::string("hello")] == 8196);
+    REQUIRE(add.map_[std::string("world")] == 1);
+    REQUIRE(add.map_[std::string("potato")] == 2);
+
+    net0.stop();
+    net1.stop();
+    net0.join();
+    net1.join();
+
+    delete hello;
+    delete world;
+    delete potato;
+}
