@@ -8,7 +8,7 @@
 
 /**
  * Application that runs on eau2.
- * Author: gomes.chri and modi.an
+ * Authors: gomes.chri@husky.neu.edu and modi.an@husky.neu.edu
  */
 class Application : public Thread {
    public:
