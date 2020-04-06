@@ -126,32 +126,29 @@ TEST_CASE("test string column", "[column]") {
 
 // test local_indices method
 TEST_CASE("get indices on node 0 for column", "[column]") {
-    KVStore kv;
-    IntColumn sc(&kv);
-    for (size_t i = 0; i < 130; i++) {
+    Address a0("127.0.0.1", 10000);
+    Address a1("127.0.0.1", 10001);
+    NetworkIfc net0(&a0, 2);
+    KVStore kv0(&net0);
+    net0.set_kv(&kv0);
+    NetworkIfc net1(&a1, &a0, 1, 2);
+    KVStore kv1(&net1);
+    net1.set_kv(&kv1);
+
+    net0.start();
+    net1.start();
+
+    IntColumn sc(&kv0);
+    for (size_t i = 0; i < 8195; i++) {
         sc.push_back(i);
     }
-
-    Key diff_key("outlier", 1);
-    sc.segments_[1] = diff_key;
     sc.finalize();
     std::vector<size_t> indices = sc.local_indices();
 
-    REQUIRE(indices.size() == 128);
-}
+    REQUIRE(indices.size() == 8192);
 
-// test local_indices method
-TEST_CASE("get indices on last node for column", "[column]") {
-    KVStore kv;
-    IntColumn sc(&kv);
-    for (size_t i = 0; i < 130; i++) {
-        sc.push_back(i);
-    }
-
-    Key diff_key("outlier", 1);
-    sc.segments_[0] = diff_key;
-    sc.finalize();
-    std::vector<size_t> indices = sc.local_indices();
-
-    REQUIRE(indices.size() == 2);
+    net0.stop();
+    net1.stop();
+    net0.join();
+    net1.join();
 }

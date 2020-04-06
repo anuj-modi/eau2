@@ -1,5 +1,7 @@
-#include "catch.hpp"
 #include "store/key.h"
+
+#include "catch.hpp"
+#include "util/serial.h"
 
 // test equal method
 TEST_CASE("equal for key", "[key]") {
@@ -42,4 +44,17 @@ TEST_CASE("set node key's node", "[key]") {
     REQUIRE(k.node_ == 0);
     k.set_node(5);
     REQUIRE(k.node_ == 5);
+}
+
+TEST_CASE("serialize deserialize key", "[key][serialize][deserialize]") {
+    Key k("asdf");
+    Serializer s;
+    k.serialize(&s);
+
+    Deserializer d(s.get_bytes(), s.size());
+
+    Key k2(&d);
+
+    REQUIRE(k2.k_ == k.k_);
+    REQUIRE(k2.node_ == k.node_);
 }

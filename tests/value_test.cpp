@@ -1,5 +1,6 @@
-#include "catch.hpp"
 #include "store/value.h"
+
+#include "catch.hpp"
 #include "util/string.h"
 
 // test equal method
@@ -40,4 +41,18 @@ TEST_CASE("clone a value", "[value]") {
     REQUIRE(v.equals(v_clone));
 
     delete v_clone;
+}
+
+TEST_CASE("serialize deserialize value", "[value][serialize][deserialize]") {
+    String st("serialized data");
+    Value v(st.c_str(), st.size());
+
+    Serializer s;
+    v.serialize(&s);
+
+    Deserializer d(s.get_bytes(), s.size());
+
+    Value v2(&d);
+
+    REQUIRE(v.equals(&v2));
 }

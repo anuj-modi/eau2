@@ -5,6 +5,7 @@
 #include <mutex>
 #include <sstream>
 #include <thread>
+
 #include "object.h"
 #include "string.h"
 
@@ -15,7 +16,7 @@ class Thread : public Object {
     std::thread thread_;
 
     /** Starts running the thread, invoked the run() method. */
-    void start() {
+    virtual void start() {
         thread_ = std::thread([this] { this->run(); });
     }
 

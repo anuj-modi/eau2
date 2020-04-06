@@ -1,7 +1,9 @@
 #include <thread>
+
 #include "application/application.h"
 #include "catch.hpp"
 #include "dataframe/dataframe.h"
+#include "network/network_ifc.h"
 #include "store/key.h"
 
 class Demo : public Application {
@@ -9,8 +11,9 @@ class Demo : public Application {
     Key main = Key("main", 0);
     Key verify = Key("verif", 0);
     Key check = Key("ck", 0);
+    size_t SZ = 1000;
 
-    Demo(size_t idx, KVStore* kv) : Application(idx, kv) {}
+    Demo(NetworkIfc& net) : Application(net) {}
 
     void run() override {
         switch (this_node()) {
@@ -26,7 +29,6 @@ class Demo : public Application {
     }
 
     void producer() {
-        size_t SZ = 100 * 1000;
         double* vals = new double[SZ];
         double sum = 0;
         for (size_t i = 0; i < SZ; ++i) sum += vals[i] = i;
@@ -38,7 +40,7 @@ class Demo : public Application {
     void counter() {
         DataFrame* v = kd_.waitAndGet(main);
         double sum = 0;
-        for (size_t i = 0; i < 100 * 1000; ++i) sum += v->get_double(0, i);
+        for (size_t i = 0; i < SZ; ++i) sum += v->get_double(0, i);
         delete DataFrame::fromScalar(&verify, &kd_, sum);
         delete v;
     }
@@ -52,41 +54,24 @@ class Demo : public Application {
     }
 };
 
-TEST_CASE("their m1", "[application]") {
-    KVStore kv;
-    Demo d0(0, &kv);
-    Demo d1(1, &kv);
-    Demo d2(2, &kv);
+TEST_CASE("their m1", "[m1]") {
+    Address a0("127.0.0.1", 10000);
+    Address a1("127.0.0.1", 10001);
+    Address a2("127.0.0.1", 10002);
 
-    d2.start();
+    NetworkIfc net0(&a0, 3);
+    NetworkIfc net1(&a1, &a0, 1, 3);
+    NetworkIfc net2(&a2, &a0, 2, 3);
+
+    Demo d0(net0);
+    Demo d1(net1);
+    Demo d2(net2);
+
     d0.start();
+    d2.start();
     d1.start();
 
     d2.join();
-    d0.join();
     d1.join();
-}
-
-TEST_CASE("validate their m1", "[application]") {
-    KVStore kv;
-    KDStore kd(&kv);
-    Demo d0(0, &kv);
-    Demo d1(1, &kv);
-
-    Key verify = Key("verif", 0);
-    Key check = Key("ck", 0);
-
-    d0.start();
-    d1.start();
-
-    DataFrame* result = kd.waitAndGet(verify);
-    DataFrame* expected = kd.waitAndGet(check);
-
-    REQUIRE(expected->get_double(0, 0) == result->get_double(0, 0));
-
     d0.join();
-    d1.join();
-
-    delete result;
-    delete expected;
 }

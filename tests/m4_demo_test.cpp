@@ -169,11 +169,11 @@ class WordCount : public Application {
    public:
     static const size_t BUFSIZE = 1024;
     Key in;
-    std::unordered_map<std::string, int> all;
+    std::unordered_map<std::string, int> result;
     FileReader fr_;
 
-    WordCount(size_t idx, KVStore* kv, const char* file_name)
-        : Application(idx, kv), in("data"), fr_(file_name) {}
+    WordCount(NetworkIfc& net, const char* file_name)
+        : Application(net), in("data"), fr_(file_name) {}
 
     /** The master nodes reads the input, then all of the nodes count. */
     void run() override {
@@ -181,54 +181,123 @@ class WordCount : public Application {
             delete DataFrame::fromVisitor(&in, &kd_, "S", fr_);
         }
         local_count();
-        reduce();
+        if (node_num_ == 0) {
+            reduce();
+        }
     }
 
     /** Returns a key for given node.  These keys are homed on master node
      *  which then joins them one by one. */
     Key* mk_key(size_t idx) {
         StrBuff sb = StrBuff();
-        sb.c(node_num_);
-        Key* k = new Key(sb.get()->c_str());
+        sb.c(idx);
+        String* s = sb.get(); 
+        Key* k = new Key(s->c_str());
+        delete s;
         return k;
     }
 
     /** Compute word counts on the local node and build a data frame. */
     void local_count() {
-        DataFrame* words = (kd_.waitAndGet(in));
+        DataFrame* words = kd_.waitAndGet(in);
         p("Node ").p(node_num_).pln(": starting local count...");
         std::unordered_map<std::string, int> map = std::unordered_map<std::string, int>();
         Adder add(map);
         words->local_map(add);
         delete words;
-        Summer cnt(map);
-        delete DataFrame::fromVisitor(mk_key(node_num_), &kd_, "SI", cnt);
+        Summer cnt(add.map_);
+        Key* k = mk_key(node_num_);
+        delete DataFrame::fromVisitor(k, &kd_, "SI", cnt);
+        delete k;
     }
 
     /** Merge the data frames of all nodes */
     void reduce() {
-        if (node_num_ != 0) return;
         pln("Node 0: reducing counts...");
         std::unordered_map<std::string, int> map = std::unordered_map<std::string, int>();
         Key* own = mk_key(0);
-        merge(kd_.get(*own), map);
-        for (size_t i = 1; i < kv_->num_nodes(); ++i) {  // merge other nodes
+        map = merge(kd_.get(*own), map);
+        for (size_t i = 1; i < kv_.num_nodes(); ++i) {  // merge other nodes
             Key* ok = mk_key(i);
-            merge(kd_.waitAndGet(*ok), map);
+            map = merge(kd_.waitAndGet(*ok), map);
             delete ok;
         }
-        p("Different words: ").pln(map.size());
         delete own;
+        p("Different words: ").pln(map.size());
+        result = map;
     }
 
-    void merge(DataFrame* df, std::unordered_map<std::string, int>& m) {
-        Adder merger(m);
-        df->map(merger);
+    std::unordered_map<std::string, int> merge(DataFrame* df,
+                                               std::unordered_map<std::string, int>& m) {
+        Merger merge(m);
+        df->map(merge);
         delete df;
+        return merge.map_;
     }
 };
 
 // check output of word count
-TEST_CASE("run word count app") {
-    // TODO word count test
+TEST_CASE("run word count app with our sample", "[m4]") {
+    Address a0("127.0.0.1", 10000);
+    Address a1("127.0.0.1", 10001);
+    const char* file_path = "./data/sample.txt";
+
+    NetworkIfc net0(&a0, 2);
+    NetworkIfc net1(&a1, &a0, 1, 2);
+
+    WordCount w0(net0, file_path);
+    WordCount w1(net1, file_path);
+
+    w0.start();
+    w1.start();
+
+    w0.join();
+    w1.join();
+
+    std::unordered_map<std::string, int> expected = std::unordered_map<std::string, int>();
+    expected[std::string("over")] = 1 * 513;
+    expected[std::string("dog")] = 2 * 513;
+    expected[std::string("jumps")] = 1 * 513;
+    expected[std::string("do")] = 1 * 513;
+    expected[std::string("not")] = 1 * 513;
+    expected[std::string("fox")] = 1 * 513;
+    expected[std::string("brown")] = 1 * 513;
+    expected[std::string("peanut")] = 1 * 513;
+    expected[std::string("butter")] = 1 * 513;
+    expected[std::string("give")] = 1 * 513;
+    expected[std::string("quick")] = 1 * 513;
+    expected[std::string("lazy")] = 1 * 513;
+    expected[std::string("the")] = 3 * 513;
+
+    std::unordered_map<std::string, int>::iterator it = w0.result.begin();
+    while (it != w0.result.end()) {
+        REQUIRE(expected[it->first] == it->second);
+        it++;
+    }
+}
+
+// check output of word count
+TEST_CASE("run word count app with their sample", "[m4]") {
+    Address a0("127.0.0.1", 10000);
+    Address a1("127.0.0.1", 10001);
+    Address a2("127.0.0.1", 10002);
+    const char* file_path = "./data/100k.txt";
+
+    NetworkIfc net0(&a0, 3);
+    NetworkIfc net1(&a1, &a0, 1, 3);
+    NetworkIfc net2(&a2, &a0, 2, 3);
+
+    WordCount w0(net0, file_path);
+    WordCount w1(net1, file_path);
+    WordCount w2(net2, file_path);
+
+    w0.start();
+    w2.start();
+    w1.start();
+
+    w2.join();
+    w1.join();
+    w0.join();
+
+    REQUIRE(w0.result[std::string("lorem")] == 50);
 }

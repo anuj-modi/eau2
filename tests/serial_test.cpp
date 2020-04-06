@@ -1,9 +1,12 @@
 #include "util/serial.h"
+
 #include <float.h>
 #include <limits.h>
+
 #include "catch.hpp"
-#include "util/string.h"
+#include "network/message.h"
 #include "util/array.h"
+#include "util/string.h"
 
 /**
  * Determine if these two doubles are equal with respect to eps.
@@ -114,8 +117,7 @@ TEST_CASE("test_serialize_deserialize_string", "[serialize][deserialize][string]
     delete h3d;
 }
 
-TEST_CASE("test serialize deserialize string array",
-          "[serialize][deserialize][array][string]") {
+TEST_CASE("test serialize deserialize string array", "[serialize][deserialize][array][string]") {
     StringArray* strs = new StringArray(5);
     String* h1 = new String("hello there");
     String* h2 = new String("why howdy!");
@@ -152,4 +154,19 @@ TEST_CASE("test serialize deserialize double array", "[serialize][deserialize][a
     delete doubles_copy;
     delete s;
     delete d;
+}
+
+TEST_CASE("test_serialize_deserialize_message_type", "[serialize][deserialize][message_type]") {
+    MsgType types[] = {MsgType::PUT,    MsgType::REPLY, MsgType::GET,      MsgType::WAITANDGET,
+                       MsgType::STATUS, MsgType::KILL,  MsgType::REGISTER, MsgType::DIRECTORY};
+    size_t num_types = 8;
+    Serializer s;
+
+    for (size_t i = 0; i < num_types; i++) {
+        s.add_msg_type(types[i]);
+    }
+    Deserializer d(s.get_bytes(), s.size());
+    for (size_t i = 0; i < num_types; i++) {
+        REQUIRE(d.get_msg_type() == types[i]);
+    }
 }

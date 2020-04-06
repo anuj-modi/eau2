@@ -1,5 +1,6 @@
 #pragma once
 #include "util/object.h"
+#include "util/serial.h"
 #include "util/string.h"
 
 /**
@@ -29,6 +30,11 @@ class Value : public Object {
         }
     }
 
+    Value(Deserializer* d) : Object() {
+        size_ = d->get_size_t();
+        blob_ = d->get_buffer(size_);
+    }
+
     virtual ~Value() {
         if (size_ > 0) {
             delete[] blob_;
@@ -52,6 +58,11 @@ class Value : public Object {
         return size_;
     }
 
+    void serialize(Serializer* s) {
+        s->add_size_t(size_);
+        s->add_buffer(blob_, size_);
+    }
+
     /**
      * Checks if this key is equal to another object.
      * @arg other  the other object
@@ -70,7 +81,7 @@ class Value : public Object {
         for (size_t i = 0; i < size_; ++i) hash = blob_[i] + (hash << 6) + (hash << 16) - hash;
         return hash;
     }
-    
+
     /**
      * Makes a copy of the value.
      * @return the copy

@@ -14,6 +14,9 @@ all: zip test valgrind
 
 zip: submission.zip
 
+client: $(ODIR)/client
+server: $(ODIR)/server
+
 submission.zip: $(STUFF)
 	mkdir eau2
 	cp -r $(STUFF) eau2
@@ -34,11 +37,17 @@ $(TEST_OUT): $(OBJS) $(DEPS)
 
 .PHONY:test
 test: $(ODIR) $(TEST_OUT)
-	@$(TEST_OUT)
+	$(TEST_OUT)
 
 .PHONY: valgrind
 valgrind: $(TEST_OUT)
 	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT)
+
+$(ODIR)/server: ./src/network/server.cpp $(DEPS)
+	$(CC) $(CFLAGS) -Isrc/ -o $@ $<
+
+$(ODIR)/client: ./src/network/client.cpp $(DEPS)
+	$(CC) $(CFLAGS) -Isrc/ -o $@ $<
 
 .PHONY: clean
 clean:

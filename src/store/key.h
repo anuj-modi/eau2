@@ -1,8 +1,9 @@
 #pragma once
+#include <string>
+
 #include "util/object.h"
 #include "util/serial.h"
 #include "util/string.h"
-#include <string>
 
 /**
  * Array: Represents a key in a key value store.
@@ -34,8 +35,7 @@ class Key : public Object {
         k_ = std::string(k.k_);
     }
 
-    virtual ~Key() {
-    }
+    virtual ~Key() {}
 
     /**
      * Sets the node number.
@@ -93,6 +93,10 @@ class Key : public Object {
 
     bool operator==(const Key& k) const {
         return k.k_ == k_;
+    }
+
+    bool operator!=(const Key& k) const {
+        return !operator==(k);
     }
 };
 
