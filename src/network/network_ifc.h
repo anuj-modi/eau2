@@ -14,6 +14,7 @@ class KVStore;
 class NetworkIfc : public Thread {
    public:
     bool keep_processing_;
+    bool registration_done_;
     size_t node_num_;
     size_t total_nodes_;
     std::unordered_map<size_t, Connection*> connections_;
@@ -31,6 +32,7 @@ class NetworkIfc : public Thread {
         peer_addresses_[0] = new Address(controller);
         local_kv_ = nullptr;
         keep_processing_ = false;
+        registration_done_ = false;
         listen_sock_ = new ListenSocket();
     }
 
@@ -69,6 +71,7 @@ class NetworkIfc : public Thread {
 
         // ensure registration was successful
         assert(peer_addresses_.size() == total_nodes_);
+        registration_done = true;
 
         // process new connections from other clients
         while (keep_processing_) {
@@ -187,7 +190,7 @@ class NetworkIfc : public Thread {
     }
 
     void wait_for_registration_() {
-        while (peer_addresses_.size() < total_nodes_ || connections_.size() == 0) {
+        while (!registration_done_) {
             // wait for registration phase to finish
         }
     }
