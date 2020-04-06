@@ -174,6 +174,9 @@ class NetworkIfc : public Thread {
      */
     void handle_directory_message_(Deserializer& d) {
         MsgType m = d.get_msg_type();
+        if (m != MsgType::DIRECTORY) {
+            printf("%d\n", (int)m);
+        }
         assert(m == MsgType::DIRECTORY);
         // create Address array
         Directory dir(&d);
@@ -197,6 +200,7 @@ class NetworkIfc : public Thread {
 
     void connect_to_node_(size_t node) {
         if (connections_.find(node) == connections_.end()) {
+            printf("POTATO");
             assert(peer_addresses_.size() == total_nodes_);
             ConnectionSocket* cs = new ConnectionSocket();
             cs->connect_to_other(peer_addresses_.at(node));
