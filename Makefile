@@ -37,7 +37,7 @@ $(TEST_OUT): $(OBJS) $(DEPS)
 
 .PHONY:test
 test: $(ODIR) $(TEST_OUT)
-	@$(TEST_OUT)
+	$(TEST_OUT)
 
 .PHONY: valgrind
 valgrind: $(TEST_OUT)

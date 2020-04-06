@@ -20,15 +20,6 @@ class KDStore : public Object {
     virtual ~KDStore() {}
 
     /**
-     * Checks if the given key is in the kvstore.
-     * @arg k  the key
-     * @return if it exists in the store
-     */
-    virtual bool in(Key& k) {
-        return store_->in(k);
-    }
-
-    /**
      * Gets the value at the given key.
      * @arg k  the key
      * @return the value
@@ -74,6 +65,8 @@ class KDStore : public Object {
         store_->put(k, v);
     }
 };
+
+// The following methods are only here because of really silly circular dependency issues.
 
 inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, double* vals) {
     DoubleColumn* dc = new DoubleColumn(kd->get_kvstore());

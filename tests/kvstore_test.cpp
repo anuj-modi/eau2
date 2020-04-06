@@ -1,18 +1,6 @@
 #include "store/kvstore.h"
+
 #include "catch.hpp"
-
-// test in method
-TEST_CASE("key in kvstore", "[kvstore]") {
-    Key k_1 = Key("one");
-    Key k_2 = Key("two");
-    String s("sdkfak");
-    Value* v = new Value(s.c_str(), s.size());
-    KVStore kv;
-    kv.put(k_1, v);
-
-    REQUIRE(kv.in(k_1));
-    REQUIRE_FALSE(kv.in(k_2));
-}
 
 // test put and get methods
 TEST_CASE("put and get a value in kvstore", "[kvstore]") {

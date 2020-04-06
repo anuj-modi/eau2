@@ -6,8 +6,10 @@
 #include "connection.h"
 #include "message.h"
 #include "network.h"
-#include "store/kvstore.h"
+// #include "store/kvstore.h"
 #include "util/thread.h"
+
+class KVStore;
 
 class NetworkIfc : public Thread {
    public:
@@ -20,21 +22,20 @@ class NetworkIfc : public Thread {
     Address my_addr_;
     KVStore* local_kv_;
 
-    NetworkIfc(Address* address, Address* controller, size_t node_num, size_t total_nodes,
-               KVStore* kv)
+    NetworkIfc(Address* address, Address* controller, size_t node_num, size_t total_nodes)
         : Thread(),
           node_num_(node_num),
           total_nodes_(total_nodes),
           connections_(),
           my_addr_(address) {
         peer_addresses_[0] = new Address(controller);
-        local_kv_ = kv;
+        local_kv_ = nullptr;
         keep_processing_ = false;
         listen_sock_ = new ListenSocket();
     }
 
-    NetworkIfc(Address* address, size_t total_nodes, KVStore* kv)
-        : NetworkIfc(address, address, 0, total_nodes, kv) {}
+    NetworkIfc(Address* address, size_t total_nodes)
+        : NetworkIfc(address, address, 0, total_nodes) {}
 
     virtual ~NetworkIfc() {
         for (std::pair<size_t, Connection*> p : connections_) {
@@ -47,6 +48,7 @@ class NetworkIfc : public Thread {
     }
 
     void start() override {
+        assert(local_kv_ != nullptr);
         Thread::start();
         while (!keep_processing_) {
             // Wait until socket ready
@@ -54,16 +56,21 @@ class NetworkIfc : public Thread {
     }
 
     void run() override {
+        assert(local_kv_ != nullptr);
         listen_sock_->bind_and_listen(&my_addr_);
         keep_processing_ = true;
+
+        // registration phase
         if (node_num_ == 0) {
             process_client_registrations_();
         } else {
             register_with_controller_();
         }
 
+        // ensure registration was successful
         assert(peer_addresses_.size() == total_nodes_);
 
+        // process new connections from other clients
         while (keep_processing_) {
             if (listen_sock_->has_new_connections()) {
                 ConnectionSocket* cs = listen_sock_->accept_connection();
@@ -87,6 +94,7 @@ class NetworkIfc : public Thread {
         // wait for registrations from everyone
         while (peer_addresses_.size() != total_nodes_) {
             ConnectionSocket* cs = listen_sock_->accept_connection();
+            // TODO: change to use connection object
             char buf[1024];
             size_t num_bytes = cs->recv_bytes(buf, sizeof(buf));
             assert(num_bytes > 0);
@@ -137,7 +145,10 @@ class NetworkIfc : public Thread {
         Register reg(new Address(&my_addr_), node_num_);
         Serializer s;
         reg.serialize(&s);
+        // TODO: change to use send_message in connection
+        Connection* c = new Connection(server_connection, local_kv_);
         assert(server_connection->send_bytes(s.get_bytes(), s.size()) > 0);
+        printf("sending register message from node %zu\n", node_num_);
 
         // receive directory from server
         size_t num_bytes = 0;
@@ -146,7 +157,7 @@ class NetworkIfc : public Thread {
         assert(server_connection->recv_bytes(buf, num_bytes) > 0);
         Deserializer d(true, buf, num_bytes);
         handle_directory_message_(d);
-        Connection* c = new Connection(server_connection, local_kv_);
+
         c->start();
         connections_[0] = c;
     }
@@ -238,5 +249,18 @@ class NetworkIfc : public Thread {
         c->send_message(&g);
 
         return process_reply_(c);
+    }
+
+    size_t num_nodes() {
+        return total_nodes_;
+    }
+
+    size_t this_node() {
+        return node_num_;
+    }
+
+    void set_kv(KVStore* kv) {
+        assert(kv != nullptr);
+        local_kv_ = kv;
     }
 };

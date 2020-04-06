@@ -1,6 +1,7 @@
 #pragma once
 #include <assert.h>
 
+#include "network/network_ifc.h"
 #include "store/kdstore.h"
 #include "store/kvstore.h"
 #include "util/thread.h"
@@ -11,13 +12,25 @@
  */
 class Application : public Thread {
    public:
+    NetworkIfc& net_;
+    KVStore kv_;
     size_t node_num_;
-    KVStore* kv_;
     KDStore kd_;
 
-    Application(size_t node_num, KVStore* kv) : Thread(), node_num_(node_num), kv_(kv), kd_(kv_) {}
+    Application(NetworkIfc& net)
+        : Thread(), net_(net), kv_(&net_), node_num_(net_.this_node()), kd_(&kv_) {
+        net_.set_kv(&kv_);
+    }
 
-    virtual ~Application() {}
+    virtual ~Application() {
+        net_.stop();
+        net_.join();
+    }
+
+    virtual void start() override {
+        net_.start();
+        Thread::start();
+    }
 
     /**
      * Starts the applciation thread.

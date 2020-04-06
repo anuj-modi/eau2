@@ -7,10 +7,12 @@
 TEST_CASE("test registration phase", "[network_ifc]") {
     KVStore kv;
     Address controller_addr("127.0.0.1", 5555);
-    NetworkIfc controller(&controller_addr, 2, &kv);
+    NetworkIfc controller(&controller_addr, 2);
+    controller.set_kv(&kv);
 
     Address client_addr("127.0.0.1", 5556);
-    NetworkIfc client(&client_addr, &controller_addr, 1, 2, &kv);
+    NetworkIfc client(&client_addr, &controller_addr, 1, 2);
+    client.set_kv(&kv);
 
     controller.start();
     client.start();
@@ -42,10 +44,12 @@ TEST_CASE("test putting data", "[network_ifc]") {
     Value* v = new Value(str, strlen(str) + 1);
 
     Address controller_addr("127.0.0.1", 5555);
-    NetworkIfc controller(&controller_addr, 2, &kv);
+    NetworkIfc controller(&controller_addr, 2);
+    controller.set_kv(&kv);
 
     Address client_addr("127.0.0.1", 5556);
-    NetworkIfc client(&client_addr, &controller_addr, 1, 2, &kv);
+    NetworkIfc client(&client_addr, &controller_addr, 1, 2);
+    client.set_kv(&kv);
 
     controller.start();
     client.start();
@@ -73,10 +77,12 @@ TEST_CASE("test getting data", "[network_ifc]") {
     kv.put(k, v);
 
     Address controller_addr("127.0.0.1", 5555);
-    NetworkIfc controller(&controller_addr, 2, &kv);
+    NetworkIfc controller(&controller_addr, 2);
+    controller.set_kv(&kv);
 
     Address client_addr("127.0.0.1", 5556);
-    NetworkIfc client(&client_addr, &controller_addr, 1, 2, &kv);
+    NetworkIfc client(&client_addr, &controller_addr, 1, 2);
+    client.set_kv(&kv);
 
     controller.start();
     client.start();
@@ -101,10 +107,12 @@ TEST_CASE("test wait and get data", "[network_ifc]") {
     Value* v = new Value(str, strlen(str) + 1);
 
     Address controller_addr("127.0.0.1", 5555);
-    NetworkIfc controller(&controller_addr, 2, &kv);
+    NetworkIfc controller(&controller_addr, 2);
+    controller.set_kv(&kv);
 
     Address client_addr("127.0.0.1", 5556);
-    NetworkIfc client(&client_addr, &controller_addr, 1, 2, &kv);
+    NetworkIfc client(&client_addr, &controller_addr, 1, 2);
+    client.set_kv(&kv);
 
     controller.start();
     client.start();

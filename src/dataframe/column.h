@@ -19,7 +19,8 @@ class DoubleColumn;
 class BoolColumn;
 class StringColumn;
 
-static const size_t SEGMENT_CAPACITY = 128;
+// static const size_t SEGMENT_CAPACITY = 8192 * 8 * 2;
+static const size_t SEGMENT_CAPACITY = 8192;
 static const char* ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 static const size_t ALPHA_SIZE = 52;
 
@@ -54,7 +55,7 @@ class Column : public Object {
             buff.c(c);
         }
         col_id_ = buff.get();
-        curr_node_ = 0;
+        curr_node_ = store->this_node();
         expand_();
     }
 
@@ -69,7 +70,7 @@ class Column : public Object {
         col_id_ = d->get_string();
         size_t num_segments = d->get_size_t();
         segments_ = std::vector<Key>();
-        curr_node_ = 0;
+        curr_node_ = store->this_node();
         for (size_t i = 0; i < num_segments; i++) {
             segments_.push_back(Key(d));
         }
