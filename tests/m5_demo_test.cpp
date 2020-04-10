@@ -1,5 +1,7 @@
-#include "dataframe/dataframe.h"
 #include "application/application.h"
+#include "catch.hpp"
+#include "dataframe/dataframe.h"
+#include "util/string.h"
 
 /**
  * The input data is a processed extract from GitHub.
@@ -78,9 +80,8 @@ class SetUpdater : public Reader {
     /** Assume a row with at least one column of type I. Assumes that there
      * are no missing. Reads the value and sets the corresponding position.
      * The return value is irrelevant here. */
-    bool visit(Row& row) {
+    void visit(Row& row) {
         set_.set(row.get_int(0));
-        return false;
     }
 };
 
@@ -129,15 +130,15 @@ class ProjectsTagger : public Reader {
     /** The data frame must have at least two integer columns. The newProject
      * set keeps track of projects that were newly tagged (they will have to
      * be communicated to other nodes). */
-    bool visit(Row& row) override {
+    void visit(Row& row) override {
         int pid = row.get_int(0);
         int uid = row.get_int(1);
-        if (uSet.test(uid))
+        if (uSet.test(uid)) {
             if (!pSet.test(pid)) {
                 pSet.set(pid);
                 newProjects.set(pid);
             }
-        return false;
+        }
     }
 };
 
@@ -158,15 +159,15 @@ class UsersTagger : public Reader {
     UsersTagger(Set& pSet, Set& uSet, DataFrame* users)
         : pSet(pSet), uSet(uSet), newUsers(users->nrows()) {}
 
-    bool visit(Row& row) override {
+    void visit(Row& row) override {
         int pid = row.get_int(0);
         int uid = row.get_int(1);
-        if (pSet.test(pid))
+        if (pSet.test(pid)) {
             if (!uSet.test(uid)) {
                 uSet.set(uid);
                 newUsers.set(uid);
             }
-        return false;
+        }
     }
 };
 
@@ -191,7 +192,7 @@ class Linus : public Application {
     Linus(NetworkIfc& net) : Application(net) {}
 
     /** Compute DEGREES of Linus.  */
-    void run_() override {
+    void run() override {
         readInput();
         for (size_t i = 0; i < DEGREES; i++) step(i);
     }
@@ -206,20 +207,21 @@ class Linus : public Application {
         Key pK("projs");
         Key uK("usrs");
         Key cK("comts");
-        if (index == 0) {
+        if (this_node() == 0) {
             pln("Reading...");
-            projects = DataFrame::fromFile(PROJ, pK.clone(), &kv);
+            projects = DataFrame::fromSorFile(pK.clone(), &kd_, PROJ);
             p("    ").p(projects->nrows()).pln(" projects");
-            users = DataFrame::fromFile(USER, uK.clone(), &kv);
+            users = DataFrame::fromSorFile(uK.clone(), &kd_, USER);
             p("    ").p(users->nrows()).pln(" users");
-            commits = DataFrame::fromFile(COMM, cK.clone(), &kv);
+            commits = DataFrame::fromSorFile(cK.clone(), &kd_, COMM);
             p("    ").p(commits->nrows()).pln(" commits");
+            Key scalar("users-0-0");
             // This dataframe contains the id of Linus.
-            delete DataFrame::fromScalarInt(new Key("users-0-0"), &kv, LINUS);
+            delete DataFrame::fromScalar(&scalar, &kd_, LINUS);
         } else {
-            projects = dynamic_cast<DataFrame*>(kv.waitAndGet(pK));
-            users = dynamic_cast<DataFrame*>(kv.waitAndGet(uK));
-            commits = dynamic_cast<DataFrame*>(kv.waitAndGet(cK));
+            projects = kd_.waitAndGet(pK);
+            users = kd_.waitAndGet(uK);
+            commits = kd_.waitAndGet(cK);
         }
         uSet = new Set(users);
         pSet = new Set(projects);
@@ -231,9 +233,11 @@ class Linus : public Application {
     void step(int stage) {
         p("Stage ").pln(stage);
         // Key of the shape: users-stage-0
-        Key uK(StrBuff("users-").c(stage).c("-0").get());
+        String* tmp = StrBuff().c("users-").c(stage).c("-0").get();
+        Key uK(tmp->c_str());
+        delete tmp;
         // A df with all the users added on the previous round
-        DataFrame* newUsers = dynamic_cast<DataFrame*>(kv.waitAndGet(uK));
+        DataFrame* newUsers = (kd_.waitAndGet(uK));
         Set delta(users);
         SetUpdater upd(delta);
         newUsers->map(upd);  // all of the new users are copied to delta.
@@ -259,9 +263,11 @@ class Linus : public Application {
      */
     void merge(Set& set, char const* name, int stage) {
         if (this_node() == 0) {
-            for (size_t i = 1; i < arg.num_nodes; ++i) {
-                Key nK(StrBuff(name).c(stage).c("-").c(i).get());
-                DataFrame* delta = dynamic_cast<DataFrame*>(kv.waitAndGet(nK));
+            for (size_t i = 1; i < num_nodes(); ++i) {
+                String* str = StrBuff().c(name).c(stage).c("-").c(i).get();
+                Key nK(str->c_str());
+                delete str;
+                DataFrame* delta = kd_.waitAndGet(nK);
                 p("    received delta of ").p(delta->nrows()).p(" elements from node ").pln(i);
                 SetUpdater upd(set);
                 delta->map(upd);
@@ -269,15 +275,22 @@ class Linus : public Application {
             }
             p("    storing ").p(set.size()).pln(" merged elements");
             SetWriter writer(set);
-            Key k(StrBuff(name).c(stage).c("-0").get());
-            delete DataFrame::fromVisitor(&k, &kv, "I", writer);
+            String* tmp = StrBuff().c(name).c(stage).c("-0").get();
+            Key k(tmp->c_str());
+            delete tmp;
+            delete DataFrame::fromVisitor(&k, &kd_, "I", writer);
         } else {
             p("    sending ").p(set.size()).pln(" elements to master node");
             SetWriter writer(set);
-            Key k(StrBuff(name).c(stage).c("-").c(index).get());
-            delete DataFrame::fromVisitor(&k, &kv, "I", writer);
-            Key mK(StrBuff(name).c(stage).c("-0").get());
-            DataFrame* merged = dynamic_cast<DataFrame*>(kv.waitAndGet(mK));
+            String* tmp = StrBuff().c(name).c(stage).c("-").c(this_node()).get();
+            Key k(tmp->c_str());
+            delete tmp;
+            delete DataFrame::fromVisitor(&k, &kd_, "I", writer);
+
+            String* tmp2 = StrBuff().c(name).c(stage).c("-0").get();
+            Key mK(tmp2->c_str());
+            delete tmp2;
+            DataFrame* merged = kd_.waitAndGet(mK);
             p("    receiving ").p(merged->nrows()).pln(" merged elements");
             SetUpdater upd(set);
             merged->map(upd);
