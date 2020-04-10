@@ -59,6 +59,14 @@ m1: $(TEST_OUT)
 m4: $(TEST_OUT)
 	$(TEST_OUT) "[m4]"
 
+.PHONY: valgrind-m1
+valgrind-m1: $(TEST_OUT)
+	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT) "[m1]"
+
+.PHONY: valgrind-m4
+valgrind-m4: $(TEST_OUT)
+	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT) "[m4]"
+
 .PHONY: clean
 clean:
 	rm -rf $(ODIR)/* submission.zip
