@@ -1,16 +1,21 @@
 #pragma once
 #include <cassert>
 #include <unordered_map>
-// #include <vector>
 
 #include "connection.h"
 #include "message.h"
 #include "network.h"
-// #include "store/kvstore.h"
 #include "util/thread.h"
 
+/**
+ * Forward declaration of KVStore due to dependecy issues.
+ */
 class KVStore;
 
+/**
+ * Defines an API/abstraction for the network layer of eau2.
+ * Authors: gomes.chri@husky.neu.edu and modi.an@husky.neu.edu
+ */
 class NetworkIfc : public Thread {
    public:
     bool keep_processing_;
@@ -23,6 +28,9 @@ class NetworkIfc : public Thread {
     Address my_addr_;
     KVStore* local_kv_;
 
+    /**
+     * NetworkIfc constructor to be called by all "clients" (node_num != 0)
+     */
     NetworkIfc(Address* address, Address* controller, size_t node_num, size_t total_nodes)
         : Thread(),
           node_num_(node_num),
@@ -36,9 +44,15 @@ class NetworkIfc : public Thread {
         listen_sock_ = new ListenSocket();
     }
 
+    /**
+     * Constructor meant to be called by "controller" (node_num == 0).
+     */
     NetworkIfc(Address* address, size_t total_nodes)
         : NetworkIfc(address, address, 0, total_nodes) {}
 
+    /**
+     * Destructor for a NetworkIfc object.
+     */
     virtual ~NetworkIfc() {
         for (std::pair<size_t, Connection*> p : connections_) {
             delete p.second;
@@ -49,6 +63,9 @@ class NetworkIfc : public Thread {
         delete listen_sock_;
     }
 
+    /**
+     * Starts the processing loop for the network layer.
+     */
     void start() override {
         assert(local_kv_ != nullptr);
         Thread::start();
@@ -57,6 +74,10 @@ class NetworkIfc : public Thread {
         }
     }
 
+    /**
+     * The main logic for the network layer. It starts with the registration phase and then begins
+     * the processing loop for new connections from other nodes in the network.
+     */
     void run() override {
         assert(local_kv_ != nullptr);
         listen_sock_->bind_and_listen(&my_addr_);
@@ -86,18 +107,23 @@ class NetworkIfc : public Thread {
             }
         }
 
+        // begin graceful teardown
         if (node_num_ == 0) {
             Message kill_msg(MsgType::KILL);
             broadcast_(&kill_msg);
         }
 
+        // end all connections and their threads
         for (std::pair<size_t, Connection*> p : connections_) {
             p.second->stop();
             p.second->join();
         }
     }
 
-    // The "server" handing registration messages from "clients"
+    /**
+     * The "server" handling registration messages from "clients". It also sends out the directory
+     * once all clients are connected.
+     */
     void process_client_registrations_() {
         // wait for registrations from everyone
         while (peer_addresses_.size() != total_nodes_) {
@@ -143,7 +169,10 @@ class NetworkIfc : public Thread {
         }
     }
 
-    // The "clients" registering with the "server"
+    /**
+     * The "clients" sending register messages to the "server". This method also handles the
+     * server's Directory message.
+     */
     void register_with_controller_() {
         // Connect to server
         ConnectionSocket* server_connection = new ConnectionSocket();
@@ -185,16 +214,26 @@ class NetworkIfc : public Thread {
         }
     }
 
+    /**
+     * Stops the network layer's processing loop to gracefully shutdown.
+     */
     void stop() {
         keep_processing_ = false;
     }
 
+    /**
+     * Blocks until the registration phase is over.
+     */
     void wait_for_registration_() {
         while (!registration_done_) {
             // wait for registration phase to finish
         }
     }
 
+    /**
+     * A helper method which takes a node number and opens a connection to it if one does not
+     * already exist.
+     */
     void connect_to_node_(size_t node) {
         if (connections_.find(node) == connections_.end()) {
             assert(peer_addresses_.size() == total_nodes_);
@@ -207,6 +246,9 @@ class NetworkIfc : public Thread {
         }
     }
 
+    /**
+     * Public API method which tells the specified node to put the given value at the given key.
+     */
     void put_at_node(size_t node, Key& k, Value* v) {
         wait_for_registration_();
         assert(node_num_ != node);
@@ -215,6 +257,9 @@ class NetworkIfc : public Thread {
         connections_.at(node)->send_message(&p);
     }
 
+    /**
+     * A helper method which waits for and processes a reply to a get or waitAndGet call.
+     */
     Value* process_reply_(Connection* c) {
         // Wait for a reply to come back
         while (c->replies.size() == 0) {
@@ -232,6 +277,9 @@ class NetworkIfc : public Thread {
         return result;
     }
 
+    /**
+     * Public API method which gets the data at the given key from another node.
+     */
     Value* get_from_node(size_t node, Key& k) {
         wait_for_registration_();
         assert(node_num_ != node);
@@ -245,6 +293,9 @@ class NetworkIfc : public Thread {
         return process_reply_(c);
     }
 
+    /**
+     * Public API method which performs a waitAndGet for the data at the given key on another node.
+     */
     Value* wait_and_get_from_node(size_t node, Key& k) {
         wait_for_registration_();
         assert(node_num_ != node);
@@ -258,14 +309,23 @@ class NetworkIfc : public Thread {
         return process_reply_(c);
     }
 
+    /**
+     * Public API method which returns the number of nodes in the network.
+     */
     size_t num_nodes() {
         return total_nodes_;
     }
 
+    /**
+     * Public API method which returns the node number of this node.
+     */
     size_t this_node() {
         return node_num_;
     }
 
+    /**
+     * Sets the local kv pointer to the given kv store.
+     */
     void set_kv(KVStore* kv) {
         assert(kv != nullptr);
         local_kv_ = kv;

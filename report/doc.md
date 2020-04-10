@@ -7,7 +7,8 @@ eau2 is a distributed system used to run machine learning algorithms and other o
 The main parts of the system include:
 * Stores - store data across multiple devices using keys and values (data frames for KDStore)
 * Dataframe - holds data in tabular format and works as an easy interface
-* Sorer - allows the system to read in ".sor" files 
+* Sorer - allows the system to read in ".sor" files
+* Network - enables true distribution of data across multiple systems to improve performance and overall data capacity.
 
 ## Implementation
 Classes:
@@ -19,6 +20,8 @@ Classes:
 * Key - represents a key in a store
 * Value - holds the data at the key in a KVStore
 * SorParser - reads in the ".sor" file and converts it into a DataFrame
+* NetworkIfc - defines the API for putting and getting data on remote nodes
+* Connection - manages the interactions between 2 nodes over a network connection
 
 ## Use cases
 Store and retrieve data from eau2.
@@ -83,10 +86,19 @@ int main() {
 
 
 ## Open questions
-* How would local_map work given that we were told that row, rower, and fielder were not needed?
 * What is a good number of items for one chunk in a column?
+    * We have done some testing and increased our segment size significantly. We think this can be further tuned based on the application at hand.
+* We think our implementation performs respectably, but we are still curious where our biggest bottlenecks are. Are they where we expect them to be or are other portions of our codebase impacting performance?
 
 ## Status
-Multiple instances of KVStore can work together. Columns and data frames were stripped down to be immutable. Next steps include:
-- have KVStore function with its instances over a network
-- implement local_map
+Multiple instances of KVStore can work together while running on different nodes altogether. The KVStore was updated to support fetching data on other nodes, and our `Application` base class has been updated to accept a network interface during construction. Next steps include:
+- running with different types of applications
+- analyze performance and see if any speedup is needed
+- tune the segment size further to reduce remote get and put operations when using larger data sets.
+
+## Running
+* `make test` runs all our tests
+* `make valgrind` runs most of our tests in `valgrind`. The tests which run the example applications are excluded because they take so long.
+* `make valgrind-all` runs all of our tests in `valgrind`. The tests which run the example applications are included which makes this take much longer.
+* `make m1` runs the example provided in the M1 assignment.
+* `make m4` runs the `WordCount` app on 2 different files.

@@ -191,7 +191,7 @@ class WordCount : public Application {
     Key* mk_key(size_t idx) {
         StrBuff sb = StrBuff();
         sb.c(idx);
-        String* s = sb.get(); 
+        String* s = sb.get();
         Key* k = new Key(s->c_str());
         delete s;
         return k;
@@ -237,10 +237,11 @@ class WordCount : public Application {
 };
 
 // check output of word count
-TEST_CASE("run word count app with our sample", "[m4]") {
+TEST_CASE("run word count app with our sample", "[application]") {
     Address a0("127.0.0.1", 10000);
     Address a1("127.0.0.1", 10001);
     const char* file_path = "./data/sample.txt";
+    printf("STARTING M4 ON %s\n", file_path);
 
     NetworkIfc net0(&a0, 2);
     NetworkIfc net1(&a1, &a0, 1, 2);
@@ -274,14 +275,17 @@ TEST_CASE("run word count app with our sample", "[m4]") {
         REQUIRE(expected[it->first] == it->second);
         it++;
     }
+    printf("FINISHING M4 ON %s\n", file_path);
 }
 
 // check output of word count
-TEST_CASE("run word count app with their sample", "[m4]") {
+TEST_CASE("run word count app with their sample", "[m4][milestone][application]") {
     Address a0("127.0.0.1", 10000);
     Address a1("127.0.0.1", 10001);
     Address a2("127.0.0.1", 10002);
     const char* file_path = "./data/100k.txt";
+
+    printf("STARTING M4 ON %s\n", file_path);
 
     NetworkIfc net0(&a0, 3);
     NetworkIfc net1(&a1, &a0, 1, 3);
@@ -300,4 +304,5 @@ TEST_CASE("run word count app with their sample", "[m4]") {
     w0.join();
 
     REQUIRE(w0.result[std::string("lorem")] == 50);
+    printf("FINISHING M4 ON %s\n", file_path);
 }

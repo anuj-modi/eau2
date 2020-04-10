@@ -8,7 +8,7 @@
 
 /**
  * Application that runs on eau2.
- * Author: gomes.chri and modi.an
+ * Authors: gomes.chri@husky.neu.edu and modi.an@husky.neu.edu
  */
 class Application : public Thread {
    public:
@@ -17,16 +17,27 @@ class Application : public Thread {
     size_t node_num_;
     KDStore kd_;
 
+    /**
+     * Constructs an Application object using a provided network interface.
+     * @arg the network layer interface for this application to use
+     */
     Application(NetworkIfc& net)
         : Thread(), net_(net), kv_(&net_), node_num_(net_.this_node()), kd_(&kv_) {
         net_.set_kv(&kv_);
     }
 
+    /**
+     * Destructs an application object.
+     */
     virtual ~Application() {
         net_.stop();
         net_.join();
     }
 
+    /**
+     * Starts this application by starting the network and the underlying
+     * thread.
+     */
     virtual void start() override {
         net_.start();
         Thread::start();

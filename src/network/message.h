@@ -10,11 +10,13 @@
 
 /**
  * Represents a message type to pass over a network.
+ * Authors: gomes.chri@husky.neu.edu and modi.an@husky.neu.edu
  */
 enum class MsgType : int { PUT, GET, WAITANDGET, REPLY, KILL, REGISTER, DIRECTORY, STATUS };
 
 /**
  * Represents a message to send over a network.
+ * Authors: gomes.chri@husky.neu.edu and modi.an@husky.neu.edu
  */
 class Message : public Object {
    public:

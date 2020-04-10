@@ -37,17 +37,35 @@ $(TEST_OUT): $(OBJS) $(DEPS)
 
 .PHONY:test
 test: $(ODIR) $(TEST_OUT)
+	$(TEST_OUT) "~[milestone]"
+
+.PHONY:test-all
+test-all: $(ODIR) $(TEST_OUT)
 	$(TEST_OUT)
 
 .PHONY: valgrind
 valgrind: $(TEST_OUT)
+	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT) "~[milestone]"
+
+.PHONY: valgrind-all
+valgrind-all: $(TEST_OUT)
 	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT)
 
-$(ODIR)/server: ./src/network/server.cpp $(DEPS)
-	$(CC) $(CFLAGS) -Isrc/ -o $@ $<
+.PHONY: m1
+m1: $(TEST_OUT)
+	$(TEST_OUT) "[m1]"
 
-$(ODIR)/client: ./src/network/client.cpp $(DEPS)
-	$(CC) $(CFLAGS) -Isrc/ -o $@ $<
+.PHONY: m4
+m4: $(TEST_OUT)
+	$(TEST_OUT) "[m4]"
+
+.PHONY: valgrind-m1
+valgrind-m1: $(TEST_OUT)
+	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT) "[m1]"
+
+.PHONY: valgrind-m4
+valgrind-m4: $(TEST_OUT)
+	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT) "[m4]"
 
 .PHONY: clean
 clean:
