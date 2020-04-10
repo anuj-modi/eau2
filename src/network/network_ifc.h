@@ -127,38 +127,35 @@ class NetworkIfc : public Thread {
      * once all clients are connected.
      */
     void process_client_registrations_() {
+        Connection* c = nullptr;
         // wait for registrations from everyone
         while (peer_addresses_.size() != total_nodes_) {
             ConnectionSocket* cs = listen_sock_->accept_connection();
-            // TODO: change to use connection object
-            char buf[1024];
-            size_t num_bytes = cs->recv_bytes(buf, sizeof(buf));
-            assert(num_bytes > 0);
-            Deserializer d(buf, num_bytes);
+            c = new Connection(cs, local_kv_);
 
-            handle_register_message_(cs, d);
+            // Recv and handle registration message
+            Deserializer* d_ptr = c->recv_message();
+            Deserializer& d = *d_ptr;
+            handle_register_message_(c, d);
         }
 
         // Send directory message out to everyone
         Directory dir(peer_addresses_);
         broadcast_(&dir);
+        c->start();
     }
 
     /**
      * Process a REGISTER message.
      */
-    void handle_register_message_(ConnectionSocket* client, Deserializer& d) {
+    void handle_register_message_(Connection* c, Deserializer& d) {
         MsgType m = d.get_msg_type();
         assert(m == MsgType::REGISTER);
         Register reg(&d);
 
         // Store peer address in address map
         peer_addresses_[reg.node_num_] = new Address(reg.client_addr_);
-
-        // store peer connection in connections map
-        Connection* c = new Connection(client, local_kv_);
         connections_[reg.node_num_] = c;
-        c->start();
     }
 
     /**
@@ -179,15 +176,12 @@ class NetworkIfc : public Thread {
         // Connect to server
         ConnectionSocket* server_connection = new ConnectionSocket();
         server_connection->connect_to_other(peer_addresses_[0]);
+        Connection* c = new Connection(server_connection, local_kv_);
+        connections_[0] = c;
 
         // Send Server Register
         Register reg(new Address(&my_addr_), node_num_);
-        Serializer s;
-        reg.serialize(&s);
-        // TODO: change to use send_message in connection
-        Connection* c = new Connection(server_connection, local_kv_);
-        connections_[0] = c;
-        assert(server_connection->send_bytes(s.get_bytes(), s.size()) > 0);
+        c->send_message(&reg);
 
         // receive directory from server
         size_t num_bytes = 0;
