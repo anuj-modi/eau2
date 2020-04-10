@@ -18,14 +18,7 @@ jobs:
       run: |
           sudo apt update -y
           sudo apt install -y make g++ valgrind
-    - name: Run all tests
+    - name: Run tests
       run: make test
-    - name: Run M1
-      run: make m1
-    - name: Run M4
-      run: make m4
-    - name: Valgrind all tests
-      run: |
-          make valgrind
-          make valgrind-m1
-          make valgrind-m4
+    - name: Valgrind tests
+      run: make valgrind
