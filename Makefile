@@ -35,6 +35,15 @@ $(ODIR)/%.o: ./tests/%.cpp $(DEPS)
 $(TEST_OUT): $(OBJS) $(DEPS)
 	$(CC) $(CFLAGS) -o $(TEST_OUT) $(OBJS)
 
+$(ODIR)/linus: src/linus.cpp $(DEPS)
+	$(CC) $(CFLAGS) -Isrc/ -o $@ $<
+
+$(ODIR)/client: $(ODIR)/linus
+	cp $< $@
+
+$(ODIR)/server: $(ODIR)/linus
+	cp $< $@
+
 .PHONY:test
 test: $(ODIR) $(TEST_OUT)
 	$(TEST_OUT) "~[milestone]"
