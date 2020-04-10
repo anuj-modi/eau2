@@ -55,6 +55,14 @@ class Application : public Thread {
      * @return the node number
      */
     size_t this_node() {
-        return node_num_;
+        return net_.this_node();
+    }
+
+    /**
+     * Returns the number of nodes in this application
+     * @return the number of nodes
+     */
+    size_t num_nodes() {
+        return net_.num_nodes();
     }
 };
