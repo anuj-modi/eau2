@@ -37,11 +37,15 @@ $(TEST_OUT): $(OBJS) $(DEPS)
 
 .PHONY:test
 test: $(ODIR) $(TEST_OUT)
+	$(TEST_OUT) "~[milestone]"
+
+.PHONY:test-all
+test-all: $(ODIR) $(TEST_OUT)
 	$(TEST_OUT)
 
 .PHONY: valgrind
 valgrind: $(TEST_OUT)
-	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT) "~[application]"
+	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT) "~[milestone]"
 
 .PHONY: valgrind-all
 valgrind-all: $(TEST_OUT)

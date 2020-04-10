@@ -56,7 +56,7 @@ class Demo : public Application {
     }
 };
 
-TEST_CASE("their m1", "[m1][application]") {
+TEST_CASE("their m1", "[m1][milestone][application]") {
     printf("RUNNING M1 EXAMPLE\n");
     Address a0("127.0.0.1", 10000);
     Address a1("127.0.0.1", 10001);

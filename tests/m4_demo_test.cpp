@@ -237,7 +237,7 @@ class WordCount : public Application {
 };
 
 // check output of word count
-TEST_CASE("run word count app with our sample", "[m4][application]") {
+TEST_CASE("run word count app with our sample", "[application]") {
     Address a0("127.0.0.1", 10000);
     Address a1("127.0.0.1", 10001);
     const char* file_path = "./data/sample.txt";
@@ -279,7 +279,7 @@ TEST_CASE("run word count app with our sample", "[m4][application]") {
 }
 
 // check output of word count
-TEST_CASE("run word count app with their sample", "[m4][application]") {
+TEST_CASE("run word count app with their sample", "[m4][milestone][application]") {
     Address a0("127.0.0.1", 10000);
     Address a1("127.0.0.1", 10001);
     Address a2("127.0.0.1", 10002);
