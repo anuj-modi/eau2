@@ -101,9 +101,17 @@ class ConnectionSocket : public BaseSocket {
      * @returns the number of bytes actually read from the socket
      */
     size_t recv_bytes(char *buffer, size_t num_bytes) {
-        int bytes_received = recv(sock_fd_, buffer, num_bytes, 0);
-        assert(bytes_received >= 0);
-        return bytes_received;
+        size_t total_bytes_received = 0;
+        while (total_bytes_received != num_bytes) {
+            ssize_t bytes_received =
+                recv(sock_fd_, buffer + total_bytes_received, num_bytes - total_bytes_received, 0);
+            assert(bytes_received >= 0);
+            if (bytes_received == 0) {
+                break;
+            }
+            total_bytes_received += bytes_received;
+        }
+        return total_bytes_received;
     }
 
     /**
@@ -113,9 +121,15 @@ class ConnectionSocket : public BaseSocket {
      * @returns the number of bytes actually written to the socket
      */
     size_t send_bytes(const char *buffer, size_t num_bytes) {
-        int bytes_sent = send(sock_fd_, buffer, num_bytes, 0);
-        assert(bytes_sent != -1);
-        return bytes_sent;
+        size_t total_bytes_sent = 0;
+        while (total_bytes_sent != num_bytes) {
+            ssize_t bytes_sent =
+                send(sock_fd_, buffer + total_bytes_sent, num_bytes - total_bytes_sent, 0);
+            assert(bytes_sent != -1);
+            total_bytes_sent += bytes_sent;
+        }
+
+        return total_bytes_sent;
     }
 };
 

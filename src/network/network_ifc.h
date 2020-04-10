@@ -94,6 +94,8 @@ class NetworkIfc : public Thread {
         assert(peer_addresses_.size() == total_nodes_);
         registration_done_ = true;
 
+        printf("Finished registration\n");
+
         // process new connections from other clients
         while (keep_processing_) {
             if (listen_sock_->has_new_connections()) {
