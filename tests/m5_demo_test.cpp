@@ -2,7 +2,6 @@
 #include "catch.hpp"
 #include "dataframe/dataframe.h"
 #include "util/string.h"
-
 /**
  * The input data is a processed extract from GitHub.
  *
@@ -92,8 +91,8 @@ class SetUpdater : public Reader {
  ****************************************************************************/
 class SetWriter : public Writer {
    public:
-    Set& set_;   // set to read from
-    int i_ = 0;  // position in set
+    Set& set_;      // set to read from
+    size_t i_ = 0;  // position in set
 
     SetWriter(Set& set) : set_(set) {}
 
@@ -104,7 +103,9 @@ class SetWriter : public Writer {
     }
 
     void visit(Row& row) {
-        row.set(0, i_++);
+        int val = i_;
+        row.set(0, val);
+        i_++;
     }
 };
 
@@ -178,11 +179,11 @@ class UsersTagger : public Reader {
  **************************************************************************/
 class Linus : public Application {
    public:
-    int DEGREES = 4;   // How many degrees of separation form linus?
-    int LINUS = 4967;  // The uid of Linus (offset in the user df)
-    const char* PROJ = "datasets/projects.ltgt";
-    const char* USER = "datasets/users.ltgt";
-    const char* COMM = "datasets/commits.ltgt";
+    size_t DEGREES = 4;  // How many degrees of separation form linus?
+    int LINUS = 4967;    // The uid of Linus (offset in the user df)
+    const char* PROJ = "data/projects.ltgt";
+    const char* USER = "data/users.ltgt";
+    const char* COMM = "data/commits.ltgt";
     DataFrame* projects;  //  pid x project name
     DataFrame* users;     // uid x user name
     DataFrame* commits;   // pid x uid x uid
