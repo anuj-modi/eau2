@@ -3,8 +3,7 @@ CFLAGS = -g -Wall -Werror -std=c++11 -pthread
 
 STUFF = src tests data report Makefile Dockerfile
 
-# TEST_SRCS = $(wildcard tests/*_test.cpp)
-TEST_SRCS = tests/m5_demo_test.cpp
+TEST_SRCS = $(wildcard tests/*_test.cpp)
 _OBJS = $(patsubst %.cpp,%.o,$(notdir $(TEST_SRCS))) test.o
 OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
 DEPS := ./tests/catch.hpp $(shell find src/ -name *.h)

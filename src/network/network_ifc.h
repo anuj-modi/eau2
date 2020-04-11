@@ -95,8 +95,6 @@ class NetworkIfc : public Thread {
         assert(peer_addresses_.size() == total_nodes_);
         registration_done_ = true;
 
-        printf("Finished registration\n");
-
         // process new connections from other clients
         while (keep_processing_) {
             if (listen_sock_->has_new_connections()) {
@@ -138,6 +136,7 @@ class NetworkIfc : public Thread {
             Deserializer* d_ptr = c->recv_message();
             Deserializer& d = *d_ptr;
             handle_register_message_(c, d);
+            delete d_ptr;
         }
 
         // Send directory message out to everyone

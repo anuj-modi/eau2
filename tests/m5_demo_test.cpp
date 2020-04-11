@@ -202,6 +202,14 @@ class Linus : public Application {
 
     Linus(NetworkIfc& net) : Application(net) {}
 
+    ~Linus() {
+        delete uSet;
+        delete pSet;
+        delete projects;
+        delete users;
+        delete commits;
+    }
+
     /** Compute DEGREES of Linus.  */
     void run() override {
         readInput();
@@ -313,33 +321,24 @@ class Linus : public Application {
 // basic m5 run
 TEST_CASE("run linus app on simple data", "[m5][milestone][application]") {
     Address a0("127.0.0.1", 10000);
-    // Address a1("127.0.0.1", 10001);
+    Address a1("127.0.0.1", 10001);
 
     printf("STARTING M5\n");
 
-    NetworkIfc net0(&a0, 1);
-    // NetworkIfc net1(&a1, &a0, 1, 2);
+    NetworkIfc net0(&a0, 2);
+    NetworkIfc net1(&a1, &a0, 1, 2);
 
     Linus app0(net0);
-    // Linus app1(net1);
+    Linus app1(net1);
     app0.LINUS = 3;
-    // app1.LINUS = 3;
+    app1.LINUS = 3;
 
     app0.start();
-    // app1.start();
+    app1.start();
 
     app0.join();
-    // app1.join();
+    app1.join();
 
-    // delete app0.projects;
-    // delete app0.users;
-    // delete app0.commits;
-    // delete app0.uSet;
-    // delete app0.pSet;
-    // delete app1.projects;
-    // delete app1.projects;
-    // delete app1.users;
-    // delete app1.commits;
-    // delete app1.uSet;
-    // delete app1.pSet;
+    REQUIRE(app0.pSet->num_tagged() == 3);
+    REQUIRE(app0.uSet->num_tagged() == 3);
 }

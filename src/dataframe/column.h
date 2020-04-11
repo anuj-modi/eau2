@@ -19,8 +19,7 @@ class DoubleColumn;
 class BoolColumn;
 class StringColumn;
 
-// static const size_t SEGMENT_CAPACITY = 8192 * 8 * 2;
-static const size_t SEGMENT_CAPACITY = 6;
+static const size_t SEGMENT_CAPACITY = 8192;
 // static const size_t SEGMENT_CAPACITY = 5242880;
 static const char* ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 static const size_t ALPHA_SIZE = 52;
