@@ -59,6 +59,16 @@ class Set {
         return size_;
     }
 
+    size_t num_tagged() {
+        size_t sum = 0;
+        for (size_t i = 0; i < size_; i++) {
+            if (test(i)) {
+                sum += 1;
+            }
+        }
+        return sum;
+    }
+
     /** Performs set union in place. */
     void union_(Set& from) {
         for (size_t i = 0; i < from.size_; i++)
@@ -210,11 +220,11 @@ class Linus : public Application {
         Key cK("comts");
         if (this_node() == 0) {
             pln("Reading...");
-            projects = DataFrame::fromSorFile(pK.clone(), &kd_, PROJ);
+            projects = DataFrame::fromSorFile(&pK, &kd_, PROJ);
             p("    ").p(projects->nrows()).pln(" projects");
-            users = DataFrame::fromSorFile(uK.clone(), &kd_, USER);
+            users = DataFrame::fromSorFile(&uK, &kd_, USER);
             p("    ").p(users->nrows()).pln(" users");
-            commits = DataFrame::fromSorFile(cK.clone(), &kd_, COMM);
+            commits = DataFrame::fromSorFile(&cK, &kd_, COMM);
             p("    ").p(commits->nrows()).pln(" commits");
             Key scalar("users-0-0");
             // This dataframe contains the id of Linus.
@@ -252,8 +262,8 @@ class Linus : public Application {
         merge(utagger.newUsers, "users-", stage + 1);
         uSet->union_(utagger.newUsers);
         p("    after stage ").p(stage).pln(":");
-        p("        tagged projects: ").pln(pSet->size());
-        p("        tagged users: ").pln(uSet->size());
+        p("        tagged projects: ").pln(pSet->num_tagged());
+        p("        tagged users: ").pln(uSet->num_tagged());
     }
 
     /** Gather updates to the given set from all the nodes in the systems.
@@ -298,4 +308,38 @@ class Linus : public Application {
             delete merged;
         }
     }
-};  // Linus
+};
+
+// basic m5 run
+TEST_CASE("run linus app on simple data", "[m5][milestone][application]") {
+    Address a0("127.0.0.1", 10000);
+    // Address a1("127.0.0.1", 10001);
+
+    printf("STARTING M5\n");
+
+    NetworkIfc net0(&a0, 1);
+    // NetworkIfc net1(&a1, &a0, 1, 2);
+
+    Linus app0(net0);
+    // Linus app1(net1);
+    app0.LINUS = 3;
+    // app1.LINUS = 3;
+
+    app0.start();
+    // app1.start();
+
+    app0.join();
+    // app1.join();
+
+    // delete app0.projects;
+    // delete app0.users;
+    // delete app0.commits;
+    // delete app0.uSet;
+    // delete app0.pSet;
+    // delete app1.projects;
+    // delete app1.projects;
+    // delete app1.users;
+    // delete app1.commits;
+    // delete app1.uSet;
+    // delete app1.pSet;
+}

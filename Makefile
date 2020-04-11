@@ -3,7 +3,8 @@ CFLAGS = -g -Wall -Werror -std=c++11 -pthread
 
 STUFF = src tests data report Makefile Dockerfile
 
-TEST_SRCS = $(wildcard tests/*_test.cpp)
+# TEST_SRCS = $(wildcard tests/*_test.cpp)
+TEST_SRCS = tests/m5_demo_test.cpp
 _OBJS = $(patsubst %.cpp,%.o,$(notdir $(TEST_SRCS))) test.o
 OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
 DEPS := ./tests/catch.hpp $(shell find src/ -name *.h)
@@ -68,6 +69,10 @@ m1: $(TEST_OUT)
 m4: $(TEST_OUT)
 	$(TEST_OUT) "[m4]"
 
+.PHONY: m5
+m5: $(TEST_OUT)
+	$(TEST_OUT) "[m5]"
+
 .PHONY: valgrind-m1
 valgrind-m1: $(TEST_OUT)
 	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT) "[m1]"
@@ -75,6 +80,10 @@ valgrind-m1: $(TEST_OUT)
 .PHONY: valgrind-m4
 valgrind-m4: $(TEST_OUT)
 	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT) "[m4]"
+
+.PHONY: valgrind-m5
+valgrind-m5: $(TEST_OUT)
+	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT) "[m5]"
 
 .PHONY: clean
 clean:

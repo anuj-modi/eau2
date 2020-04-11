@@ -83,13 +83,14 @@ class NetworkIfc : public Thread {
         listen_sock_->bind_and_listen(&my_addr_);
         keep_processing_ = true;
 
-        // registration phase
-        if (node_num_ == 0) {
-            process_client_registrations_();
-        } else {
-            register_with_controller_();
+        if (total_nodes_ > 1) {
+            // registration phase
+            if (node_num_ == 0) {
+                process_client_registrations_();
+            } else {
+                register_with_controller_();
+            }
         }
-
         // ensure registration was successful
         assert(peer_addresses_.size() == total_nodes_);
         registration_done_ = true;

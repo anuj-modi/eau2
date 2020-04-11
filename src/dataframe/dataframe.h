@@ -183,7 +183,6 @@ class DataFrame : public Object {
         }
     }
 
-    // TODO test DataFrame map
     /**
      * Maps over the rows of the data frame on the given node.
      * @arg v  the reader to use
