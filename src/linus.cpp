@@ -1,7 +1,6 @@
 #include "application/application.h"
 #include "dataframe/dataframe.h"
 #include "util/string.h"
-
 /**
  * The input data is a processed extract from GitHub.
  *
@@ -57,6 +56,16 @@ class Set {
 
     size_t size() {
         return size_;
+    }
+
+    size_t num_tagged() {
+        size_t sum = 0;
+        for (size_t i = 0; i < size_; i++) {
+            if (test(i)) {
+                sum += 1;
+            }
+        }
+        return sum;
     }
 
     /** Performs set union in place. */
@@ -192,6 +201,14 @@ class Linus : public Application {
 
     Linus(NetworkIfc& net) : Application(net) {}
 
+    ~Linus() {
+        delete uSet;
+        delete pSet;
+        delete projects;
+        delete users;
+        delete commits;
+    }
+
     /** Compute DEGREES of Linus.  */
     void run() override {
         readInput();
@@ -210,11 +227,11 @@ class Linus : public Application {
         Key cK("comts");
         if (this_node() == 0) {
             pln("Reading...");
-            projects = DataFrame::fromSorFile(pK.clone(), &kd_, PROJ);
+            projects = DataFrame::fromSorFile(&pK, &kd_, PROJ);
             p("    ").p(projects->nrows()).pln(" projects");
-            users = DataFrame::fromSorFile(uK.clone(), &kd_, USER);
+            users = DataFrame::fromSorFile(&uK, &kd_, USER);
             p("    ").p(users->nrows()).pln(" users");
-            commits = DataFrame::fromSorFile(cK.clone(), &kd_, COMM);
+            commits = DataFrame::fromSorFile(&cK, &kd_, COMM);
             p("    ").p(commits->nrows()).pln(" commits");
             Key scalar("users-0-0");
             // This dataframe contains the id of Linus.
@@ -252,8 +269,8 @@ class Linus : public Application {
         merge(utagger.newUsers, "users-", stage + 1);
         uSet->union_(utagger.newUsers);
         p("    after stage ").p(stage).pln(":");
-        p("        tagged projects: ").pln(pSet->size());
-        p("        tagged users: ").pln(uSet->size());
+        p("        tagged projects: ").pln(pSet->num_tagged());
+        p("        tagged users: ").pln(uSet->num_tagged());
     }
 
     /** Gather updates to the given set from all the nodes in the systems.
@@ -298,7 +315,7 @@ class Linus : public Application {
             delete merged;
         }
     }
-};  // Linus
+};
 
 int server(int argc, char** argv) {
     char usage[] = "./build/server <ip> <port> <total_nodes>";
