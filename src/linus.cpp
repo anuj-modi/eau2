@@ -1,6 +1,8 @@
 #include "application/application.h"
 #include "dataframe/dataframe.h"
 #include "util/string.h"
+#include <unordered_set>
+
 /**
  * The input data is a processed extract from GitHub.
  *
@@ -24,20 +26,17 @@
  ************************************************************************/
 class Set {
    public:
-    bool* vals_;   // owned; data
-    size_t size_;  // number of elements
+    std::unordered_set<size_t> vals_;  // owned; data
+    size_t size_;                 // number of elements
+    size_t num_items_;
 
     /** Creates a set of the same size as the dataframe. */
     Set(DataFrame* df) : Set(df->nrows()) {}
 
     /** Creates a set of the given size. */
-    Set(size_t sz) : vals_(new bool[sz]), size_(sz) {
-        for (size_t i = 0; i < size_; i++) vals_[i] = false;
-    }
+    Set(size_t sz) : size_(sz) {}
 
-    ~Set() {
-        delete[] vals_;
-    }
+    ~Set() {}
 
     /** Add idx to the set. If idx is out of bound, ignore it.  Out of bound
      *  values can occur if there are references to pids or uids in commits
@@ -45,33 +44,24 @@ class Set {
      */
     void set(size_t idx) {
         if (idx >= size_) return;  // ignoring out of bound writes
-        vals_[idx] = true;
+        vals_.insert(idx);
     }
 
     /** Is idx in the set?  See comment for set(). */
     bool test(size_t idx) {
         if (idx >= size_) return true;  // ignoring out of bound reads
-        return vals_[idx];
+        return vals_.find(idx) != vals_.end();
     }
 
     size_t size() {
-        return size_;
-    }
-
-    size_t num_tagged() {
-        size_t sum = 0;
-        for (size_t i = 0; i < size_; i++) {
-            if (test(i)) {
-                sum += 1;
-            }
-        }
-        return sum;
+        return vals_.size();
     }
 
     /** Performs set union in place. */
     void union_(Set& from) {
-        for (size_t i = 0; i < from.size_; i++)
-            if (from.test(i)) set(i);
+        for (size_t i : from.vals_) {
+            set(i);
+        }
     }
 };
 
@@ -238,8 +228,11 @@ class Linus : public Application {
             delete DataFrame::fromScalar(&scalar, &kd_, LINUS);
         } else {
             projects = kd_.waitAndGet(pK);
+            pln("received projects");
             users = kd_.waitAndGet(uK);
+            pln("received users");
             commits = kd_.waitAndGet(cK);
+            pln("received commits");
         }
         uSet = new Set(users);
         pSet = new Set(projects);
@@ -269,8 +262,8 @@ class Linus : public Application {
         merge(utagger.newUsers, "users-", stage + 1);
         uSet->union_(utagger.newUsers);
         p("    after stage ").p(stage).pln(":");
-        p("        tagged projects: ").pln(pSet->num_tagged());
-        p("        tagged users: ").pln(uSet->num_tagged());
+        p("        tagged projects: ").pln(pSet->size());
+        p("        tagged users: ").pln(uSet->size());
     }
 
     /** Gather updates to the given set from all the nodes in the systems.
