@@ -19,8 +19,8 @@ class DoubleColumn;
 class BoolColumn;
 class StringColumn;
 
-// static const size_t SEGMENT_CAPACITY = 8192 * 8 * 2;
 static const size_t SEGMENT_CAPACITY = 8192;
+// static const size_t SEGMENT_CAPACITY = 5242880;
 static const char* ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 static const size_t ALPHA_SIZE = 52;
 
@@ -137,10 +137,10 @@ class Column : public Object {
             if (segments_[i].get_node() == store_->this_node()) {
                 size_t start = i * SEGMENT_CAPACITY;
                 size_t end;
-                if (i < segments_.size() - 1) {
+                if (i < segments_.size() - 1 || size_ % SEGMENT_CAPACITY == 0) {
                     end = start + SEGMENT_CAPACITY;
                 } else {
-                    end = (size_ % SEGMENT_CAPACITY) + start;
+                    end = start + (size_ % SEGMENT_CAPACITY);
                 }
                 for (size_t j = start; j < end; j++) {
                     indices.push_back(j);

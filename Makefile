@@ -35,6 +35,15 @@ $(ODIR)/%.o: ./tests/%.cpp $(DEPS)
 $(TEST_OUT): $(OBJS) $(DEPS)
 	$(CC) $(CFLAGS) -o $(TEST_OUT) $(OBJS)
 
+$(ODIR)/linus: src/linus.cpp $(DEPS)
+	$(CC) $(CFLAGS) -Isrc/ -o $@ $<
+
+$(ODIR)/client: $(ODIR)/linus
+	cp $< $@
+
+$(ODIR)/server: $(ODIR)/linus
+	cp $< $@
+
 .PHONY:test
 test: $(ODIR) $(TEST_OUT)
 	$(TEST_OUT) "~[milestone]"
@@ -59,6 +68,10 @@ m1: $(TEST_OUT)
 m4: $(TEST_OUT)
 	$(TEST_OUT) "[m4]"
 
+.PHONY: m5
+m5: $(TEST_OUT)
+	$(TEST_OUT) "[m5]"
+
 .PHONY: valgrind-m1
 valgrind-m1: $(TEST_OUT)
 	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT) "[m1]"
@@ -66,6 +79,10 @@ valgrind-m1: $(TEST_OUT)
 .PHONY: valgrind-m4
 valgrind-m4: $(TEST_OUT)
 	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT) "[m4]"
+
+.PHONY: valgrind-m5
+valgrind-m5: $(TEST_OUT)
+	valgrind --errors-for-leak-kinds=all --error-exitcode=5 --leak-check=full $(TEST_OUT) "[m5]"
 
 .PHONY: clean
 clean:

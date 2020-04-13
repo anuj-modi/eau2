@@ -84,7 +84,7 @@ class Connection : public Thread {
      * @returns nullptr if 0 bytes were received or a deserializer object containing the received
      * bytes
      */
-    Deserializer* recv_message_() {
+    Deserializer* recv_message() {
         size_t num_bytes = 0;
         l_.lock();
         size_t num_bytes_received = s_->recv_bytes((char*)&num_bytes, sizeof(size_t));
@@ -163,7 +163,7 @@ class Connection : public Thread {
     void run() override {
         while (keep_processing_) {
             if (s_->has_new_bytes()) {
-                Deserializer* d = recv_message_();
+                Deserializer* d = recv_message();
                 if (d == nullptr) {
                     return;
                 }
