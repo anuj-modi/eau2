@@ -25,6 +25,7 @@ Classes:
 
 ## Use cases
 Store and retrieve data from eau2.
+See demos in the "tests" directory for more example applications.
 ```cpp
 KDStore kd;
 Key doubles("doubles");
@@ -86,19 +87,16 @@ int main() {
 
 
 ## Open questions
-* What is a good number of items for one chunk in a column?
-    * We have done some testing and increased our segment size significantly. We think this can be further tuned based on the application at hand.
 * We think our implementation performs respectably, but we are still curious where our biggest bottlenecks are. Are they where we expect them to be or are other portions of our codebase impacting performance?
 
 ## Status
-Multiple instances of KVStore can work together while running on different nodes altogether. The KVStore was updated to support fetching data on other nodes, and our `Application` base class has been updated to accept a network interface during construction. Next steps include:
-- running with different types of applications
-- analyze performance and see if any speedup is needed
-- tune the segment size further to reduce remote get and put operations when using larger data sets.
+Our implementation is basically complete. All we should have left is upping our column segment size for when we rerun it on an actual distributed set of machines. The column segments were kept lower for this submission so that we could properly test running on multiple segments on multiple nodes with sample data. Lastly, we only included a subset of the `Linus` app data, because it would not be feasible to try and have others try to rerun and valid our test runs with the full datasets.
 
 ## Running
-* `make test` runs all our tests
-* `make valgrind` runs most of our tests in `valgrind`. The tests which run the example applications are excluded because they take so long.
-* `make valgrind-all` runs all of our tests in `valgrind`. The tests which run the example applications are included which makes this take much longer.
-* `make m1` runs the example provided in the M1 assignment.
-* `make m4` runs the `WordCount` app on 2 different files.
+* `make test` runs all unit tests
+* `make valgrind` runs all unit tests in `valgrind`
+* `make test-all` runs all tests in the "tests" directory (including demo applications)
+* `make valgrind-all` runs all tests in the "tests" directory (including demo applications) in `valgrind`
+* `make m1` runs the `Demo` app provided in the M1 assignment.
+* `make m4` runs the `WordCount` app on a file with 100,000 words.
+* `make m5` runs the `Linus` app on a subset of Github data (users, projects, and commits)
