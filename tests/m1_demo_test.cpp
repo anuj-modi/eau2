@@ -11,7 +11,7 @@ class Demo : public Application {
     Key main = Key("main", 0);
     Key verify = Key("verif", 0);
     Key check = Key("ck", 0);
-    size_t SZ = 100 * 1000;
+    size_t SZ = 10 * 1000;
 
     Demo(NetworkIfc& net) : Application(net) {}
 
