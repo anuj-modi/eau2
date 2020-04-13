@@ -321,8 +321,6 @@ TEST_CASE("run linus app on simple data", "[m5][milestone][application]") {
 
     Linus app0(net0);
     Linus app1(net1);
-    app0.LINUS = 3;
-    app1.LINUS = 3;
 
     app0.start();
     app1.start();
@@ -330,6 +328,6 @@ TEST_CASE("run linus app on simple data", "[m5][milestone][application]") {
     app0.join();
     app1.join();
 
-    REQUIRE(app0.pSet->size() == 3);
-    REQUIRE(app0.uSet->size() == 3);
+    REQUIRE(app0.pSet->size() == 2246);
+    REQUIRE(app0.uSet->size() == 1728);
 }
