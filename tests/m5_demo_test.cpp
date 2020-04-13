@@ -314,7 +314,7 @@ TEST_CASE("run linus app on simple data", "[m5][milestone][application]") {
     Address a0("127.0.0.1", 10000);
     Address a1("127.0.0.1", 10001);
 
-    printf("STARTING M5\n");
+    printf("STARTING M5 ON SAMPLE FILES\n");
 
     NetworkIfc net0(&a0, 2);
     NetworkIfc net1(&a1, &a0, 1, 2);
