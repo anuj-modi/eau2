@@ -142,7 +142,11 @@ class NetworkIfc : public Thread {
         // Send directory message out to everyone
         Directory dir(peer_addresses_);
         broadcast_(&dir);
-        c->start();
+
+        // start up connections for all clients
+        for (std::pair<size_t, Connection*> p : connections_) {
+            p.second->start();
+        }
     }
 
     /**
