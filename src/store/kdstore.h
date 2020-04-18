@@ -109,7 +109,7 @@ inline DataFrame* DataFrame::fromArray(Key* k, KDStore* kd, size_t size, String*
 }
 
 inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, double val) {
-    DoubleColumn* dc = new DoubleColumn(kd->get_kvstore());
+    DoubleColumn* dc = new DoubleColumn(kd->get_kvstore(), 1);
     dc->push_back(val);
     DataFrame* df = new DataFrame(dc, kd->get_kvstore());
     kd->put(*k, df);
@@ -117,7 +117,7 @@ inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, double val) {
 }
 
 inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, int val) {
-    IntColumn* ic = new IntColumn(kd->get_kvstore());
+    IntColumn* ic = new IntColumn(kd->get_kvstore(), 1);
     ic->push_back(val);
     DataFrame* df = new DataFrame(ic, kd->get_kvstore());
     kd->put(*k, df);
@@ -125,7 +125,7 @@ inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, int val) {
 }
 
 inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, bool val) {
-    BoolColumn* bc = new BoolColumn(kd->get_kvstore());
+    BoolColumn* bc = new BoolColumn(kd->get_kvstore(), 1);
     bc->push_back(val);
     DataFrame* df = new DataFrame(bc, kd->get_kvstore());
     kd->put(*k, df);
@@ -133,7 +133,7 @@ inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, bool val) {
 }
 
 inline DataFrame* DataFrame::fromScalar(Key* k, KDStore* kd, String* val) {
-    StringColumn* sc = new StringColumn(kd->get_kvstore());
+    StringColumn* sc = new StringColumn(kd->get_kvstore(), 1);
     sc->push_back(val);
     DataFrame* df = new DataFrame(sc, kd->get_kvstore());
     kd->put(*k, df);

@@ -383,7 +383,7 @@ TEST_CASE("adder with local_map on data frame", "[dataframe][kdstore]") {
     net0.start();
     net1.start();
 
-    StringColumn* sc = new StringColumn(&kv0);
+    StringColumn* sc = new StringColumn(&kv0, 8192);
     for (size_t i = 0; i < 8195; i++) {
         sc->push_back(hello);
     }
@@ -426,7 +426,7 @@ TEST_CASE("adder with map on data frame", "[dataframe][kdstore]") {
     net0.start();
     net1.start();
 
-    StringColumn* sc = new StringColumn(&kv0);
+    StringColumn* sc = new StringColumn(&kv0, 8192);
     for (size_t i = 0; i < 8195; i++) {
         sc->push_back(hello);
     }
