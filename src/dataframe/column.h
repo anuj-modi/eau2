@@ -3,6 +3,7 @@
 #include <stdarg.h>
 
 #include <array>
+#include <random>
 #include <vector>
 
 #include "store/kvstore.h"
@@ -19,7 +20,8 @@ class DoubleColumn;
 class BoolColumn;
 class StringColumn;
 
-static const size_t SEGMENT_CAPACITY = 8192;
+// static const size_t SEGMENT_CAPACITY = 8192;
+static const size_t SEGMENT_CAPACITY = 50;
 // static const size_t SEGMENT_CAPACITY = 5242880;
 static const char* ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 static const size_t ALPHA_SIZE = 52;
@@ -50,8 +52,13 @@ class Column : public Object {
         StrBuff buff;
         char c[2];
         c[1] = '\0';
+        // Brought in from cppreference.com
+        std::random_device rd;   // Will be used to obtain a seed for the random number engine
+        std::mt19937 gen(rd());  // Standard mersenne_twister_engine seeded with rd()
+        std::uniform_int_distribution<> dis(0, ALPHA_SIZE);
+
         for (size_t i = 0; i < 10; i++) {
-            c[0] = ALPHA[rand() % ALPHA_SIZE];
+            c[0] = ALPHA[dis(gen)];
             buff.c(c);
         }
         col_id_ = buff.get();
