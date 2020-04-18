@@ -138,7 +138,7 @@ TEST_CASE("get indices on node 0 for column", "[column]") {
     net0.start();
     net1.start();
 
-    IntColumn sc(&kv0);
+    IntColumn sc(&kv0, 8192);
     for (size_t i = 0; i < 8195; i++) {
         sc.push_back(i);
     }

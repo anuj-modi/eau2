@@ -20,8 +20,7 @@ class DoubleColumn;
 class BoolColumn;
 class StringColumn;
 
-// static const size_t SEGMENT_CAPACITY = 8192;
-static const size_t SEGMENT_CAPACITY = 5242880 * 2;
+static const size_t DEFAULT_SEGMENT_CAPACITY = 5242880 * 2;
 static const char* ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 static const size_t ALPHA_SIZE = strlen(ALPHA);
 
@@ -42,8 +41,10 @@ class Column : public Object {
     Array* cache_;
     Key cache_key_;
     size_t curr_node_;
+    const size_t segment_capacity_;
 
-    Column(KVStore* store) : Object() {
+    Column(KVStore* store, size_t segment_capacity)
+        : Object(), segment_capacity_(segment_capacity) {
         size_ = 0;
         segments_ = std::vector<Key>();
         store_ = store;
@@ -65,11 +66,14 @@ class Column : public Object {
         expand_();
     }
 
+    Column(KVStore* store) : Column(store, DEFAULT_SEGMENT_CAPACITY) {}
+
     /**
      * Not providing this constructor with the same KVStore as
      * the serialized column is undefined behavior.
      */
-    Column(KVStore* store, Deserializer* d) : Object() {
+    Column(KVStore* store, Deserializer* d)
+        : Object(), segment_capacity_(DEFAULT_SEGMENT_CAPACITY) {
         store_ = store;
         finalized_ = true;
         size_ = d->get_size_t();
@@ -141,12 +145,12 @@ class Column : public Object {
         std::vector<size_t> indices = std::vector<size_t>();
         for (size_t i = 0; i < segments_.size(); i++) {
             if (segments_[i].get_node() == store_->this_node()) {
-                size_t start = i * SEGMENT_CAPACITY;
+                size_t start = i * segment_capacity_;
                 size_t end;
-                if (i < segments_.size() - 1 || size_ % SEGMENT_CAPACITY == 0) {
-                    end = start + SEGMENT_CAPACITY;
+                if (i < segments_.size() - 1 || size_ % segment_capacity_ == 0) {
+                    end = start + segment_capacity_;
                 } else {
-                    end = start + (size_ % SEGMENT_CAPACITY);
+                    end = start + (size_ % segment_capacity_);
                 }
                 for (size_t j = start; j < end; j++) {
                     indices.push_back(j);
@@ -213,12 +217,14 @@ class Column : public Object {
  */
 class IntColumn : public Column {
    public:
-    IntColumn(KVStore* store) : Column(store) {
-        cache_ = new IntArray(SEGMENT_CAPACITY);
+    IntColumn(KVStore* store, size_t segment_capacity) : Column(store, segment_capacity) {
+        cache_ = new IntArray(segment_capacity_);
     }
 
+    IntColumn(KVStore* store) : IntColumn(store, DEFAULT_SEGMENT_CAPACITY) {}
+
     IntColumn(KVStore* store, Deserializer* d) : Column(store, d) {
-        cache_ = new IntArray(SEGMENT_CAPACITY);
+        cache_ = new IntArray(segment_capacity_);
     }
 
     virtual ~IntColumn() {}
@@ -226,7 +232,7 @@ class IntColumn : public Column {
     void expand_() {
         Column::expand_();
         delete cache_;
-        cache_ = new IntArray(SEGMENT_CAPACITY);
+        cache_ = new IntArray(segment_capacity_);
     }
 
     /**
@@ -236,7 +242,7 @@ class IntColumn : public Column {
      */
     void push_back(int val) {
         assert(!finalized_);
-        if (size_ == segments_.size() * SEGMENT_CAPACITY) {
+        if (size_ == segments_.size() * segment_capacity_) {
             put_in_store_();
             expand_();
         }
@@ -253,8 +259,8 @@ class IntColumn : public Column {
     int get(size_t idx) {
         assert(idx < size());
         assert(finalized_);
-        size_t segment_index = idx / SEGMENT_CAPACITY;
-        size_t index_in_seg = idx % SEGMENT_CAPACITY;
+        size_t segment_index = idx / segment_capacity_;
+        size_t index_in_seg = idx % segment_capacity_;
         Key& k = segments_[segment_index];
         if (!k.equals(&cache_key_)) {
             delete cache_;
@@ -291,12 +297,14 @@ class IntColumn : public Column {
  */
 class BoolColumn : public Column {
    public:
-    BoolColumn(KVStore* store) : Column(store) {
-        cache_ = new BoolArray(SEGMENT_CAPACITY);
+    BoolColumn(KVStore* store, size_t segment_capacity) : Column(store, segment_capacity) {
+        cache_ = new BoolArray(segment_capacity_);
     }
 
+    BoolColumn(KVStore* store) : BoolColumn(store, DEFAULT_SEGMENT_CAPACITY) {}
+
     BoolColumn(KVStore* store, Deserializer* d) : Column(store, d) {
-        cache_ = new BoolArray(SEGMENT_CAPACITY);
+        cache_ = new BoolArray(segment_capacity_);
     }
 
     virtual ~BoolColumn() {}
@@ -304,7 +312,7 @@ class BoolColumn : public Column {
     void expand_() {
         Column::expand_();
         delete cache_;
-        cache_ = new BoolArray(SEGMENT_CAPACITY);
+        cache_ = new BoolArray(segment_capacity_);
     }
 
     /**
@@ -314,7 +322,7 @@ class BoolColumn : public Column {
      */
     void push_back(bool val) {
         assert(!finalized_);
-        if (size_ == segments_.size() * SEGMENT_CAPACITY) {
+        if (size_ == segments_.size() * segment_capacity_) {
             put_in_store_();
             expand_();
         }
@@ -331,8 +339,8 @@ class BoolColumn : public Column {
     bool get(size_t idx) {
         assert(idx < size());
         assert(finalized_);
-        size_t segment_index = idx / SEGMENT_CAPACITY;
-        int index_in_seg = idx % SEGMENT_CAPACITY;
+        size_t segment_index = idx / segment_capacity_;
+        int index_in_seg = idx % segment_capacity_;
         Key& k = segments_[segment_index];
         if (!k.equals(&cache_key_)) {
             delete cache_;
@@ -369,12 +377,14 @@ class BoolColumn : public Column {
  */
 class DoubleColumn : public Column {
    public:
-    DoubleColumn(KVStore* store) : Column(store) {
-        cache_ = new DoubleArray(SEGMENT_CAPACITY);
+    DoubleColumn(KVStore* store, size_t segment_capacity) : Column(store, segment_capacity) {
+        cache_ = new DoubleArray(segment_capacity_);
     }
 
+    DoubleColumn(KVStore* store) : DoubleColumn(store, DEFAULT_SEGMENT_CAPACITY) {}
+
     DoubleColumn(KVStore* store, Deserializer* d) : Column(store, d) {
-        cache_ = new DoubleArray(SEGMENT_CAPACITY);
+        cache_ = new DoubleArray(segment_capacity_);
     }
 
     virtual ~DoubleColumn() {}
@@ -382,7 +392,7 @@ class DoubleColumn : public Column {
     void expand_() {
         Column::expand_();
         delete cache_;
-        cache_ = new DoubleArray(SEGMENT_CAPACITY);
+        cache_ = new DoubleArray(segment_capacity_);
     }
 
     /**
@@ -392,7 +402,7 @@ class DoubleColumn : public Column {
      */
     void push_back(double val) {
         assert(!finalized_);
-        if (size_ == segments_.size() * SEGMENT_CAPACITY) {
+        if (size_ == segments_.size() * segment_capacity_) {
             put_in_store_();
             expand_();
         }
@@ -409,8 +419,8 @@ class DoubleColumn : public Column {
     double get(size_t idx) {
         assert(idx < size());
         assert(finalized_);
-        size_t segment_index = idx / SEGMENT_CAPACITY;
-        int index_in_seg = idx % SEGMENT_CAPACITY;
+        size_t segment_index = idx / segment_capacity_;
+        int index_in_seg = idx % segment_capacity_;
         Key& k = segments_[segment_index];
         if (!k.equals(&cache_key_)) {
             delete cache_;
@@ -454,12 +464,14 @@ class DoubleColumn : public Column {
  */
 class StringColumn : public Column {
    public:
-    StringColumn(KVStore* store) : Column(store) {
-        cache_ = new StringArray(SEGMENT_CAPACITY);
+    StringColumn(KVStore* store, size_t segment_capacity) : Column(store, segment_capacity) {
+        cache_ = new StringArray(segment_capacity_);
     }
 
+    StringColumn(KVStore* store) : StringColumn(store, DEFAULT_SEGMENT_CAPACITY) {}
+
     StringColumn(KVStore* store, Deserializer* d) : Column(store, d) {
-        cache_ = new StringArray(SEGMENT_CAPACITY);
+        cache_ = new StringArray(segment_capacity_);
     }
 
     virtual ~StringColumn() {}
@@ -467,7 +479,7 @@ class StringColumn : public Column {
     void expand_() {
         Column::expand_();
         delete cache_;
-        cache_ = new StringArray(SEGMENT_CAPACITY);
+        cache_ = new StringArray(segment_capacity_);
     }
 
     /**
@@ -477,7 +489,7 @@ class StringColumn : public Column {
      */
     void push_back(String* val) {
         assert(!finalized_);
-        if (size_ == segments_.size() * SEGMENT_CAPACITY) {
+        if (size_ == segments_.size() * segment_capacity_) {
             put_in_store_();
             expand_();
         }
@@ -494,8 +506,8 @@ class StringColumn : public Column {
     String* get(size_t idx) {
         assert(idx < size());
         assert(finalized_);
-        size_t segment_index = idx / SEGMENT_CAPACITY;
-        int index_in_seg = idx % SEGMENT_CAPACITY;
+        size_t segment_index = idx / segment_capacity_;
+        int index_in_seg = idx % segment_capacity_;
         Key& k = segments_[segment_index];
         if (!k.equals(&cache_key_)) {
             delete cache_;
