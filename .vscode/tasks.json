@@ -1,0 +1,23 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "build server",
+            "command": "make",
+            "args": [
+                "server"
+            ],
+            "group": "build",
+        },
+        {
+            "type": "shell",
+            "label": "run tests",
+            "command": "make",
+            "args": [
+                "test"
+            ],
+            "group": "test"
+        }
+    ],
+    "version": "2.0.0"
+}
