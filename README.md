@@ -1,4 +1,4 @@
-# `eau2` Report
+# `eau2`
 
 ## Introduction
 eau2 is a distributed system used to run machine learning algorithms and other operations over large amounts of data. The system works by creating data frames (tabular based data structures) and storing their contents in a key-value store over multiple nodes. All of the computation and data management is done in the background, which allows the user to work with the data as if it was one large unified data frame. CwC is a programming language subset defined by our professor as all of the C language plus the ability to use classes from C++, but this restricted was lifted and normal C++ was allowed for certain parts of the program.
