@@ -1,7 +1,7 @@
 CC = g++
 CFLAGS = -g -Wall -Werror -std=c++11 -pthread
 
-STUFF = src tests data report Makefile Dockerfile
+STUFF = src tests data Makefile Dockerfile
 
 TEST_SRCS = $(wildcard tests/*_test.cpp)
 _OBJS = $(patsubst %.cpp,%.o,$(notdir $(TEST_SRCS))) test.o
@@ -9,6 +9,8 @@ OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
 DEPS := ./tests/catch.hpp $(shell find src/ -name *.h)
 ODIR = build
 TEST_OUT = ./$(ODIR)/test
+
+default: test
 
 all: zip test valgrind
 
