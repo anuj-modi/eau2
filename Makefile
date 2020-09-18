@@ -1,8 +1,6 @@
 CC = g++
 CFLAGS = -g -Wall -Werror -std=c++11 -pthread
 
-STUFF = src tests data Makefile Dockerfile
-
 TEST_SRCS = $(wildcard tests/*_test.cpp)
 _OBJS = $(patsubst %.cpp,%.o,$(notdir $(TEST_SRCS))) test.o
 OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
@@ -10,20 +8,12 @@ DEPS := ./tests/catch.hpp $(shell find src/ -name *.h)
 ODIR = build
 TEST_OUT = ./$(ODIR)/test
 
-default: test
+default: $(ODIR) $(TEST_OUT)
 
 all: zip test valgrind
 
-zip: submission.zip
-
 client: $(ODIR)/client
 server: $(ODIR)/server
-
-submission.zip: $(STUFF)
-	mkdir eau2
-	cp -r $(STUFF) eau2
-	zip -x '*.DS_Store' -x '*__MACOSX*' -x '*.AppleDouble*' -r submission.zip eau2
-	@rm -rf eau2/
 
 $(ODIR):
 	mkdir -p ./$(ODIR)
